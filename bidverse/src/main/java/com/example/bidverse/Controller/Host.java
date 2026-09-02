@@ -89,8 +89,16 @@ public class Host {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String status) {
+    public ResponseEntity<List<Product>> getAllProducts(@RequestParam String status) {
         return ResponseEntity.ok(productRepo.findByStatus(status.toLowerCase()));
     }
+
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId) {
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        return ResponseEntity.ok(room);
+    }
+    
 
 }
