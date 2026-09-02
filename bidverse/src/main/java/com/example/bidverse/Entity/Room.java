@@ -1,12 +1,12 @@
 package com.example.bidverse.Entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -27,10 +27,10 @@ public class Room {
     @Column(name = "seat_limit", nullable = false)
     private Integer seatLimit;
     @Column(name = "advance_amount", nullable = false)
-    private Double advanceAmount;
+    private BigDecimal advanceAmount;
     @Column(name = "status", nullable = false)
     private String status;
     @Column(name = "start_time", nullable = false)
-    private LocalDateTime startTime;
+    private OffsetDateTime startTime;
 
 }

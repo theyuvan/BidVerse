@@ -1,5 +1,7 @@
 package com.example.bidverse.Entity;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,14 +19,14 @@ public class Deal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "deal_id")
     private Long dealId;
-    @Column(name = "aucion_item_id", nullable = false)
+    @Column(name = "auction_item_id", nullable = false)
     private Long auctionItemId;
     @Column(name = "seller_id", nullable = false)
     private Long sellerId;
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
     @Column(name = "final_amount", nullable = false)
-    private Double finalPrice;
+    private BigDecimal finalPrice;
     @Column(name = "status", nullable = false)
     private String status;
     @Column(name = "cancel_reason", nullable = false)

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -23,7 +24,7 @@ public class Room_Seat {
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
     @Column(name = "advance_amount", nullable = false)
-    private Double advanceAmount;
+    private BigDecimal advanceAmount;
     @Column(name = "advance_status", nullable = false)
     private String advance_status = "booked";
     

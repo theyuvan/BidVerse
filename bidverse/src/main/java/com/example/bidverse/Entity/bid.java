@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -23,7 +24,7 @@ public class bid {
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
     @Column(name = "amount", nullable = false)
-    private Double Amount;
+    private BigDecimal Amount;
     @Column(name = "bid_time", nullable = false)
-    private LocalDateTime bidTime;
+    private OffsetDateTime bidTime;
 }

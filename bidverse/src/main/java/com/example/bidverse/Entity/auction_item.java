@@ -1,4 +1,7 @@
 package com.example.bidverse.Entity;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,13 +24,13 @@ public class auction_item {
     @Column(name = "product_id", nullable = false)
     private Long productId;
     @Column(name = "start_price", nullable = false)
-    private Double startPrice;
+    private BigDecimal startPrice;
     @Column(name = "current_price", nullable = false)
-    private Double currentPrice;
+    private BigDecimal currentPrice;
     @Column(name = "status", nullable = false)
     private String status;
     @Column(name = "started_at", nullable = false)
-    private String startedAt;
+    private OffsetDateTime startedAt;
     @Column(name = "ended_at", nullable = false)
-    private String endedAt;
+    private OffsetDateTime endedAt;
 }
