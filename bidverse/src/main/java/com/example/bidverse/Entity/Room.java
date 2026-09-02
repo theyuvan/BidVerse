@@ -19,7 +19,7 @@ public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "room_id")
-    private Long room_id;
+    private Long roomId;
     @Column(name = "host_id", nullable = false)
     private Long hostId;
     @Column(name = "title", nullable = false, unique = true)
