@@ -28,7 +28,7 @@ public class ApprovalVerification {
     public ResponseEntity<List<Product>> getPendingProducts() {
 
         return ResponseEntity.ok(
-                productRepo.findByStatus("PENDING")
+                productRepo.findByStatus("pending")
         );
     }
 
