@@ -44,7 +44,7 @@ public class Host {
         String decision =
                 request.status() == null
                         ? ""
-                        : request.status().trim().toUpperCase();
+                        : request.status().trim().toLowerCase();
 
         if (!decision.equalsIgnoreCase(STATUS_APPROVED)
                 && !decision.equalsIgnoreCase(STATUS_REJECTED)) {
