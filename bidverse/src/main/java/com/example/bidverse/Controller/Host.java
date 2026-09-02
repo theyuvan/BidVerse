@@ -1,36 +1,40 @@
-package com.example.bidverse.Controller.Host;
+package com.example.bidverse.Controller;
+
 
 import com.example.bidverse.Dto.ProductStatus;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Repository.ProductRepository;
-
+import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Repository.RoomRepo;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping("/host")
-public class ApprovalVerification {
+public class Host {
 
-    private static final String STATUS_APPROVED = "APPROVED";
-    private static final String STATUS_REJECTED = "REJECTED";
+    private static final String STATUS_APPROVED = "approved";
+    private static final String STATUS_REJECTED = "rejected";
 
     private final ProductRepository productRepo;
-
-    public ApprovalVerification(ProductRepository productRepo) {
+    private final RoomRepo roomRepo;
+    public Host(ProductRepository productRepo,RoomRepo roomRepo) {
         this.productRepo = productRepo;
+        this.roomRepo = roomRepo;
     }
 
-    @GetMapping("/products/pending")
-    public ResponseEntity<List<Product>> getPendingProducts() {
-
-        return ResponseEntity.ok(
-                productRepo.findByStatus("pending")
-        );
-    }
+//    @GetMapping("/products/pending")
+//    public ResponseEntity<List<Product>> getPendingProducts() {
+//
+//        return ResponseEntity.ok(
+//                productRepo.findByStatus("pending")
+//        );
+//    }
 
     @PostMapping("/products/{productId}/verify")
     public ResponseEntity<?> verifyProduct(
@@ -42,8 +46,8 @@ public class ApprovalVerification {
                         ? ""
                         : request.status().trim().toUpperCase();
 
-        if (!decision.equals(STATUS_APPROVED)
-                && !decision.equals(STATUS_REJECTED)) {
+        if (!decision.equalsIgnoreCase(STATUS_APPROVED)
+                && !decision.equalsIgnoreCase(STATUS_REJECTED)) {
 
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -68,4 +72,25 @@ public class ApprovalVerification {
                 HttpStatus.OK
         );
     }
+
+    @PutMapping("/rooms/{roomId}/start")
+    public ResponseEntity<?> startRoom(@PathVariable Long roomId) {
+
+        Room room = roomRepo.findById(roomId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Room Not Found"));
+        room.setStatus("LIVE");
+        room.setStartTime(OffsetDateTime.now());
+
+        roomRepo.save(room);
+
+        return new ResponseEntity<>(
+                "Room Started Successfully",
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getAllProducts(@RequestParam(required = false) String status) {
+        return ResponseEntity.ok(productRepo.findByStatus(status.toLowerCase()));
+    }
+
 }
