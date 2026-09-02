@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.bidverse.Dto.UpdateRoom;
 
 import java.util.List;
 import java.time.OffsetDateTime;
@@ -99,6 +100,24 @@ public class Host {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
         return ResponseEntity.ok(room);
     }
-    
+
+    @PatchMapping("/rooms/{roomId}")
+    public ResponseEntity<?> updateRoom(
+            @PathVariable Long roomId,
+            @RequestBody UpdateRoom dto) {
+
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+
+        room.setSeatLimit(dto.seatLimit());
+
+        roomRepo.save(room);
+
+        return new ResponseEntity<>(
+                "Room capacity updated successfully",
+                HttpStatus.OK
+        );
+    }
+
 
 }
