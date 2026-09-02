@@ -1,6 +1,7 @@
 package com.example.bidverse.Controller;
 
 
+import com.example.bidverse.Dto.AssignRoomRequest;
 import com.example.bidverse.Dto.ProductStatus;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
@@ -39,6 +40,19 @@ public class Host {
 
         return new ResponseEntity<>(
                 "Product Verified Successfully",
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/products/{productId}/assignRoom")
+    public ResponseEntity<?> assignProductToRoom(
+            @PathVariable Long productId,
+            @RequestBody AssignRoomRequest request) {
+
+        hostService.assignProductToRoom(productId, request.roomId());
+
+        return new ResponseEntity<>(
+                "Product added to room successfully",
                 HttpStatus.OK
         );
     }

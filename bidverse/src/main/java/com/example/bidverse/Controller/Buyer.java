@@ -1,0 +1,39 @@
+package com.example.bidverse.Controller;
+
+import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Service.BuyerService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/buyer")
+public class Buyer {
+
+    private final BuyerService buyerService;
+
+    public Buyer(BuyerService buyerService) {
+        this.buyerService = buyerService;
+    }
+
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<List<CatalogItem>> getRoomCatalog(@PathVariable Long roomId) {
+        return ResponseEntity.ok(buyerService.getRoomCatalog(roomId));
+    }
+
+    @GetMapping("/rooms/available")
+    public ResponseEntity<List<Room>> getAvailableRooms() {
+        return ResponseEntity.ok(buyerService.getAvailableRooms());
+    }
+
+    @GetMapping("/rooms/search")
+    public ResponseEntity<List<Room>> searchRooms(@RequestParam String query) {
+        return ResponseEntity.ok(buyerService.searchRooms(query));
+    }
+}

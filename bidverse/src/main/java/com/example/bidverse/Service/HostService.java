@@ -2,6 +2,8 @@ package com.example.bidverse.Service;
 
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Entity.auction_item;
+import com.example.bidverse.Repository.AuctionItemRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import org.springframework.http.HttpStatus;
@@ -16,13 +18,17 @@ public class HostService {
 
     private static final String STATUS_APPROVED = "approved";
     private static final String STATUS_REJECTED = "rejected";
+    private static final String ROOM_STATUS_LIVE = "live";
+    private static final String AUCTION_ITEM_STATUS_WAITING = "waiting";
 
     private final ProductRepository productRepo;
     private final RoomRepo roomRepo;
+    private final AuctionItemRepository auctionItemRepo;
 
-    public HostService(ProductRepository productRepo, RoomRepo roomRepo) {
+    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo) {
         this.productRepo = productRepo;
         this.roomRepo = roomRepo;
+        this.auctionItemRepo = auctionItemRepo;
     }
 
     public Product verifyProduct(Long productId, String status) {
@@ -43,9 +49,36 @@ public class HostService {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        room.setStatus("LIVE");
+        room.setStatus(ROOM_STATUS_LIVE);
         room.setStartTime(OffsetDateTime.now());
         return roomRepo.save(room);
+    }
+
+    public auction_item assignProductToRoom(Long productId, Long roomId) {
+        Product product = productRepo.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        if (!STATUS_APPROVED.equalsIgnoreCase(product.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product must be approved before it can be added to a room");
+        }
+
+        Room room = roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+
+        if (ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add products to a room that has already started");
+        }
+
+        if (auctionItemRepo.existsByProductId(productId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Product is already assigned to a room");
+        }
+
+        auction_item item = new auction_item();
+        item.setRoomId(room.getRoomId());
+        item.setProductId(product.getProductId());
+        item.setStartPrice(product.getBasePrice());
+        item.setCurrentPrice(product.getBasePrice());
+        item.setStatus(AUCTION_ITEM_STATUS_WAITING);
+
+        return auctionItemRepo.save(item);
     }
 
     public List<Product> getAllProducts(String status) {
