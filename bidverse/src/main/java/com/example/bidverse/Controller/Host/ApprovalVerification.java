@@ -15,8 +15,8 @@ import java.util.List;
 @RequestMapping("/host")
 public class ApprovalVerification {
 
-    private static final String STATUS_APPROVED = "APPROVED";
-    private static final String STATUS_REJECTED = "REJECTED";
+    private static final String STATUS_APPROVED = "approved";
+    private static final String STATUS_REJECTED = "rejected";
 
     private final ProductRepository productRepo;
 
@@ -40,7 +40,7 @@ public class ApprovalVerification {
         String decision =
                 request.status() == null
                         ? ""
-                        : request.status().trim().toUpperCase();
+                        : request.status().trim().toLowerCase();
 
         if (!decision.equals(STATUS_APPROVED)
                 && !decision.equals(STATUS_REJECTED)) {
