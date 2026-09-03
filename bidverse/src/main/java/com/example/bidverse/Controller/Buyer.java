@@ -1,6 +1,7 @@
 package com.example.bidverse.Controller;
 
 import com.example.bidverse.Dto.BookSeatRequest;
+import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Room_Seat;
@@ -44,5 +45,19 @@ public class Buyer {
     @PostMapping("/rooms/{roomId}/book")
     public ResponseEntity<Room_Seat> bookRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
         return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));
+    }
+
+    // GET /buyer/{buyerId}/bookings?status=upcoming|live|completed  (status optional -> all bookings)
+    @GetMapping("/{buyerId}/bookings")
+    public ResponseEntity<List<BookingSummary>> displayBookings(
+            @PathVariable Long buyerId,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
+    }
+
+    // POST /buyer/rooms/{roomId}/join  { "buyerId": <id> }  -> only once the room is live and this buyer has a seat
+    @PostMapping("/rooms/{roomId}/join")
+    public ResponseEntity<List<CatalogItem>> joinRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, request.buyerId()));
     }
 }
