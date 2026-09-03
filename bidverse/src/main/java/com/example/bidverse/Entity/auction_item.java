@@ -29,8 +29,8 @@ public class auction_item {
     private BigDecimal currentPrice;
     @Column(name = "status", nullable = false)
     private String status;
-    @Column(name = "started_at", nullable = false)
+    @Column(name = "started_at")
     private OffsetDateTime startedAt;
-    @Column(name = "ended_at", nullable = false)
+    @Column(name = "ended_at")
     private OffsetDateTime endedAt;
 }
