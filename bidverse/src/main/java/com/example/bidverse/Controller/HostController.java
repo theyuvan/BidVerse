@@ -15,11 +15,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/host")
-public class Host {
+public class HostController {
 
     private final HostService hostService;
 
-    public Host(HostService hostService) {
+    public HostController(HostService hostService) {
         this.hostService = hostService;
     }
 
