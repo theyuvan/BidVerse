@@ -9,13 +9,17 @@ import CreateRoom from "./pages/Host/CreateRoom";
 function App() {
   return (
     <BrowserRouter>
-    <Navbar />
-      <Routes>
-        <Route path="/host" element={<HostDashboard />} />
-        <Route path="/host/create-room" element={<CreateRoom />} />
-        <Route path="/host/rooms" element={<MyRooms />} />
-        <Route path="/host/products" element={<Products />} />
-      </Routes>
+      <div className="app-shell">
+        <Navbar />
+        <div className="page-content">
+          <Routes>
+            <Route path="/host" element={<HostDashboard />} />
+            <Route path="/host/create-room" element={<CreateRoom />} />
+            <Route path="/host/rooms" element={<MyRooms />} />
+            <Route path="/host/products" element={<Products />} />
+          </Routes>
+        </div>
+      </div>
     </BrowserRouter>
   );
 }
