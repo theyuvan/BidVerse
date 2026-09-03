@@ -32,29 +32,17 @@ public class Host {
 //    }
 
     @PostMapping("/products/{productId}/verify")
-    public ResponseEntity<?> verifyProduct(
-            @PathVariable Long productId,
-            @RequestBody ProductStatus request) {
+    public ResponseEntity<?> verifyProduct(@PathVariable Long productId, @RequestBody ProductStatus request) {
 
         hostService.verifyProduct(productId, request.status());
-
-        return new ResponseEntity<>(
-                "Product Verified Successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Product Verified Successfully", HttpStatus.OK);
     }
 
     @PostMapping("/products/{productId}/assignRoom")
-    public ResponseEntity<?> assignProductToRoom(
-            @PathVariable Long productId,
-            @RequestBody AssignRoomRequest request) {
+    public ResponseEntity<?> assignProductToRoom(@PathVariable Long productId,@RequestBody AssignRoomRequest request) {
 
         hostService.assignProductToRoom(productId, request.roomId());
-
-        return new ResponseEntity<>(
-                "Product added to room successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Product added to room successfully", HttpStatus.OK);
     }
 
     @PutMapping("/rooms/{roomId}/start")
@@ -62,10 +50,7 @@ public class Host {
 
         hostService.startRoom(roomId);
 
-        return new ResponseEntity<>(
-                "Room Started Successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Room Started Successfully", HttpStatus.OK);
     }
 
     @GetMapping("/products")
@@ -79,16 +64,11 @@ public class Host {
     }
 
     @PatchMapping("/rooms/{roomId}")
-    public ResponseEntity<?> updateRoom(
-            @PathVariable Long roomId,
-            @RequestBody UpdateRoom dto) {
+    public ResponseEntity<?> updateRoom(@PathVariable Long roomId,@RequestBody UpdateRoom dto) {
 
         hostService.updateRoomCapacity(roomId, dto.seatLimit());
 
-        return new ResponseEntity<>(
-                "Room capacity updated successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Room capacity updated successfully", HttpStatus.OK);
     }
 
 
