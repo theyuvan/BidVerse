@@ -1,4 +1,4 @@
-package com.example.bidverse.Controller.Product;
+package com.example.bidverse.Controller;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Repository.ListProductRepository;
 import org.springframework.http.HttpStatus;
@@ -7,16 +7,16 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/seller")
-public class ListProduct {
+public class Seller {
     private final ListProductRepository productRepo;
-    public ListProduct(ListProductRepository productRepo) {
+    public Seller(ListProductRepository productRepo) {
         this.productRepo = productRepo;
     }
     @GetMapping("/products/{productId}")
     public ResponseEntity<?> getProductDetails(
         @PathVariable Long productId) {
 
-        Product product = productRepo.findByProductId(productId);
+        Product product = productRepo.findById(productId).orElse(null);
 
         if (product == null) {
             return new ResponseEntity<>(

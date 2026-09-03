@@ -97,4 +97,12 @@ public class HostService {
         room.setSeatLimit(seatLimit);
         return roomRepo.save(room);
     }
+
+    public List<Room> getAllRooms() {
+        return roomRepo.findAll();
+    }
+
+    public Room createRoom(Room room) {
+        return roomRepo.save(room);
+    }
 }

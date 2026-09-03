@@ -15,21 +15,21 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/host")
-public class HostController {
+public class Host {
 
     private final HostService hostService;
 
-    public HostController(HostService hostService) {
+    public Host(HostService hostService) {
         this.hostService = hostService;
     }
 
-//    @GetMapping("/products/pending")
-//    public ResponseEntity<List<Product>> getPendingProducts() {
-//
-//        return ResponseEntity.ok(
-//                hostService.getAllProducts("pending")
-//        );
-//    }
+   @GetMapping("/products/pending")
+   public ResponseEntity<List<Product>> getPendingProducts() {
+
+       return ResponseEntity.ok(
+               hostService.getAllProducts("pending")
+       );
+   }
 
     @PostMapping("/products/{productId}/verify")
     public ResponseEntity<?> verifyProduct(
@@ -90,7 +90,16 @@ public class HostController {
                 HttpStatus.OK
         );
     }
-
-
-
+    @GetMapping("/rooms")
+    public ResponseEntity<?> getAllRooms() {
+        return new ResponseEntity<>(hostService.getAllRooms(), HttpStatus.OK);
+    } 
+    @PostMapping("/rooms")
+    public ResponseEntity<?> createRoom(@RequestBody Room room) {
+        hostService.createRoom(room);
+        return new ResponseEntity<>(
+                "Room Created Successfully",
+                HttpStatus.CREATED
+        );
+    }
 }
