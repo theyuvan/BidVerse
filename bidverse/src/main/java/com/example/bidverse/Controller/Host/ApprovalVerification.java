@@ -32,6 +32,11 @@ public class ApprovalVerification {
         );
     }
 
+        @GetMapping("/products")
+        public ResponseEntity<List<Product>> getAllProducts() {
+                return ResponseEntity.ok(productRepo.findAll());
+        }
+
     @PostMapping("/products/{productId}/verify")
     public ResponseEntity<?> verifyProduct(
             @PathVariable Long productId,
