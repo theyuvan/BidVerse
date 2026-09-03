@@ -47,7 +47,6 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));
     }
 
-    // GET /buyer/{buyerId}/bookings?status=upcoming|live|completed  (status optional -> all bookings)
     @GetMapping("/{buyerId}/bookings")
     public ResponseEntity<List<BookingSummary>> displayBookings(
             @PathVariable Long buyerId,
@@ -55,7 +54,6 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
     }
 
-    // POST /buyer/rooms/{roomId}/join  { "buyerId": <id> }  -> only once the room is live and this buyer has a seat
     @PostMapping("/rooms/{roomId}/join")
     public ResponseEntity<List<CatalogItem>> joinRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
         return ResponseEntity.ok(buyerService.joinRoom(roomId, request.buyerId()));
