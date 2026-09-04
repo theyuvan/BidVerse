@@ -25,7 +25,7 @@ export const getPendingProducts = () => {
 };
 
 export const getProducts = () => {
-    return axios.get("http://localhost:8080/host/products");
+    return axios.get("http://localhost:8080/host/products?status=pending");
 };
 
 export const verifyProduct = (productId, status) => {

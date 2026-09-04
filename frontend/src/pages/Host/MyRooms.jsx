@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRooms } from "../../services/hostService";
-
+import "./MyRooms.css";
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
     const navigate = useNavigate();
@@ -38,7 +38,7 @@ function MyRooms() {
                                     }
                                 }}
                                 role="button"
-                                tabIndex="0"
+                                tabIndex={0}
                             >
                                 <h3>{room.title}</h3>
                                 <span className="room-status">{room.status}</span>

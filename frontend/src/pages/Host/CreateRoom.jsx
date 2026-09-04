@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createRoom } from "../../services/hostService";
-
+import "./CreateRoom.css";
 function CreateRoom(){
     const [formData, setFormData] = useState({
         hostId: "",

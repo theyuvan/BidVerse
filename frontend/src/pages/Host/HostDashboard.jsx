@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getRooms } from "../../services/hostService";
+import "./HostDashboard.css";
 
 function HostDashboard(){
     const [rooms, setRooms] = useState([]);

@@ -6,7 +6,7 @@ import {
 	getRoomDetails,
 	getRoomProducts,
 } from "../../services/hostService";
-
+import "./RoomDetails.css";
 function RoomDetails() {
 	const { roomId } = useParams();
 	const [room, setRoom] = useState(null);

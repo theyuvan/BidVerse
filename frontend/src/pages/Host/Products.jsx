@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProducts, verifyProduct } from "../../services/hostService";
-
+import "./Products.css";
 function Products(){
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -20,14 +20,23 @@ function Products(){
 
         try {
             await verifyProduct(productId, status);
+
             setProducts((currentProducts) =>
-                currentProducts.filter((product) => product.productId !== productId)
+                currentProducts.filter(
+                    (product) => product.productId !== productId
+                )
             );
         } catch (requestError) {
+            console.log("VERIFY ERROR:", requestError);
+            console.log("RESPONSE:", requestError.response?.data);
+
             const responseData = requestError.response?.data;
-            setError(typeof responseData === "string"
-                ? responseData
-                : responseData?.message || "Unable to update product status.");
+
+            setError(
+                typeof responseData === "string"
+                    ? responseData
+                    : responseData?.message || "Unable to update product status."
+            );
         } finally {
             setUpdatingId(null);
         }

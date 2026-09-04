@@ -1,6 +1,6 @@
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 
-import Navbar from "./components/host/Navbar";
+import Sidebar from "./components/host/Sidebar";
 import HostDashboard from "./pages/Host/HostDashboard";
 import MyRooms from "./pages/Host/MyRooms";
 import Products from "./pages/Host/Products";
@@ -11,7 +11,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app-shell">
-        <Navbar />
+        <Sidebar />
         <div className="page-content">
           <Routes>
             <Route path="/host" element={<HostDashboard />} />

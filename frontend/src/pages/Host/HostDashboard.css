@@ -1,0 +1,54 @@
+html,
+body,
+#root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+.host-dashboard {
+    min-height: 100vh;
+    margin-left: 230px;
+    width: calc(100% - 230px);
+    padding: 45px 50px;
+    box-sizing: border-box;
+    background: #f7f9fc;
+}
+
+.host-dashboard-header {
+    margin-bottom: 35px;
+}
+
+.host-dashboard-header h1 {
+    margin: 0;
+    font-size: 38px;
+    color: #1e293b;
+}
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    width: 100%;
+}
+
+.stat {
+    padding: 25px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.stat h2 {
+    margin: 0 0 15px;
+    font-size: 17px;
+    color: #64748b;
+}
+
+.stat p {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: #2563eb;
+}
