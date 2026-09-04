@@ -1,21 +1,21 @@
 package com.example.bidverse.Controller;
 
-import com.example.bidverse.Dto.BookSeatRequest;
-import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Dto.RejectRequest;
 import com.example.bidverse.Entity.Room;
-import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Service.BuyerService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequestMapping("/buyer")
@@ -42,20 +42,23 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.searchRooms(query));
     }
 
-    @PostMapping("/rooms/{roomId}/book")
-    public ResponseEntity<Room_Seat> bookRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
-        return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));
+    @GetMapping("/deals")
+    public ResponseEntity<?> getAllDeals() {
+        return ResponseEntity.ok(buyerService.getAllDeals());
     }
 
-    @GetMapping("/{buyerId}/bookings")
-    public ResponseEntity<List<BookingSummary>> displayBookings(
-            @PathVariable Long buyerId,
-            @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
+    @GetMapping("/deals/{dealId}")
+    public ResponseEntity<?> getDealById(@PathVariable Long dealId) {
+        return ResponseEntity.ok(buyerService.getDealId(dealId));
     }
 
-    @PostMapping("/rooms/{roomId}/join")
-    public ResponseEntity<List<CatalogItem>> joinRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
-        return ResponseEntity.ok(buyerService.joinRoom(roomId, request.buyerId()));
+    @PostMapping("/deals/{dealId}/Confirm")
+    public ResponseEntity<?> confirmDeal(@PathVariable Long dealId) {
+        return ResponseEntity.ok(buyerService.confirmDeal(dealId));
+    }
+
+    @PostMapping("/deals/{dealId}/Reject")
+    public ResponseEntity<?> rejectDeal(@PathVariable Long dealId, @RequestBody RejectRequest reason) {
+        return ResponseEntity.ok(buyerService.rejectDeal(dealId, reason.getReason()));
     }
 }

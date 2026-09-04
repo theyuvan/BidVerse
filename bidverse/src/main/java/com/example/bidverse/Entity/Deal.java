@@ -31,5 +31,8 @@ public class Deal {
     private String status;
     @Column(name = "cancel_reason")
     private String cancelReason;
-    
+    @Column(name = "buyer_status", nullable = false)
+    private String buyerStatus;
+    @Column(name = "seller_status", nullable = false)
+    private String sellerStatus;
 }

@@ -4,16 +4,21 @@ import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Repository.AuctionItemRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
+import com.example.bidverse.Repository.DealRepository;
+
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,12 +38,14 @@ public class BuyerService {
     private final AuctionItemRepository auctionItemRepo;
     private final ProductRepository productRepo;
     private final RoomSeatRepository roomSeatRepo;
+    private final DealRepository dealRepo;
 
-    public BuyerService(RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, ProductRepository productRepo, RoomSeatRepository roomSeatRepo) {
+    public BuyerService(RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, ProductRepository productRepo, RoomSeatRepository roomSeatRepo , DealRepository dealRepo) {
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
         this.productRepo = productRepo;
         this.roomSeatRepo = roomSeatRepo;
+        this.dealRepo = dealRepo;
     }
 
     public List<Room> getAvailableRooms() {
@@ -163,5 +170,51 @@ public class BuyerService {
         }
 
         return getRoomCatalog(roomId);
+    }
+
+    public List<Deal> getAllDeals() {
+        return dealRepo.findAll();
+    }
+
+    public List<Deal> getDealId(Long dealId) {
+        return dealRepo.findById(dealId).map(Collections::singletonList).orElse(Collections.emptyList());
+    }
+
+    public List<Deal> confirmDeal(Long dealId) {
+        Deal deal = dealRepo.findById(dealId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
+
+        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
+        }
+
+        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
+        }
+
+        deal.setBuyerStatus("confirmed");
+        dealRepo.save(deal);
+
+        return Collections.singletonList(deal);
+    }
+
+    public List<Deal> rejectDeal(Long dealId , String reason) {
+        Deal deal = dealRepo.findById(dealId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
+
+        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        }
+        
+        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        }
+
+        deal.setBuyerStatus("rejected");
+        deal.setCancelReason(reason);
+
+        dealRepo.save(deal);
+
+        return Collections.singletonList(deal);
     }
 }
