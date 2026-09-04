@@ -24,7 +24,7 @@ public class Product {
     private Long categoryId;
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     private String description;
     @Column(name = "base_price", nullable = false)
     private BigDecimal basePrice;

@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,7 +28,10 @@ public class BuyerService {
     private static final List<String> UPCOMING_ROOM_STATUSES = List.of("upcoming", "open");
     private static final String ROOM_STATUS_LIVE = "live";
     private static final String ROOM_STATUS_COMPLETED = "completed";
+    private static final String ROOM_STATUS_CANCELLED = "cancelled";
     private static final String ADVANCE_STATUS_PAID = "paid";
+    private static final int BID_DURATION_SECONDS = 90;
+    private static final long MIN_ROOM_DURATION_SECONDS = 3600;
 
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
@@ -91,6 +95,8 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer already has a seat booked in this room");
         }
 
+        assertNoOverlappingBooking(room, buyerId);
+
         long bookedSeats = roomSeatRepo.countByRoomId(roomId);
         if (bookedSeats >= room.getSeatLimit()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Room is fully booked");
@@ -103,6 +109,46 @@ public class BuyerService {
         seat.setAdvanceStatus(ADVANCE_STATUS_PAID);
 
         return roomSeatRepo.save(seat);
+    }
+
+    private void assertNoOverlappingBooking(Room room, Long buyerId) {
+        List<Room_Seat> existingBookings = roomSeatRepo.findByBuyerId(buyerId);
+        if (existingBookings.isEmpty()) {
+            return;
+        }
+
+        List<Long> otherRoomIds = existingBookings.stream()
+                .map(Room_Seat::getRoomId)
+                .filter(id -> !id.equals(room.getRoomId()))
+                .collect(Collectors.toList());
+        if (otherRoomIds.isEmpty()) {
+            return;
+        }
+
+        OffsetDateTime newStart = room.getStartTime();
+        OffsetDateTime newEnd = estimateRoomEndTime(room);
+
+        List<Room> otherRooms = roomRepo.findAllById(otherRoomIds);
+        for (Room otherRoom : otherRooms) {
+            if (ROOM_STATUS_CANCELLED.equalsIgnoreCase(otherRoom.getStatus())) {
+                continue;
+            }
+
+            OffsetDateTime otherStart = otherRoom.getStartTime();
+            OffsetDateTime otherEnd = estimateRoomEndTime(otherRoom);
+
+            boolean overlaps = newStart.isBefore(otherEnd) && otherStart.isBefore(newEnd);
+            if (overlaps) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Buyer already has a seat booked in \"" + otherRoom.getTitle() + "\" during this time slot");
+            }
+        }
+    }
+
+    private OffsetDateTime estimateRoomEndTime(Room room) {
+        long itemCount = auctionItemRepo.findByRoomId(room.getRoomId()).size();
+        long durationSeconds = Math.max(itemCount * (long) BID_DURATION_SECONDS, MIN_ROOM_DURATION_SECONDS);
+        return room.getStartTime().plusSeconds(durationSeconds);
     }
 
     public List<BookingSummary> displayBookings(Long buyerId, String status) {

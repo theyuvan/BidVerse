@@ -1,63 +1,23 @@
 package com.example.bidverse.Controller;
-<<<<<<< HEAD
-import com.example.bidverse.Entity.Product;
-import com.example.bidverse.Repository.ListProductRepository;
-=======
 
-
+import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerDealDecision;
 import com.example.bidverse.Entity.Deal;
+import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Service.SellerService;
->>>>>>> host-approval
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-<<<<<<< HEAD
-@RestController
-@RequestMapping("/seller")
-public class Seller {
-    private final ListProductRepository productRepo;
-    public Seller(ListProductRepository productRepo) {
-        this.productRepo = productRepo;
-    }
-    @GetMapping("/products/{productId}")
-    public ResponseEntity<?> getProductDetails(
-        @PathVariable Long productId) {
-
-        Product product = productRepo.findById(productId).orElse(null);
-
-        if (product == null) {
-            return new ResponseEntity<>(
-                "Product Not Found",
-                HttpStatus.NOT_FOUND
-            );
-        }
-        return new ResponseEntity<>(
-            product,
-            HttpStatus.OK
-        );
-    }
-
-    @PostMapping("/products")
-    public ResponseEntity<?> createProduct(@RequestBody Product product) {
-        productRepo.save(product);
-        return new ResponseEntity<>(
-                "Product Created Successfully",
-                HttpStatus.CREATED
-        );
-    }
-}
-=======
 import java.util.List;
 
 @RestController
 @RequestMapping("/seller")
-public class Seller{
+public class Seller {
 
     private final SellerService sellerService;
 
-    public Seller(SellerService sellerService){
+    public Seller(SellerService sellerService) {
         this.sellerService = sellerService;
     }
 
@@ -75,5 +35,14 @@ public class Seller{
     public ResponseEntity<Deal> confirmDeal(@PathVariable Long dealId, @RequestBody SellerDealDecision request) {
         return ResponseEntity.ok(sellerService.confirmDeal(dealId, request.decision(), request.reason()));
     }
+
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<Product> getProductDetails(@PathVariable Long productId) {
+        return ResponseEntity.ok(sellerService.getProductDetails(productId));
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest request) {
+        return new ResponseEntity<>(sellerService.createProduct(request), HttpStatus.CREATED);
+    }
 }
->>>>>>> host-approval
