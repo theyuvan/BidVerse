@@ -86,6 +86,14 @@ body {
   color: var(--accent);
 }
 
+.sidebar-role {
+  padding: 0 16px 18px;
+  color: var(--text);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .sidebar-links {
   display: flex;
   flex-direction: column;

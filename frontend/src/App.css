@@ -183,6 +183,192 @@
   font-size: 14px;
 }
 
+.seller-page .eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.seller-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.seller-action-card {
+  min-height: 190px;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--bg);
+}
+
+.seller-action-card:hover,
+.seller-action-card:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.seller-action-number,
+.product-id {
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.seller-action-card h2 {
+  margin: 34px 0 8px;
+}
+
+.seller-action-card p,
+.seller-product-card > p {
+  color: var(--text);
+}
+
+.seller-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 720px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.seller-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.seller-form-wide,
+.seller-form button,
+.seller-form [role="status"],
+.seller-form [role="alert"] {
+  grid-column: 1 / -1;
+}
+
+.seller-form input,
+.seller-form textarea,
+.seller-filter input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-h);
+  background: var(--bg);
+  font: inherit;
+}
+
+.seller-form button,
+.seller-filter button {
+  justify-self: start;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 5px;
+  color: #fff;
+  background: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.seller-form button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.seller-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.seller-filter label {
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.seller-filter input {
+  width: 120px;
+}
+
+.seller-product-list {
+  display: grid;
+  gap: 14px;
+}
+
+.seller-product-card {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.seller-product-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.seller-product-heading h2 {
+  margin: 5px 0 0;
+  font-size: 20px;
+}
+
+.seller-product-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0 0;
+}
+
+.seller-product-meta dt {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.seller-product-meta dd {
+  margin: 3px 0 0;
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buyer-details {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border-left: 3px solid #26734d;
+  background: #edf8f1;
+}
+
+.buyer-details h3,
+.buyer-details p {
+  margin: 0;
+}
+
+.buyer-details h3 {
+  color: #26734d;
+  font-size: 14px;
+}
+
+.buyer-details p {
+  margin-top: 5px;
+  color: #24583e;
+  font-size: 13px;
+}
+
 .room-card h3 {
   margin: 0 0 12px;
   color: var(--text-h);
