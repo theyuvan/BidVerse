@@ -52,6 +52,137 @@
   background: var(--bg);
 }
 
+.room-card-clickable {
+  cursor: pointer;
+}
+
+.room-card-clickable:hover,
+.room-card-clickable:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: var(--accent);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.room-summary,
+.assign-product-section {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.room-summary dl {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 24px 0 0;
+}
+
+.room-summary dt {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.room-summary dd {
+  margin: 4px 0 0;
+  color: var(--text-h);
+  font-weight: 600;
+}
+
+.room-products-section,
+.assign-product-section {
+  margin-top: 32px;
+}
+
+.assigned-product-list {
+  display: grid;
+  gap: 10px;
+}
+
+.assigned-product {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.assigned-product h3,
+.assigned-product p {
+  margin: 0;
+}
+
+.assigned-product h3 {
+  color: var(--text-h);
+  font-size: 16px;
+}
+
+.assigned-product p {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.assigned-product strong {
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.assign-product-form {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.assign-product-form label {
+  color: var(--text-h);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.assign-product-form select,
+.assign-product-form button {
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font: inherit;
+}
+
+.assign-product-form select {
+  min-width: 0;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.assign-product-form button {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.assign-product-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.form-success {
+  color: #26734d;
+  font-size: 14px;
+}
+
 .room-card h3 {
   margin: 0 0 12px;
   color: var(--text-h);

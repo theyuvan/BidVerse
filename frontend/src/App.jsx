@@ -5,6 +5,7 @@ import HostDashboard from "./pages/Host/HostDashboard";
 import MyRooms from "./pages/Host/MyRooms";
 import Products from "./pages/Host/Products";
 import CreateRoom from "./pages/Host/CreateRoom";
+import RoomDetails from "./pages/Host/RoomDetails";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/host" element={<HostDashboard />} />
             <Route path="/host/create-room" element={<CreateRoom />} />
             <Route path="/host/rooms" element={<MyRooms />} />
+            <Route path="/host/rooms/:roomId" element={<RoomDetails />} />
             <Route path="/host/products" element={<Products />} />
           </Routes>
         </div>

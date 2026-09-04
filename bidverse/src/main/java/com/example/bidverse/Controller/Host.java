@@ -2,6 +2,7 @@ package com.example.bidverse.Controller;
 
 
 import com.example.bidverse.Dto.AssignRoomRequest;
+import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.ProductStatus;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
@@ -69,13 +70,19 @@ public class Host {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(@RequestParam String status) {
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(required = false) String status) {
         return ResponseEntity.ok(hostService.getAllProducts(status));
     }
 
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId) {
         return ResponseEntity.ok(hostService.getRoomDetails(roomId));
+    }
+
+    @GetMapping("/rooms/{roomId}/products")
+    public ResponseEntity<List<CatalogItem>> getRoomProducts(@PathVariable Long roomId) {
+        return ResponseEntity.ok(hostService.getRoomProducts(roomId));
     }
 
     @PatchMapping("/rooms/{roomId}")

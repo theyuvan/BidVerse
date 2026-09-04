@@ -3,6 +3,7 @@ package com.example.bidverse.Service;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
+import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Repository.AuctionItemRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
@@ -82,12 +86,39 @@ public class HostService {
     }
 
     public List<Product> getAllProducts(String status) {
-        return productRepo.findByStatus(status.toLowerCase());
+        if (status == null || status.isBlank()) {
+            return productRepo.findAll();
+        }
+
+        return productRepo.findByStatus(status.trim().toLowerCase());
     }
 
     public Room getRoomDetails(Long roomId) {
         return roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+    }
+
+    public List<CatalogItem> getRoomProducts(Long roomId) {
+        getRoomDetails(roomId);
+
+        List<auction_item> items = auctionItemRepo.findByRoomId(roomId);
+        Map<Long, Product> productsById = productRepo.findAllById(
+                items.stream().map(auction_item::getProductId).collect(Collectors.toList())
+        ).stream().collect(Collectors.toMap(Product::getProductId, Function.identity()));
+
+        return items.stream().map(item -> {
+            Product product = productsById.get(item.getProductId());
+            return new CatalogItem(
+                    item.getAuctionItemId(),
+                    item.getProductId(),
+                    product == null ? null : product.getName(),
+                    product == null ? null : product.getDescription(),
+                    product == null ? null : product.getCategoryId(),
+                    product == null ? null : product.getBasePrice(),
+                    item.getCurrentPrice(),
+                    item.getStatus()
+            );
+        }).collect(Collectors.toList());
     }
 
     public Room updateRoomCapacity(Long roomId, Integer seatLimit) {

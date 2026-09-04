@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getRooms } from "../../services/hostService";
 
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         getRooms()
@@ -26,7 +28,18 @@ function MyRooms() {
                 ) : (
                     <div className="room-grid">
                         {rooms.map((room) => (
-                            <article className="room-card" key={room.roomId}>
+                            <article
+                                className="room-card room-card-clickable"
+                                key={room.roomId}
+                                onClick={() => navigate(`/host/rooms/${room.roomId}`)}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                        navigate(`/host/rooms/${room.roomId}`);
+                                    }
+                                }}
+                                role="button"
+                                tabIndex="0"
+                            >
                                 <h3>{room.title}</h3>
                                 <span className="room-status">{room.status}</span>
                                 <dl>

@@ -76,7 +76,7 @@ function Products(){
                                 <td>₹{product.basePrice}</td>
                                 <td><span className={`product-status ${product.status}`}>{product.status}</span></td>
                                 <td>
-                                    {product.status === "pending" ? (
+                                    {product.status?.toLowerCase() === "pending" ? (
                                         <div className="product-actions">
                                             <button
                                                 type="button"
