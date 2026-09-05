@@ -4,6 +4,7 @@ import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerDealDecision;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Dto.SellerProductHistory;
 import com.example.bidverse.Service.SellerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,16 @@ public class Seller {
     @GetMapping("/products/{productId}")
     public ResponseEntity<Product> getProductDetails(@PathVariable Long productId) {
         return ResponseEntity.ok(sellerService.getProductDetails(productId));
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getProducts(@RequestParam Long sellerId) {
+        return ResponseEntity.ok(sellerService.getProducts(sellerId));
+    }
+
+    @GetMapping("/products/history")
+    public ResponseEntity<List<SellerProductHistory>> getProductHistory(@RequestParam Long sellerId) {
+        return ResponseEntity.ok(sellerService.getProductHistory(sellerId));
     }
 
     @PostMapping("/products")

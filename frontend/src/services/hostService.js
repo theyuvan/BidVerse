@@ -1,33 +1,33 @@
-import axios from "axios";
+import api from "./api";
 
 export const getRooms = () => {
-    return axios.get("http://localhost:8080/host/rooms");
+    return api.get("/host/rooms");
 };
 
 export const getRoomDetails = (roomId) => {
-    return axios.get(`http://localhost:8080/host/rooms/${roomId}`);
+    return api.get(`/host/rooms/${roomId}`);
 };
 
 export const getRoomProducts = (roomId) => {
-    return axios.get(`http://localhost:8080/host/rooms/${roomId}/products`);
+    return api.get(`/host/rooms/${roomId}/products`);
 };
 
 export const assignProductToRoom = (productId, roomId) => {
-    return axios.post(`http://localhost:8080/host/products/${productId}/assign-room`, { roomId });
+    return api.post(`/host/products/${productId}/assign-room`, { roomId });
 };
 
 export const createRoom = (room) => {
-    return axios.post("http://localhost:8080/host/rooms", room);
+    return api.post("/host/rooms", room);
 };
 
 export const getPendingProducts = () => {
-    return axios.get("http://localhost:8080/host/products/pending");
+    return api.get("/host/products/pending");
 };
 
 export const getProducts = () => {
-    return axios.get("http://localhost:8080/host/products");
+    return api.get("/host/products");
 };
 
 export const verifyProduct = (productId, status) => {
-    return axios.post(`http://localhost:8080/host/products/${productId}/verify`, { status });
+    return api.post(`/host/products/${productId}/verify`, { status });
 };

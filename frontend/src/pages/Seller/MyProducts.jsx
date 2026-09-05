@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { getSellerProductHistory } from "../../services/sellerService";
 
+const INITIAL_SELLER_ID = "2";
+
 function MyProducts() {
-    const [sellerId, setSellerId] = useState("2");
+    const [sellerId, setSellerId] = useState(INITIAL_SELLER_ID);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -23,7 +25,28 @@ function MyProducts() {
         }
     };
 
-    useEffect(() => { loadProducts(); }, []);
+    useEffect(() => {
+        let cancelled = false;
+
+        getSellerProductHistory(Number(INITIAL_SELLER_ID))
+            .then((response) => {
+                if (!cancelled) setProducts(response.data);
+            })
+            .catch((requestError) => {
+                if (cancelled) return;
+                const responseData = requestError.response?.data;
+                setError(typeof responseData === "string"
+                    ? responseData
+                    : responseData?.message || "Unable to load your products.");
+            })
+            .finally(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     return (
         <main className="host-page seller-page">

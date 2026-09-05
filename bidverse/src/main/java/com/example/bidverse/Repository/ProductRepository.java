@@ -9,6 +9,30 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByStatus(String status);
+    List<Product> findBySellerId(Long sellerId);
+
+    @Query(value = """
+            select
+                p.product_id    as "productId",
+                p.name          as "name",
+                p.description   as "description",
+                p.base_price    as "basePrice",
+                p.status        as "productStatus",
+                ai.room_id      as "roomId",
+                ai.status       as "auctionStatus",
+                d.status        as "dealStatus",
+                d.buyer_id      as "buyerId",
+                buyer.name      as "buyerName",
+                buyer.email     as "buyerEmail",
+                buyer.phone     as "buyerPhone"
+            from products p
+            left join auction_items ai on ai.product_id = p.product_id
+            left join deals d on d.auction_item_id = ai.auction_item_id
+            left join users buyer on buyer.user_id = d.buyer_id
+            where p.seller_id = :sellerId
+            order by p.product_id
+            """, nativeQuery = true)
+    List<SellerProductHistoryRow> findHistoryBySellerId(@Param("sellerId") Long sellerId);
 
     @Query(value = """
             select

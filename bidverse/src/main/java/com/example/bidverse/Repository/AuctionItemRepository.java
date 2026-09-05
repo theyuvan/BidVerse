@@ -16,6 +16,21 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
             select
                 ai.auction_item_id as "auctionItemId",
                 p.product_id       as "productId",
+                p.name             as "name",
+                p.description      as "description",
+                p.base_price       as "basePrice",
+                ai.status          as "auctionStatus"
+            from auction_items ai
+            join products p on p.product_id = ai.product_id
+            where ai.room_id = :roomId
+            order by ai.auction_item_id
+            """, nativeQuery = true)
+    List<RoomProductRow> findRoomProductsByRoomId(@Param("roomId") Long roomId);
+
+    @Query(value = """
+            select
+                ai.auction_item_id as "auctionItemId",
+                p.product_id       as "productId",
                 p.name             as "productName",
                 p.description      as "description",
                 c.name             as "categoryName"

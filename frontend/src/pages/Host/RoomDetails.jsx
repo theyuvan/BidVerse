@@ -7,6 +7,24 @@ import {
 	getRoomProducts,
 } from "../../services/hostService";
 import "./RoomDetails.css";
+
+async function fetchRoomData(roomId) {
+	const [roomResponse, roomProductsResponse, productsResponse] = await Promise.all([
+		getRoomDetails(roomId),
+		getRoomProducts(roomId),
+		getProducts(),
+	]);
+
+	const assignedProducts = roomProductsResponse.data;
+	const assignedIds = new Set(assignedProducts.map((product) => product.productId));
+	const approvedProducts = productsResponse.data.filter(
+		(product) => product.status?.toLowerCase() === "approved"
+			&& !assignedIds.has(product.productId)
+	);
+
+	return { room: roomResponse.data, assignedProducts, approvedProducts };
+}
+
 function RoomDetails() {
 	const { roomId } = useParams();
 	const [room, setRoom] = useState(null);
@@ -18,28 +36,26 @@ function RoomDetails() {
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
 
-	const loadRoom = async () => {
-		const [roomResponse, roomProductsResponse, productsResponse] = await Promise.all([
-			getRoomDetails(roomId),
-			getRoomProducts(roomId),
-			getProducts(),
-		]);
-
-		const roomProducts = roomProductsResponse.data;
-		const assignedIds = new Set(roomProducts.map((product) => product.productId));
-
-		setRoom(roomResponse.data);
-		setAssignedProducts(roomProducts);
-		setApprovedProducts(productsResponse.data.filter(
-			(product) => product.status?.toLowerCase() === "approved"
-				&& !assignedIds.has(product.productId)
-		));
-	};
-
 	useEffect(() => {
-		loadRoom()
-			.catch(() => setError("Unable to load room details."))
-			.finally(() => setLoading(false));
+		let cancelled = false;
+
+		fetchRoomData(roomId)
+			.then((data) => {
+				if (cancelled) return;
+				setRoom(data.room);
+				setAssignedProducts(data.assignedProducts);
+				setApprovedProducts(data.approvedProducts);
+			})
+			.catch(() => {
+				if (!cancelled) setError("Unable to load room details.");
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+
+		return () => {
+			cancelled = true;
+		};
 	}, [roomId]);
 
 	const handleAssign = async (event) => {
@@ -52,7 +68,10 @@ function RoomDetails() {
 
 		try {
 			await assignProductToRoom(Number(selectedProductId), Number(roomId));
-			await loadRoom();
+			const data = await fetchRoomData(roomId);
+			setRoom(data.room);
+			setAssignedProducts(data.assignedProducts);
+			setApprovedProducts(data.approvedProducts);
 			setSelectedProductId("");
 			setMessage("Product added to this room.");
 		} catch (requestError) {
