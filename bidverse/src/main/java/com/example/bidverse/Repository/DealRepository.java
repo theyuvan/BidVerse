@@ -1,9 +1,8 @@
 package com.example.bidverse.Repository;
-import java.util.List;
-
+import com.example.bidverse.Entity.Deal;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.bidverse.Entity.Deal;
+import java.util.List;
 
 public interface DealRepository extends JpaRepository<Deal, Long>{
 
