@@ -1,6 +1,8 @@
 package com.example.bidverse.Controller;
 
+import com.example.bidverse.Dto.BookSeatRequest;
 import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Dto.RejectRequest;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.BuyerService;
@@ -30,6 +32,19 @@ public class Buyer {
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<List<CatalogItem>> getRoomCatalog(@PathVariable Long roomId) {
         return ResponseEntity.ok(buyerService.getRoomCatalog(roomId));
+    }
+
+    @PostMapping("/rooms/{roomId}/book")
+    public ResponseEntity<?> bookRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
+        return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));
+    }
+
+    @GetMapping("/rooms/{roomId}/join")
+    public ResponseEntity<List<LiveAuctionItem>> joinRoom(
+            @PathVariable Long roomId,
+            @RequestParam Long buyerId
+    ) {
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
     }
 
     @GetMapping("/rooms/available")

@@ -2,8 +2,8 @@ package com.example.bidverse.Controller;
 
 
 import com.example.bidverse.Dto.AssignRoomRequest;
+import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Dto.ProductStatus;
-import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.HostService;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class Host {
     }
 
    @GetMapping("/products/pending")
-   public ResponseEntity<List<Product>> getPendingProducts() {
+   public ResponseEntity<List<ProductDisplay>> getPendingProducts() {
 
        return ResponseEntity.ok(
                hostService.getAllProducts("pending")
@@ -54,7 +54,7 @@ public class Host {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(@RequestParam String status) {
+    public ResponseEntity<List<ProductDisplay>> getAllProducts(@RequestParam String status) {
         return ResponseEntity.ok(hostService.getAllProducts(status));
     }
 

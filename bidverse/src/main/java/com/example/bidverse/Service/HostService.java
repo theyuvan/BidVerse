@@ -1,5 +1,6 @@
 package com.example.bidverse.Service;
 
+import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
@@ -81,8 +82,24 @@ public class HostService {
         return auctionItemRepo.save(item);
     }
 
-    public List<Product> getAllProducts(String status) {
-        return productRepo.findByStatus(status.toLowerCase());
+    public List<ProductDisplay> getAllProducts(String status) {
+        if (status == null || status.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must not be empty");
+        }
+
+        return productRepo.findDisplayProductsByStatus(status.trim()).stream()
+                .map(row -> new ProductDisplay(
+                        row.getProductId(),
+                        row.getSellerId(),
+                        row.getSellerName(),
+                        row.getCategoryId(),
+                        row.getCategoryName(),
+                        row.getProductName(),
+                        row.getDescription(),
+                        row.getBasePrice(),
+                        row.getStatus()
+                ))
+                .toList();
     }
 
     public Room getRoomDetails(Long roomId) {

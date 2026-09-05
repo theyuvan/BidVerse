@@ -2,18 +2,15 @@ package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.CatalogItem;
-import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Room_Seat;
-import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Repository.AuctionItemRepository;
-import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
 import com.example.bidverse.Repository.DealRepository;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,14 +33,12 @@ public class BuyerService {
 
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
-    private final ProductRepository productRepo;
     private final RoomSeatRepository roomSeatRepo;
     private final DealRepository dealRepo;
 
-    public BuyerService(RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, ProductRepository productRepo, RoomSeatRepository roomSeatRepo , DealRepository dealRepo) {
+    public BuyerService(RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, RoomSeatRepository roomSeatRepo, DealRepository dealRepo) {
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
-        this.productRepo = productRepo;
         this.roomSeatRepo = roomSeatRepo;
         this.dealRepo = dealRepo;
     }
@@ -60,30 +55,17 @@ public class BuyerService {
     }
 
     public List<CatalogItem> getRoomCatalog(Long roomId) {
-
         roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        List<auction_item> items = auctionItemRepo.findByRoomId(roomId);
-
-        List<Long> productIds = items.stream().map(auction_item::getProductId).collect(Collectors.toList());
-
-        Map<Long, Product> productsById = productRepo.findAllById(productIds).stream().collect(Collectors.toMap(Product::getProductId, Function.identity()));
-
-        return items.stream()
-                .map(item -> {
-                    Product product = productsById.get(item.getProductId());
-                    return new CatalogItem(
-                            item.getAuctionItemId(),
-                            item.getProductId(),
-                            product == null ? null : product.getName(),
-                            product == null ? null : product.getDescription(),
-                            product == null ? null : product.getCategoryId(),
-                            product == null ? null : product.getBasePrice(),
-                            item.getCurrentPrice(),
-                            item.getStatus()
-                    );
-                })
-                .collect(Collectors.toList());
+        return auctionItemRepo.findCatalogByRoomId(roomId).stream()
+                .map(row -> new CatalogItem(
+                        row.getAuctionItemId(),
+                        row.getProductId(),
+                        row.getProductName(),
+                        row.getDescription(),
+                        row.getCategoryName()
+                ))
+                .toList();
     }
 
     public Room_Seat bookRoom(Long roomId, Long buyerId) {
@@ -157,7 +139,7 @@ public class BuyerService {
         };
     }
 
-    public List<CatalogItem> joinRoom(Long roomId, Long buyerId) {
+    public List<LiveAuctionItem> joinRoom(Long roomId, Long buyerId) {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
@@ -169,7 +151,18 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You must book a seat in this room before joining");
         }
 
-        return getRoomCatalog(roomId);
+        return auctionItemRepo.findLiveAuctionItemsByRoomId(roomId).stream()
+                .map(row -> new LiveAuctionItem(
+                        row.getAuctionItemId(),
+                        row.getProductId(),
+                        row.getProductName(),
+                        row.getCategoryName(),
+                        row.getSellerName(),
+                        row.getBasePrice(),
+                        row.getCurrentPrice(),
+                        row.getAuctionStatus()
+                ))
+                .toList();
     }
 
     public List<Deal> getAllDeals() {
