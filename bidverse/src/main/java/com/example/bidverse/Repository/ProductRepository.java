@@ -24,6 +24,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             from products p
             join categories c on c.category_id = p.category_id
             join users seller on seller.user_id = p.seller_id
+            order by p.product_id
+            """, nativeQuery = true)
+    List<ProductDisplayRow> findAllDisplayProducts();
+
+    @Query(value = """
+            select
+                p.product_id   as "productId",
+                p.seller_id    as "sellerId",
+                seller.name    as "sellerName",
+                p.category_id  as "categoryId",
+                c.name         as "categoryName",
+                p.name         as "productName",
+                p.description  as "description",
+                p.base_price   as "basePrice",
+                p.status       as "status"
+            from products p
+            join categories c on c.category_id = p.category_id
+            join users seller on seller.user_id = p.seller_id
             where lower(p.status) = lower(:status)
             order by p.product_id
             """, nativeQuery = true)

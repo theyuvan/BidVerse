@@ -5,6 +5,7 @@ import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Repository.AuctionItemRepository;
+import com.example.bidverse.Repository.ProductDisplayRow;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import org.springframework.http.HttpStatus;
@@ -13,12 +14,19 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class HostService {
 
     private static final String STATUS_APPROVED = "approved";
+    private static final String STATUS_PENDING = "pending";
     private static final String STATUS_REJECTED = "rejected";
+    private static final Set<String> PRODUCT_STATUSES = Set.of(
+            STATUS_APPROVED,
+            STATUS_PENDING,
+            STATUS_REJECTED
+    );
     private static final String ROOM_STATUS_LIVE = "live";
     private static final String AUCTION_ITEM_STATUS_WAITING = "waiting";
 
@@ -82,12 +90,23 @@ public class HostService {
         return auctionItemRepo.save(item);
     }
 
-    public List<ProductDisplay> getAllProducts(String status) {
+    public List<ProductDisplay> getProducts(String status) {
+        List<ProductDisplayRow> rows;
+
         if (status == null || status.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must not be empty");
+            rows = productRepo.findAllDisplayProducts();
+        } else {
+            String normalizedStatus = status.trim().toLowerCase();
+            if (!PRODUCT_STATUSES.contains(normalizedStatus)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "status must be approved, pending, or rejected"
+                );
+            }
+            rows = productRepo.findDisplayProductsByStatus(normalizedStatus);
         }
 
-        return productRepo.findDisplayProductsByStatus(status.trim()).stream()
+        return rows.stream()
                 .map(row -> new ProductDisplay(
                         row.getProductId(),
                         row.getSellerId(),
