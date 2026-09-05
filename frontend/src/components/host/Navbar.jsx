@@ -1,19 +1,19 @@
 import { Link } from "react-router-dom";
-import "./Sidebar.css";
+import "./Navbar.css";
 
-function Sidebar() {
+function Navbar() {
     return (
-        <aside className="sidebar">
-            <div className="sidebar-brand">Bidverse</div>
+        <nav className="navbar">
+            <div className="navbar-brand">Bidverse</div>
 
-            <nav className="sidebar-links">
+            <div className="navbar-links">
                 <Link to="/host/dashboard">Dashboard</Link>
                 <Link to="/host/rooms/create">Create Room</Link>
                 <Link to="/host/rooms">My Rooms</Link>
                 <Link to="/host/products">Products</Link>
-            </nav>
-        </aside>
+            </div>
+        </nav>
     );
 }
 
-export default Sidebar;
+export default Navbar;

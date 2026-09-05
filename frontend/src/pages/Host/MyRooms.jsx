@@ -16,7 +16,6 @@ function MyRooms() {
         <main className="host-page rooms-page">
             <header className="page-header">
                 <h1>My Rooms</h1>
-                <p>View and manage rooms</p>
             </header>
             <section className="rooms-section">
                 <div className="section-heading">
