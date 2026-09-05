@@ -24,11 +24,13 @@ public class HostService {
     private final ProductRepository productRepo;
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
+    private final AuctionService auctionService;
 
-    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo) {
+    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, AuctionService auctionService) {
         this.productRepo = productRepo;
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
+        this.auctionService = auctionService;
     }
 
     public Product verifyProduct(Long productId, String status) {
@@ -51,7 +53,9 @@ public class HostService {
 
         room.setStatus(ROOM_STATUS_LIVE);
         room.setStartTime(OffsetDateTime.now());
-        return roomRepo.save(room);
+        Room saved = roomRepo.save(room);
+        auctionService.activateFirstItem(saved);
+        return saved;
     }
 
     public auction_item assignProductToRoom(Long productId, Long roomId) {
