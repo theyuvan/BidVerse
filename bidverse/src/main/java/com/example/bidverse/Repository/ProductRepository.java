@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+
     List<Product> findByStatus(String status);
 
     @Query(value = """
@@ -27,5 +28,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             where lower(p.status) = lower(:status)
             order by p.product_id
             """, nativeQuery = true)
-    List<ProductDisplayRow> findDisplayProductsByStatus(@Param("status") String status);
+    List<ProductDisplayRow> findDisplayProductsByStatus(
+            @Param("status") String status
+    );
+
+    List<Product> findBySellerId(Long sellerId);
 }

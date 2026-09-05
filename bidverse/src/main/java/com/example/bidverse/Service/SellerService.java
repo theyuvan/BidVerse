@@ -18,14 +18,19 @@ public class SellerService {
     private static final String DEAL_STATUS_PENDING = "pending";
     private static final String DEAL_STATUS_CONFIRMED = "confirmed";
     private static final String DEAL_STATUS_CANCELLED = "cancelled";
+
     private static final String DECISION_ACCEPT = "accept";
     private static final String DECISION_REJECT = "reject";
+
     private static final String PRODUCT_STATUS_PENDING = "pending";
 
     private final DealRepository dealRepository;
     private final ProductRepository productRepository;
 
-    public SellerService(DealRepository dealRepository, ProductRepository productRepository) {
+    public SellerService(
+            DealRepository dealRepository,
+            ProductRepository productRepository) {
+
         this.dealRepository = dealRepository;
         this.productRepository = productRepository;
     }
@@ -36,29 +41,54 @@ public class SellerService {
 
     public Deal getDetails(Long dealId) {
         return dealRepository.findById(dealId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Deal Not Found"
+                ));
     }
 
-    public Deal confirmDeal(Long dealId, String decision, String reason) {
-        String currDecision = decision == null ? "" : decision.trim().toLowerCase();
+    public Deal confirmDeal(
+            Long dealId,
+            String decision,
+            String reason) {
 
-        if (!currDecision.equals(DECISION_ACCEPT) && !currDecision.equals(DECISION_REJECT)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be ACCEPT or REJECT");
+        String currDecision =
+                decision == null ? "" : decision.trim().toLowerCase();
+
+        if (!currDecision.equals(DECISION_ACCEPT)
+                && !currDecision.equals(DECISION_REJECT)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "decision must be ACCEPT or REJECT"
+            );
         }
 
         Deal deal = dealRepository.findById(dealId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Deal Not Found"
+                ));
 
         if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is not pending confirmation");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Deal is not pending confirmation"
+            );
         }
 
         if (currDecision.equals(DECISION_REJECT)) {
+
             if (reason == null || reason.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "reason is required when rejecting a deal"
+                );
             }
+
             deal.setStatus(DEAL_STATUS_CANCELLED);
             deal.setCancelReason(reason.trim());
+
         } else {
             deal.setStatus(DEAL_STATUS_CONFIRMED);
         }
@@ -68,24 +98,65 @@ public class SellerService {
 
     public Product getProductDetails(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product Not Found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product Not Found"
+                ));
     }
 
     public Product createProduct(CreateProductRequest request) {
-        if (request.basePrice() == null || request.basePrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "basePrice must be greater than 0");
+
+        if (request.basePrice() == null
+                || request.basePrice().compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "basePrice must be greater than 0"
+            );
         }
+
         if (request.name() == null || request.name().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "name is required"
+            );
         }
 
         Product product = new Product();
+
         product.setSellerId(request.sellerId());
         product.setCategoryId(request.categoryId());
         product.setName(request.name());
         product.setDescription(request.description());
         product.setBasePrice(request.basePrice());
         product.setStatus(PRODUCT_STATUS_PENDING);
+
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(
+            Long productId,
+            String name,
+            String description,
+            BigDecimal basePrice) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Product Not Found"
+                ));
+
+        if (!"pending".equalsIgnoreCase(product.getStatus())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Product cannot be modified after approval"
+            );
+        }
+
+        product.setName(name);
+        product.setDescription(description);
+        product.setBasePrice(basePrice);
 
         return productRepository.save(product);
     }
