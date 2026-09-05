@@ -1,10 +1,11 @@
 package com.example.bidverse.Repository;
+import java.util.List;
 
-import com.example.bidverse.Entity.Deal;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.example.bidverse.Entity.Deal;
 
-public interface DealRepository extends JpaRepository<Deal, Long> {
-    Optional<Deal> findByAuctionItemId(Long auctionItemId);
+public interface DealRepository extends JpaRepository<Deal, Long>{
+
+    List<Deal> findBySellerId(Long sellerId);
 }
