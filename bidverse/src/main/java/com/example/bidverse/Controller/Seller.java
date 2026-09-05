@@ -1,41 +1,48 @@
 package com.example.bidverse.Controller;
+
+import com.example.bidverse.Dto.CreateProductRequest;
+import com.example.bidverse.Dto.SellerDealDecision;
+import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
-import com.example.bidverse.Repository.ListProductRepository;
+import com.example.bidverse.Service.SellerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/seller")
 public class Seller {
-    private final ListProductRepository productRepo;
-    public Seller(ListProductRepository productRepo) {
-        this.productRepo = productRepo;
+
+    private final SellerService sellerService;
+
+    public Seller(SellerService sellerService) {
+        this.sellerService = sellerService;
     }
+
+    @GetMapping("/{sellerId}/deals")
+    public ResponseEntity<List<Deal>> displayDeals(@PathVariable Long sellerId) {
+        return ResponseEntity.ok(sellerService.getDeals(sellerId));
+    }
+
+    @GetMapping("/deals/{dealId}")
+    public ResponseEntity<Deal> dealDetails(@PathVariable Long dealId) {
+        return ResponseEntity.ok(sellerService.getDetails(dealId));
+    }
+
+    @PostMapping("/deals/{dealId}/confirm")
+    public ResponseEntity<Deal> confirmDeal(@PathVariable Long dealId, @RequestBody SellerDealDecision request) {
+        return ResponseEntity.ok(sellerService.confirmDeal(dealId, request.decision(), request.reason()));
+    }
+
     @GetMapping("/products/{productId}")
-    public ResponseEntity<?> getProductDetails(
-        @PathVariable Long productId) {
-
-        Product product = productRepo.findById(productId).orElse(null);
-
-        if (product == null) {
-            return new ResponseEntity<>(
-                "Product Not Found",
-                HttpStatus.NOT_FOUND
-            );
-        }
-        return new ResponseEntity<>(
-            product,
-            HttpStatus.OK
-        );
+    public ResponseEntity<Product> getProductDetails(@PathVariable Long productId) {
+        return ResponseEntity.ok(sellerService.getProductDetails(productId));
     }
 
     @PostMapping("/products")
-    public ResponseEntity<?> createProduct(@RequestBody Product product) {
-        productRepo.save(product);
-        return new ResponseEntity<>(
-                "Product Created Successfully",
-                HttpStatus.CREATED
-        );
+    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest request) {
+        return new ResponseEntity<>(sellerService.createProduct(request), HttpStatus.CREATED);
     }
 }
