@@ -1,23 +1,25 @@
 .host-page {
-  max-width: 1080px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 56px clamp(24px, 5vw, 72px);
+  padding: 48px clamp(24px, 6vw, 72px) 72px;
   box-sizing: border-box;
   text-align: left;
 }
 
 .page-header {
-  margin-bottom: 42px;
+  margin-bottom: 34px;
+  text-align: center;
 }
 
 .page-header h1 {
   margin: 0 0 8px;
-  font-size: clamp(32px, 4vw, 48px);
-  letter-spacing: -1px;
+  font-size: clamp(32px, 4vw, 42px);
+  letter-spacing: 0;
 }
 
 .page-header p {
   color: var(--text);
+  font-size: 15px;
 }
 
 .section-heading {
@@ -75,7 +77,8 @@
   padding: 24px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .room-summary dl {
@@ -205,7 +208,8 @@
   border-radius: 8px;
   color: inherit;
   text-decoration: none;
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .seller-action-card:hover,
@@ -238,7 +242,9 @@
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  margin: 0 auto;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .seller-form label {
@@ -263,9 +269,9 @@
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   color: var(--text-h);
-  background: var(--bg);
+  background: #fff;
   font: inherit;
 }
 
@@ -274,7 +280,7 @@
   justify-self: start;
   padding: 11px 18px;
   border: 0;
-  border-radius: 5px;
+  border-radius: 7px;
   color: #fff;
   background: var(--accent);
   font: inherit;
@@ -312,7 +318,8 @@
   padding: 22px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .seller-product-heading {
@@ -432,7 +439,8 @@
   padding: 20px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .dashboard-room-card h3 {
@@ -489,7 +497,9 @@
   padding: 28px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg);
+  margin: 0 auto;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .room-form label {
@@ -505,9 +515,9 @@
   box-sizing: border-box;
   padding: 11px 12px;
   border: 1px solid var(--border);
-  border-radius: 5px;
+  border-radius: 7px;
   color: var(--text-h);
-  background: var(--bg);
+  background: #fff;
   font: inherit;
   font-size: 15px;
 }
@@ -516,6 +526,48 @@
   border-color: var(--accent);
   outline: 2px solid var(--accent-border);
   outline-offset: 1px;
+}
+
+.room-form button,
+.seller-form button {
+  justify-self: start;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.room-form button:hover,
+.seller-form button:hover,
+.seller-filter button:hover {
+  background: #293752;
+}
+
+@media (max-width: 640px) {
+  .host-page {
+    padding: 36px 20px 56px;
+  }
+
+  .room-form,
+  .seller-form {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+
+  .room-form button,
+  .seller-form button,
+  .seller-form-wide,
+  .seller-form [role="status"],
+  .seller-form [role="alert"] {
+    grid-column: 1;
+  }
+
+  .seller-action-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .room-form button {
