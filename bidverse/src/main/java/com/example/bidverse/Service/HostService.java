@@ -48,14 +48,9 @@ public class HostService {
     }
 
     public Room startRoom(Long roomId) {
-        Room room = roomRepo.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
-
-        room.setStatus(ROOM_STATUS_LIVE);
-        room.setStartTime(OffsetDateTime.now());
-        Room saved = roomRepo.save(room);
-        auctionService.activateFirstItem(saved);
-        return saved;
+        // delegates to AuctionService so a host clicking "start now" and the scheduler's
+        // auto-start-at-scheduled-time can never race each other into double-starting a room
+        return auctionService.startRoom(roomId);
     }
 
     public auction_item assignProductToRoom(Long productId, Long roomId) {

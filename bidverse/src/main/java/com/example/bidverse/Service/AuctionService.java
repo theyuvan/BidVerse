@@ -37,6 +37,7 @@ public class AuctionService {
     private static final String ITEM_STATUS_LIVE = "live";
     private static final String ITEM_STATUS_SOLD = "sold";
     private static final String ITEM_STATUS_UNSOLD = "unsold";
+    private static final String ROOM_STATUS_LIVE = "live";
 
     private static final String DEAL_STATUS_PENDING = "pending";
 
@@ -79,6 +80,50 @@ public class AuctionService {
                 .filter(i -> ITEM_STATUS_WAITING.equals(i.getStatus()))
                 .findFirst()
                 .ifPresent(this::activateItem);
+    }
+
+
+    @Transactional
+    public Room startRoom(Long roomId) {
+        roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+
+        int started = roomRepo.startIfNotStarted(roomId, OffsetDateTime.now());
+        if (started == 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room is already live or has ended");
+        }
+
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        activateFirstItem(room);
+        return room;
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void autoStartDueRooms() {
+        OffsetDateTime now = OffsetDateTime.now();
+        List<Room> dueRooms = roomRepo.findByStatusInAndStartTimeLessThanEqual(
+                List.of("upcoming", "open"), now);
+        for (Room room : dueRooms) {
+            try {
+                self.getObject().startRoom(room.getRoomId());
+            } catch (ResponseStatusException alreadyStarted) {
+
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 2000)
+    public void healStalledRooms() {
+        List<Room> liveRooms = roomRepo.findByStatus(ROOM_STATUS_LIVE);
+        for (Room room : liveRooms) {
+            List<auction_item> items = auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(room.getRoomId());
+            boolean hasLiveItem = items.stream().anyMatch(i -> ITEM_STATUS_LIVE.equals(i.getStatus()));
+            boolean hasWaitingItem = items.stream().anyMatch(i -> ITEM_STATUS_WAITING.equals(i.getStatus()));
+            if (!hasLiveItem && hasWaitingItem) {
+                self.getObject().activateFirstItem(room);
+            }
+        }
     }
 
 
