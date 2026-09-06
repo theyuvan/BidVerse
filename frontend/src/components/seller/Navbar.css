@@ -1,0 +1,69 @@
+.seller-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 45px;
+    box-sizing: border-box;
+    background: #172033;
+    z-index: 1000;
+}
+
+.seller-navbar .navbar-brand {
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.seller-navbar .navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.seller-navbar .navbar-links a {
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background .2s ease, transform .2s ease;
+}
+
+.seller-navbar .navbar-links a:hover,
+.seller-navbar .navbar-links a:focus-visible {
+    background: rgba(255, 255, 255, .15);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 800px) {
+    .seller-navbar {
+        height: auto;
+        min-height: 70px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px 20px 10px;
+    }
+
+    .seller-navbar .navbar-links {
+        width: 100%;
+        justify-content: space-between;
+        gap: 4px;
+        overflow-x: auto;
+    }
+
+    .seller-navbar .navbar-links a {
+        padding: 8px 9px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+}

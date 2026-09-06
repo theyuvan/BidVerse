@@ -4,6 +4,8 @@ import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerProductHistory;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Entity.Categories;
+import com.example.bidverse.Repository.CategoryRepository;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.SellerProductHistoryRow;
@@ -26,10 +28,20 @@ public class SellerService {
 
     private final DealRepository dealRepository;
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
-    public SellerService(DealRepository dealRepository, ProductRepository productRepository) {
+    public SellerService(
+            DealRepository dealRepository,
+            ProductRepository productRepository,
+            CategoryRepository categoryRepository
+    ) {
         this.dealRepository = dealRepository;
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+    }
+
+    public List<Categories> getCategories() {
+        return categoryRepository.findAll();
     }
 
     public List<Deal> getDeals(Long sellerId) {
@@ -92,6 +104,8 @@ public class SellerService {
     private SellerProductHistory toSellerProductHistory(SellerProductHistoryRow row) {
         return new SellerProductHistory(
                 row.getProductId(),
+            row.getCategoryId(),
+            row.getCategoryName(),
                 row.getName(),
                 row.getDescription(),
                 row.getBasePrice(),

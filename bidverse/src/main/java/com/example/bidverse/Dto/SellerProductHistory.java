@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public record SellerProductHistory(
         Long productId,
+        Long categoryId,
+        String categoryName,
         String name,
         String description,
         BigDecimal basePrice,

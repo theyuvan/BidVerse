@@ -60,6 +60,11 @@ public class HostService {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
+        String currentStatus = room.getStatus() == null ? "" : room.getStatus().trim().toLowerCase();
+        if (!currentStatus.equals("upcoming") && !currentStatus.equals("open")) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only an upcoming room can be started");
+        }
+
         room.setStatus(ROOM_STATUS_LIVE);
         room.setStartTime(OffsetDateTime.now());
         return roomRepo.save(room);

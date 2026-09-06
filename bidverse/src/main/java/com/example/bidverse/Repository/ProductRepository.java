@@ -14,6 +14,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = """
             select
                 p.product_id    as "productId",
+                p.category_id   as "categoryId",
+                c.name          as "categoryName",
                 p.name          as "name",
                 p.description   as "description",
                 p.base_price    as "basePrice",
@@ -26,6 +28,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 buyer.email     as "buyerEmail",
                 buyer.phone     as "buyerPhone"
             from products p
+            left join categories c on c.category_id = p.category_id
             left join auction_items ai on ai.product_id = p.product_id
             left join deals d on d.auction_item_id = ai.auction_item_id
             left join users buyer on buyer.user_id = d.buyer_id

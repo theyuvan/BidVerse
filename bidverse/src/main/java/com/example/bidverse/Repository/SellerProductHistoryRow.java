@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public interface SellerProductHistoryRow {
     Long getProductId();
+    Long getCategoryId();
+    String getCategoryName();
     String getName();
     String getDescription();
     BigDecimal getBasePrice();
