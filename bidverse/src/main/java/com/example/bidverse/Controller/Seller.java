@@ -1,22 +1,29 @@
 package com.example.bidverse.Controller;
+
+import com.example.bidverse.Dto.CreateProductRequest;
+import com.example.bidverse.Dto.SellerDealDecision;
+import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
-import com.example.bidverse.Repository.ListProductRepository;
+import com.example.bidverse.Dto.SellerProductHistory;
+import com.example.bidverse.Service.SellerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/seller")
 public class Seller {
-    private final ListProductRepository productRepo;
-    public Seller(ListProductRepository productRepo) {
-        this.productRepo = productRepo;
+    private final SellerService sellerService;
+    public Seller(SellerService sellerService) {
+        this.sellerService = sellerService;
     }
     @GetMapping("/products/{productId}")
     public ResponseEntity<?> getProductDetails(
         @PathVariable Long productId) {
 
-        Product product = productRepo.findById(productId).orElse(null);
+        Product product = sellerService.getProductDetails(productId);
 
         if (product == null) {
             return new ResponseEntity<>(
@@ -32,10 +39,20 @@ public class Seller {
 
     @PostMapping("/products")
     public ResponseEntity<?> createProduct(@RequestBody Product product) {
-        productRepo.save(product);
+        sellerService.createProduct(product);
         return new ResponseEntity<>(
                 "Product Created Successfully",
                 HttpStatus.CREATED
         );
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<List<Product>> getSellerProducts(@RequestParam Long sellerId) {
+        return ResponseEntity.ok(sellerService.getProducts(sellerId));
+    }
+
+    @GetMapping("/products/history")
+    public ResponseEntity<List<SellerProductHistory>> getProductHistory(@RequestParam Long sellerId) {
+        return ResponseEntity.ok(sellerService.getProductHistory(sellerId));
     }
 }

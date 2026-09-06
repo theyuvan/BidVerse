@@ -2,7 +2,7 @@ package com.example.bidverse.Dto;
 
 import java.math.BigDecimal;
 
-public record SellerProductItem(
+public record SellerProductHistory(
         Long productId,
         String name,
         String description,

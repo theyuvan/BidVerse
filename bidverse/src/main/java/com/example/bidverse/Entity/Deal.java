@@ -29,7 +29,10 @@ public class Deal {
     private BigDecimal finalPrice;
     @Column(name = "status", nullable = false)
     private String status;
-    @Column(name = "cancel_reason", nullable = false)
+    @Column(name = "cancel_reason")
     private String cancelReason;
-    
+    @Column(name = "buyer_status", nullable = false)
+    private String buyerStatus;
+    @Column(name = "seller_status", nullable = false)
+    private String sellerStatus;
 }

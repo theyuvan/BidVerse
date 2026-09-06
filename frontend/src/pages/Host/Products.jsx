@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { getProducts, verifyProduct } from "../../services/hostService";
-
+import "./Products.css";
 function Products(){
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [updatingId, setUpdatingId] = useState(null);
+    const[filter,setFilter] = useState("all");
 
     useEffect(() => {
         getProducts()
@@ -20,30 +21,45 @@ function Products(){
 
         try {
             await verifyProduct(productId, status);
+
             setProducts((currentProducts) =>
-                currentProducts.filter((product) => product.productId !== productId)
+                currentProducts.filter(
+                    (product) => product.productId !== productId
+                )
             );
         } catch (requestError) {
+            console.log("VERIFY ERROR:", requestError);
+            console.log("RESPONSE:", requestError.response?.data);
+
             const responseData = requestError.response?.data;
-            setError(typeof responseData === "string"
-                ? responseData
-                : responseData?.message || "Unable to update product status.");
+
+            setError(
+                typeof responseData === "string"
+                    ? responseData
+                    : responseData?.message || "Unable to update product status."
+            );
         } finally {
             setUpdatingId(null);
         }
     };
 
+    const filteredProducts = filter === "all" ? products : products.filter((product) => product.status?.toLowerCase() === filter );
     return(
         <main className="host-page products-page">
             <header className="page-header">
                 <h1>Products</h1>
-                <p>Verify Seller products and assign them to auction rooms.</p>
             </header>
 
             <section className="products-section">
-                <div className="section-heading">
-                    <h2>Seller Products</h2>
+                {/* <div className="section-heading">
                     <span>{products.length} products</span>
+                </div> */}
+                <div className ="product-filters">
+                    <button className={filter === "all" ? "active" : ""}  onClick={() =>setFilter ("all")} >All </button>
+                    <button className={filter === "approved" ? "active" : ""}  onClick={() =>setFilter ("approved")} >Approved </button>
+                    <button className={filter === "pending" ? "active" : ""}  onClick={() =>setFilter ("pending")} >Pending </button>
+                    <button className={filter === "rejected" ? "active" : ""}  onClick={() =>setFilter ("rejected")} >Rejected</button>
+                    
                 </div>
                 {loading && <p className="empty-state">Loading products...</p>}
                 {!loading && error && <p className="form-error" role="alert">{error}</p>}
@@ -53,26 +69,22 @@ function Products(){
                 {!loading && products.length > 0 && (
                     <div className="product-table-wrapper">
                         <table className="product-table">
-                            <thead>
-                                <tr>
-                                    <th>Product ID</th>
-                                    <th>Seller ID</th>
-                                    <th>Category ID</th>
-                                    <th>Name</th>
-                                    <th>Description</th>
-                                    <th>Base Price</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
+                           <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Description</th>
+                                <th>Seller Name</th>
+                                <th>Base Price</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
                             </thead>
                             <tbody>
-                        {products.map((product) => (
+                        {filteredProducts.map((product) => (
                             <tr key={product.productId}>
-                                <td>{product.productId}</td>
-                                <td>{product.sellerId}</td>
-                                <td>{product.categoryId}</td>
-                                <td className="product-name">{product.name}</td>
-                                <td>{product.description}</td>
+                                <td className="product-name">{product.productName}</td>
+                                <td>{product.description || "No description"}</td>
+                                <td>{product.sellerName || "Unknown"}</td>
                                 <td>₹{product.basePrice}</td>
                                 <td><span className={`product-status ${product.status}`}>{product.status}</span></td>
                                 <td>

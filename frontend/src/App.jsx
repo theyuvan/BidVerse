@@ -10,37 +10,42 @@ import SellerNavbar from "./components/seller/Navbar";
 import SellerDashboard from "./pages/Seller/SellerDashboard";
 import ListProduct from "./pages/Seller/ListProduct";
 import MyProducts from "./pages/Seller/MyProducts";
+import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
+import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 
 function AppShell() {
-  const location = useLocation();
-  const isSellerRoute = location.pathname.startsWith("/seller");
+    const location = useLocation();
+    const isSellerRoute = location.pathname.startsWith("/seller");
 
-  return (
-    <div className="app-shell">
-      {isSellerRoute ? <SellerNavbar /> : <Navbar />}
-      <div className="page-content">
-        <Routes>
-          <Route path="/" element={<Navigate to="/seller" replace />} />
-          <Route path="/host" element={<HostDashboard />} />
-          <Route path="/host/create-room" element={<CreateRoom />} />
-          <Route path="/host/rooms" element={<MyRooms />} />
-          <Route path="/host/rooms/:roomId" element={<RoomDetails />} />
-          <Route path="/host/products" element={<Products />} />
-          <Route path="/seller" element={<SellerDashboard />} />
-          <Route path="/seller/list-product" element={<ListProduct />} />
-          <Route path="/seller/products" element={<MyProducts />} />
-        </Routes>
-      </div>
-    </div>
-  );
+    return (
+        <div className="app-shell">
+            {isSellerRoute ? <SellerNavbar /> : <Navbar />}
+            <div className="page-content">
+                <Routes>
+                    <Route path="/" element={<Navigate to="/host/dashboard" replace />} />
+                    <Route path="/host/dashboard" element={<HostDashboard />} />
+                    <Route path="/host/rooms/create" element={<CreateRoom />} />
+                    <Route path="/host/rooms" element={<MyRooms />} />
+                    <Route path="/host/rooms/:roomId" element={<RoomDetails />} />
+                    <Route path="/host/products" element={<Products />} />
+                    <Route path="/seller" element={<SellerDashboard />} />
+                    <Route path="/seller/list-product" element={<ListProduct />} />
+                    <Route path="/seller/products" element={<MyProducts />} />
+                    {/* BUYER */}
+                    <Route path="/buyer" element={<BuyerDashboard />}/>
+                    <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
+                </Routes>
+            </div>
+        </div>
+    );
 }
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AppShell />
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <AppShell />
+        </BrowserRouter>
+    );
 }
 
 export default App;

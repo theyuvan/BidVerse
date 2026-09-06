@@ -1,0 +1,102 @@
+.room-details-page {
+    padding: 30px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    margin-bottom: 8px;
+}
+
+.room-summary {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.room-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    text-transform: capitalize;
+}
+
+.room-summary dl {
+    display: flex;
+    gap: 40px;
+    margin: 0;
+}
+
+.room-summary dl div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.room-summary dt {
+    font-weight: bold;
+}
+
+.room-summary dd {
+    margin: 0;
+}
+
+.room-products-section {
+    margin-top: 30px;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-heading h2 {
+    margin: 0;
+}
+
+.assigned-product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.assigned-product {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+.assigned-product h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.assigned-product p {
+    margin-bottom: 12px;
+}
+
+.assigned-product small {
+    display: block;
+}
+
+.empty-state {
+    padding: 20px;
+    text-align: center;
+}
+
+.form-error {
+    padding: 15px;
+    border-radius: 8px;
+}

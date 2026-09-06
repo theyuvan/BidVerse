@@ -26,6 +26,6 @@ public class Room_Seat {
     @Column(name = "advance_amount", nullable = false)
     private BigDecimal advanceAmount;
     @Column(name = "advance_status", nullable = false)
-    private String advance_status = "booked";
+    private String advanceStatus;
     
 }

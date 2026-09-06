@@ -2,9 +2,9 @@ package com.example.bidverse.Controller;
 
 
 import com.example.bidverse.Dto.AssignRoomRequest;
-import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Dto.ProductStatus;
-import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.HostService;
 import org.springframework.http.HttpStatus;
@@ -25,54 +25,41 @@ public class Host {
     }
 
    @GetMapping("/products/pending")
-   public ResponseEntity<List<Product>> getPendingProducts() {
-
-       return ResponseEntity.ok(
-               hostService.getAllProducts("pending")
-       );
+   public ResponseEntity<List<ProductDisplay>> getPendingProducts() {
+       return ResponseEntity.ok(hostService.getProducts("pending"));
    }
 
-    @PostMapping("/products/{productId}/verify")
-    public ResponseEntity<?> verifyProduct(
-            @PathVariable Long productId,
-            @RequestBody ProductStatus request) {
-
-        hostService.verifyProduct(productId, request.status());
-
-        return new ResponseEntity<>(
-                "Product Verified Successfully",
-                HttpStatus.OK
-        );
+    @GetMapping("/products/approved")
+    public ResponseEntity<List<ProductDisplay>> getApprovedProducts() {
+        return ResponseEntity.ok(hostService.getProducts("approved"));
     }
 
-    @PostMapping("/products/{productId}/assignRoom")
-    public ResponseEntity<?> assignProductToRoom(
-            @PathVariable Long productId,
-            @RequestBody AssignRoomRequest request) {
+    @GetMapping("/products/rejected")
+    public ResponseEntity<List<ProductDisplay>> getRejectedProducts() {
+        return ResponseEntity.ok(hostService.getProducts("rejected"));
+    }
 
+    @PostMapping("/products/{productId}/verify")
+    public ResponseEntity<?> verifyProduct(@PathVariable Long productId, @RequestBody ProductStatus request) {
+        hostService.verifyProduct(productId, request.status());
+        return new ResponseEntity<>("Product Verified Successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/products/{productId}/assign-room")
+    public ResponseEntity<?> assignProductToRoom(@PathVariable Long productId,@RequestBody AssignRoomRequest request) {
         hostService.assignProductToRoom(productId, request.roomId());
-
-        return new ResponseEntity<>(
-                "Product added to room successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Product added to room successfully", HttpStatus.OK);
     }
 
     @PutMapping("/rooms/{roomId}/start")
     public ResponseEntity<?> startRoom(@PathVariable Long roomId) {
-
         hostService.startRoom(roomId);
-
-        return new ResponseEntity<>(
-                "Room Started Successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Room Started Successfully", HttpStatus.OK);
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getAllProducts(
-            @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(hostService.getAllProducts(status));
+    public ResponseEntity<List<ProductDisplay>> getProducts(@RequestParam(required = false) String status) {
+        return ResponseEntity.ok(hostService.getProducts(status));
     }
 
     @GetMapping("/rooms/{roomId}")
@@ -81,32 +68,24 @@ public class Host {
     }
 
     @GetMapping("/rooms/{roomId}/products")
-    public ResponseEntity<List<CatalogItem>> getRoomProducts(@PathVariable Long roomId) {
+    public ResponseEntity<List<RoomProduct>> getRoomProducts(@PathVariable Long roomId) {
         return ResponseEntity.ok(hostService.getRoomProducts(roomId));
     }
 
     @PatchMapping("/rooms/{roomId}")
-    public ResponseEntity<?> updateRoom(
-            @PathVariable Long roomId,
-            @RequestBody UpdateRoom dto) {
-
+    public ResponseEntity<?> updateRoom(@PathVariable Long roomId,@RequestBody UpdateRoom dto) {
         hostService.updateRoomCapacity(roomId, dto.seatLimit());
-
-        return new ResponseEntity<>(
-                "Room capacity updated successfully",
-                HttpStatus.OK
-        );
+        return new ResponseEntity<>("Room capacity updated successfully", HttpStatus.OK);
     }
+
     @GetMapping("/rooms")
     public ResponseEntity<?> getAllRooms() {
         return new ResponseEntity<>(hostService.getAllRooms(), HttpStatus.OK);
     } 
+
     @PostMapping("/rooms")
     public ResponseEntity<?> createRoom(@RequestBody Room room) {
         hostService.createRoom(room);
-        return new ResponseEntity<>(
-                "Room Created Successfully",
-                HttpStatus.CREATED
-        );
+        return new ResponseEntity<>("Room Created Successfully",HttpStatus.CREATED);
     }
 }

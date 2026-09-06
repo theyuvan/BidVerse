@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRooms } from "../../services/hostService";
-
+import "./MyRooms.css";
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
     const navigate = useNavigate();
@@ -16,7 +16,6 @@ function MyRooms() {
         <main className="host-page rooms-page">
             <header className="page-header">
                 <h1>My Rooms</h1>
-                <p>View and manage rooms</p>
             </header>
             <section className="rooms-section">
                 <div className="section-heading">
@@ -38,7 +37,7 @@ function MyRooms() {
                                     }
                                 }}
                                 role="button"
-                                tabIndex="0"
+                                tabIndex={0}
                             >
                                 <h3>{room.title}</h3>
                                 <span className="room-status">{room.status}</span>
