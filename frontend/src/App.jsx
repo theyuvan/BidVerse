@@ -10,6 +10,8 @@ import SellerNavbar from "./components/seller/Navbar";
 import SellerDashboard from "./pages/Seller/SellerDashboard";
 import ListProduct from "./pages/Seller/ListProduct";
 import MyProducts from "./pages/Seller/MyProducts";
+import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
+import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 
 function AppShell() {
     const location = useLocation();
@@ -29,6 +31,9 @@ function AppShell() {
                     <Route path="/seller" element={<SellerDashboard />} />
                     <Route path="/seller/list-product" element={<ListProduct />} />
                     <Route path="/seller/products" element={<MyProducts />} />
+                    {/* BUYER */}
+                    <Route path="/buyer" element={<BuyerDashboard />}/>
+                    <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
                 </Routes>
             </div>
         </div>
