@@ -4,6 +4,7 @@ package com.example.bidverse.Controller;
 import com.example.bidverse.Dto.AssignRoomRequest;
 import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Dto.ProductStatus;
+import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.HostService;
 import org.springframework.http.HttpStatus;
@@ -44,7 +45,7 @@ public class Host {
         return new ResponseEntity<>("Product Verified Successfully", HttpStatus.OK);
     }
 
-    @PostMapping("/products/{productId}/assignRoom")
+    @PostMapping("/products/{productId}/assign-room")
     public ResponseEntity<?> assignProductToRoom(@PathVariable Long productId,@RequestBody AssignRoomRequest request) {
         hostService.assignProductToRoom(productId, request.roomId());
         return new ResponseEntity<>("Product added to room successfully", HttpStatus.OK);
@@ -64,6 +65,11 @@ public class Host {
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId) {
         return ResponseEntity.ok(hostService.getRoomDetails(roomId));
+    }
+
+    @GetMapping("/rooms/{roomId}/products")
+    public ResponseEntity<List<RoomProduct>> getRoomProducts(@PathVariable Long roomId) {
+        return ResponseEntity.ok(hostService.getRoomProducts(roomId));
     }
 
     @PatchMapping("/rooms/{roomId}")

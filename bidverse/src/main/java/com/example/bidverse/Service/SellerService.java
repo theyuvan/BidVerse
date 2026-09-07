@@ -1,10 +1,12 @@
 package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.CreateProductRequest;
+import com.example.bidverse.Dto.SellerProductHistory;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
+import com.example.bidverse.Repository.SellerProductHistoryRow;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -69,6 +71,39 @@ public class SellerService {
     public Product getProductDetails(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product Not Found"));
+    }
+
+    public List<Product> getProducts(Long sellerId) {
+        if (sellerId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sellerId is required");
+        }
+        return productRepository.findBySellerId(sellerId);
+    }
+
+    public List<SellerProductHistory> getProductHistory(Long sellerId) {
+        if (sellerId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sellerId is required");
+        }
+        return productRepository.findHistoryBySellerId(sellerId).stream()
+                .map(this::toSellerProductHistory)
+                .toList();
+    }
+
+    private SellerProductHistory toSellerProductHistory(SellerProductHistoryRow row) {
+        return new SellerProductHistory(
+                row.getProductId(),
+                row.getName(),
+                row.getDescription(),
+                row.getBasePrice(),
+                row.getProductStatus(),
+                row.getRoomId(),
+                row.getAuctionStatus(),
+                row.getDealStatus(),
+                row.getBuyerId(),
+                row.getBuyerName(),
+                row.getBuyerEmail(),
+                row.getBuyerPhone()
+        );
     }
 
     public Product createProduct(CreateProductRequest request) {

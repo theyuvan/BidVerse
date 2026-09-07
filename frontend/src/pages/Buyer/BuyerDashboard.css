@@ -1,0 +1,51 @@
+.buyer-page {
+    padding: 40px;
+}
+
+.buyer-header {
+    margin-bottom: 30px;
+}
+
+.buyer-header h1 {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.buyer-header p {
+    color: #666;
+}
+
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.room-card {
+    padding: 24px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: white;
+    text-decoration: none;
+    color: inherit;
+    transition: 0.2s;
+}
+
+.room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.room-card h2 {
+    margin-bottom: 15px;
+}
+
+.room-card p {
+    margin: 8px 0;
+}
+
+.room-card span {
+    display: inline-block;
+    margin-top: 15px;
+    font-weight: bold;
+}

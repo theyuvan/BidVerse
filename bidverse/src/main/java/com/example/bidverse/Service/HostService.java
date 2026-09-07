@@ -1,6 +1,7 @@
 package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.ProductDisplay;
+import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
@@ -8,6 +9,7 @@ import com.example.bidverse.Repository.AuctionItemRepository;
 import com.example.bidverse.Repository.ProductDisplayRow;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
+import com.example.bidverse.Repository.RoomProductRow;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -123,6 +125,26 @@ public class HostService {
     public Room getRoomDetails(Long roomId) {
         return roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+    }
+
+    public List<RoomProduct> getRoomProducts(Long roomId) {
+        roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+
+        return auctionItemRepo.findRoomProductsByRoomId(roomId).stream()
+                .map(this::toRoomProduct)
+                .toList();
+    }
+
+    private RoomProduct toRoomProduct(RoomProductRow row) {
+        return new RoomProduct(
+                row.getAuctionItemId(),
+                row.getProductId(),
+                row.getName(),
+                row.getDescription(),
+                row.getBasePrice(),
+                row.getAuctionStatus()
+        );
     }
 
     public Room updateRoomCapacity(Long roomId, Integer seatLimit) {
