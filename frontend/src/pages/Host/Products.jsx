@@ -82,7 +82,7 @@ function Products(){
                             <tbody>
                         {filteredProducts.map((product) => (
                             <tr key={product.productId}>
-                                <td className="product-name">{product.name}</td>
+                                <td className="product-name">{product.productName}</td>
                                 <td>{product.description || "No description"}</td>
                                 <td>{product.sellerName || "Unknown"}</td>
                                 <td>₹{product.basePrice}</td>

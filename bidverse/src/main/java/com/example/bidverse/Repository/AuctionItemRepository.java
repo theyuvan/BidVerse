@@ -1,13 +1,15 @@
 package com.example.bidverse.Repository;
 
-import com.example.bidverse.Entity.auction_item;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import com.example.bidverse.Entity.auction_item;
 
 public interface AuctionItemRepository extends JpaRepository<auction_item, Long> {
+
     boolean existsByProductId(Long productId);
 
     List<auction_item> findByRoomId(Long roomId);
@@ -18,6 +20,7 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
                 p.product_id       as "productId",
                 p.name             as "productName",
                 p.description      as "description",
+                p.base_price       as "basePrice",
                 c.name             as "categoryName"
             from auction_items ai
             join products p on p.product_id = ai.product_id

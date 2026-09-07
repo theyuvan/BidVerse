@@ -13,7 +13,7 @@ export const getRoomProducts = (roomId) => {
 };
 
 export const assignProductToRoom = (productId, roomId) => {
-    return axios.post(`http://localhost:8080/host/products/${productId}/assign-room`, { roomId });
+    return axios.post(`http://localhost:8080/host/products/${productId}/assignRoom`, { roomId });
 };
 
 export const createRoom = (room) => {
@@ -26,6 +26,10 @@ export const getPendingProducts = () => {
 
 export const getProducts = () => {
     return axios.get("http://localhost:8080/host/products");
+};
+
+export const getAvailableProducts = () => {
+    return axios.get("http://localhost:8080/host/products/available");
 };
 
 export const verifyProduct = (productId, status) => {
