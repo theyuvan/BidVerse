@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getRooms, getProducts } from "../../services/hostService";
 import "./HostDashboard.css";
 
@@ -19,7 +20,7 @@ function HostDashboard(){
         <main className="host-page dashboard-page">
             <header className="page-header">
                 <h1>Host Dashboard</h1>
-                <button className="create-room-button"> + Create Room</button>
+                    <Link className="create-room-button" to="/host/rooms/create">+ Create Room</Link>
             </header>
             <section className="dashboard-overview">
                 <div className="overview-card">

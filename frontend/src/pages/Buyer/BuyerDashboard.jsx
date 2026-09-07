@@ -16,7 +16,7 @@ function BuyerDashboard() {
             try {
                 const response = await getAvailableRooms();
                 setRooms(response.data);
-            } catch (error) {
+            } catch {
                 setError("Unable to load rooms.");
             } finally {
                 setLoading(false);

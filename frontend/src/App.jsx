@@ -14,15 +14,17 @@ import SellerDeals from "./pages/Seller/SellerDeals";
 import SellerDealDetails from "./pages/Seller/SellerDealDetails";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
+import BuyerNavbar from "./components/buyer/Navbar";
 import "./pages/Seller/Seller.css";
 
 function AppShell() {
     const location = useLocation();
     const isSellerRoute = location.pathname.startsWith("/seller");
+    const isBuyerRoute = location.pathname.startsWith("/buyer");
 
     return (
         <div className="app-shell">
-            {isSellerRoute ? <SellerNavbar /> : <Navbar />}
+            {isSellerRoute ? <SellerNavbar /> : isBuyerRoute ? <BuyerNavbar /> : <Navbar />}
             <div className="page-content">
                 <Routes>
                     <Route path="/" element={<Navigate to="/host/dashboard" replace />} />

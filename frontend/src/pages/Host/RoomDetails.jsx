@@ -148,7 +148,7 @@ function RoomDetails() {
 						<option value="">Choose a product</option>
 						{approvedProducts.map((product) => (
 							<option key={product.productId} value={product.productId}>
-								{product.name} - {product.categoryName || "Uncategorized"} - ₹{product.basePrice}
+										{product.productName} - {product.categoryName || "Uncategorized"} - ₹{product.basePrice}
 							</option>
 						))}
 					</select>
