@@ -3,13 +3,13 @@ package com.example.bidverse.Service;
 import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.LiveAuctionItem;
-import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Deal;
+import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Repository.AuctionItemRepository;
+import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
-import com.example.bidverse.Repository.DealRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class BuyerService {
     private static final String ROOM_STATUS_COMPLETED = "completed";
     private static final String ROOM_STATUS_CANCELLED = "cancelled";
     private static final String ADVANCE_STATUS_PAID = "paid";
-    private static final int BID_DURATION_SECONDS = 90;
+    private static final int BID_DURATION_SECONDS = 10;
     private static final long MIN_ROOM_DURATION_SECONDS = 3600;
 
     private final RoomRepo roomRepo;
@@ -45,6 +45,10 @@ public class BuyerService {
         this.auctionItemRepo = auctionItemRepo;
         this.roomSeatRepo = roomSeatRepo;
         this.dealRepo = dealRepo;
+    }
+
+    public List<Deal> getDeals(Long buyerId) {
+        return dealRepo.findByBuyerId(buyerId);
     }
 
     public List<Room> getAvailableRooms() {
@@ -61,14 +65,26 @@ public class BuyerService {
     public List<CatalogItem> getRoomCatalog(Long roomId) {
         roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        return auctionItemRepo.findCatalogByRoomId(roomId).stream()
-                .map(row -> new CatalogItem(
-                        row.getAuctionItemId(),
-                        row.getProductId(),
-                        row.getProductName(),
-                        row.getDescription(),
-                        row.getCategoryName()
-                ))
+        var rows = auctionItemRepo.findCatalogByRoomId(roomId);
+        return java.util.stream.IntStream.range(0, rows.size())
+                .mapToObj(index -> {
+                    var row = rows.get(index);
+                    String displayStatus = "waiting".equals(row.getAuctionStatus())
+                            ? "upcoming"
+                            : row.getAuctionStatus();
+                    return new CatalogItem(
+                            index + 1,
+                            row.getAuctionItemId(),
+                            row.getProductId(),
+                            row.getProductName(),
+                            row.getDescription(),
+                            row.getCategoryId(),
+                            row.getCategoryName(),
+                            row.getBasePrice(),
+                            row.getCurrentPrice(),
+                            displayStatus
+                    );
+                })
                 .toList();
     }
 

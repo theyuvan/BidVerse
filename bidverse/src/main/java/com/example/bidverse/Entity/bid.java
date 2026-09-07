@@ -24,7 +24,7 @@ public class bid {
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
     @Column(name = "amount", nullable = false)
-    private BigDecimal Amount;
+    private BigDecimal amount;
     @Column(name = "bid_time", nullable = false)
     private OffsetDateTime bidTime;
 }

@@ -33,11 +33,13 @@ public class HostService {
     private final ProductRepository productRepo;
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
+    private final AuctionService auctionService;
 
-    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo) {
+    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, AuctionService auctionService) {
         this.productRepo = productRepo;
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
+        this.auctionService = auctionService;
     }
 
     public Product verifyProduct(Long productId, String status) {
@@ -55,12 +57,9 @@ public class HostService {
     }
 
     public Room startRoom(Long roomId) {
-        Room room = roomRepo.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
-
-        room.setStatus(ROOM_STATUS_LIVE);
-        room.setStartTime(OffsetDateTime.now());
-        return roomRepo.save(room);
+        // delegates to AuctionService so a host clicking "start now" and the scheduler's
+        // auto-start-at-scheduled-time can never race each other into double-starting a room
+        return auctionService.startRoom(roomId);
     }
 
     public auction_item assignProductToRoom(Long productId, Long roomId) {
