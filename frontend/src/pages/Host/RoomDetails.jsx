@@ -2,6 +2,24 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {assignProductToRoom,getAvailableProducts,getProducts,getRoomDetails,getRoomProducts,} from "../../services/hostService";
 import "./RoomDetails.css";
+
+async function fetchRoomData(roomId) {
+	const [roomResponse, roomProductsResponse, productsResponse] = await Promise.all([
+		getRoomDetails(roomId),
+		getRoomProducts(roomId),
+		getProducts(),
+	]);
+
+	const assignedProducts = roomProductsResponse.data;
+	const assignedIds = new Set(assignedProducts.map((product) => product.productId));
+	const approvedProducts = productsResponse.data.filter(
+		(product) => product.status?.toLowerCase() === "approved"
+			&& !assignedIds.has(product.productId)
+	);
+
+	return { room: roomResponse.data, assignedProducts, approvedProducts };
+}
+
 function RoomDetails() {
 	const { roomId } = useParams();
 	const [room, setRoom] = useState(null);

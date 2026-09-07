@@ -7,7 +7,7 @@ public record RoomProduct(
         Long productId,
         String name,
         String description,
-        BigDecimal basePrice
-        ) {
-
+        BigDecimal basePrice,
+        String auctionStatus
+) {
 }
