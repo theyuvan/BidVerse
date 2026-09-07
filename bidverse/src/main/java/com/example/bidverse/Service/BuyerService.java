@@ -72,6 +72,11 @@ public class BuyerService {
                 .toList();
     }
 
+    public Room getRoomDetails(Long roomId) {
+        return roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+    }
+
     public Room_Seat bookRoom(Long roomId, Long buyerId) {
 
         Room room = roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));

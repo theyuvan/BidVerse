@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-    getAvailableRooms,
+    getRoomDetails,
     getRoomCatalog,
-    bookRoom
+    bookRoom,
+    joinRoom
 } from "../../services/buyerService";
 import "./RoomDetails.css";
 
@@ -17,6 +18,8 @@ function RoomDetails() {
     const [error, setError] = useState("");
     const [booking, setBooking] = useState(false);
     const [bookingMessage, setBookingMessage] = useState("");
+    const [liveItems, setLiveItems] = useState([]);
+    const [joining, setJoining] = useState(false);
 
     useEffect(() => {
 
@@ -24,18 +27,15 @@ function RoomDetails() {
 
             try {
 
-                const roomsResponse = await getAvailableRooms();
+                const [roomResponse, productsResponse] = await Promise.all([
+                    getRoomDetails(roomId),
+                    getRoomCatalog(roomId),
+                ]);
 
-                const productsResponse = await getRoomCatalog(roomId);
-
-                const selectedRoom = roomsResponse.data.find(
-                    (room) => room.roomId === Number(roomId)
-                );
-
-                setRoom(selectedRoom);
+                setRoom(roomResponse.data);
                 setProducts(productsResponse.data);
 
-            } catch (error) {
+            } catch {
 
                 setError("Unable to load room details.");
 
@@ -80,6 +80,23 @@ function RoomDetails() {
 
             setBooking(false);
 
+        }
+    };
+
+    const handleJoinRoom = async () => {
+        setJoining(true);
+        setError("");
+        try {
+            const response = await joinRoom(roomId, 2);
+            setLiveItems(response.data);
+            setBookingMessage("You joined the live auction.");
+        } catch (requestError) {
+            const responseData = requestError.response?.data;
+            setError(typeof responseData === "string"
+                ? responseData
+                : responseData?.message || "Unable to join the live auction.");
+        } finally {
+            setJoining(false);
         }
     };
 
@@ -230,6 +247,28 @@ function RoomDetails() {
 
                 </section>
 
+            )}
+
+            {room.status?.toLowerCase() === "live" && (
+                <section className="booking-section">
+                    <h2>Live auction</h2>
+                    <button onClick={handleJoinRoom} disabled={joining}>
+                        {joining ? "Joining..." : "Join live auction"}
+                    </button>
+                    {liveItems.length > 0 && (
+                        <div className="assigned-product-list">
+                            {liveItems.map((item) => (
+                                <article className="assigned-product" key={item.auctionItemId}>
+                                    <div>
+                                        <h3>{item.productName}</h3>
+                                        <p>{item.categoryName || "Uncategorized"} · Seller {item.sellerName || "Unknown"}</p>
+                                    </div>
+                                    <strong>₹{item.currentPrice}</strong>
+                                </article>
+                            ))}
+                        </div>
+                    )}
+                </section>
             )}
 
 

@@ -1,24 +1,49 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRooms } from "../../services/hostService";
+import { getRooms, startRoom } from "../../services/hostService";
 import "./MyRooms.css";
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
     const [filter,setFilter]=useState("all");
+    const [startingRoomId, setStartingRoomId] = useState(null);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
         getRooms()
-            .then((response) =>{ console.log(response.data); setRooms(response.data)})
-            .catch((error) => console.error("Error fetching rooms:", error));
+            .then((response) => setRooms(response.data))
+            .catch(() => setError("Unable to load rooms."));
     }, []);
 
     const filteredRooms = filter === "all" ? rooms : rooms.filter((room) => room.status?.toLowerCase() === filter);
+
+    const handleStartRoom = async (event, roomId) => {
+        event.stopPropagation();
+        setStartingRoomId(roomId);
+        setError("");
+
+        try {
+            const response = await startRoom(roomId);
+            setRooms((currentRooms) => currentRooms.map((room) =>
+                room.roomId === roomId ? response.data : room
+            ));
+        } catch (requestError) {
+            const responseData = requestError.response?.data;
+            setError(typeof responseData === "string"
+                ? responseData
+                : responseData?.message || "Unable to start this room.");
+        } finally {
+            setStartingRoomId(null);
+        }
+    };
+
     return (
         <main className="host-page rooms-page">
             <header className="page-header">
-                <h1>Auction Rooms</h1>
+                <h1>My Rooms</h1>
+                <p>Start an upcoming room and manage its approved auction products.</p>
             </header>
+            {error && <p className="form-error" role="alert">{error}</p>}
             <section className="rooms-section">
                 <div className="room-filters">
                     <button className ={filter ==="all"? "active" : ""} onClick={() => setFilter("all")}>All</button>
@@ -54,6 +79,26 @@ function MyRooms() {
                                     <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
                                     <div><dt>Starts</dt><dd>{new Date(room.startTime).toLocaleString()}</dd></div>
                                 </dl>
+                                <div className="room-card-actions">
+                                    <button
+                                        type="button"
+                                        className="start-room-button"
+                                        disabled={startingRoomId === room.roomId || !["upcoming", "open"].includes(room.status?.toLowerCase())}
+                                        onClick={(event) => handleStartRoom(event, room.roomId)}
+                                    >
+                                        {startingRoomId === room.roomId ? "Starting..." : room.status?.toLowerCase() === "live" ? "Room ongoing" : "Start room"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="manage-room-button"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            navigate(`/host/rooms/${room.roomId}`);
+                                        }}
+                                    >
+                                        Manage products
+                                    </button>
+                                </div>
                             </article>
                         ))}
                     </div>

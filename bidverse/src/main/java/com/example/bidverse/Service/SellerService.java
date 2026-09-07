@@ -4,6 +4,8 @@ import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerProductHistory;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Entity.Categories;
+import com.example.bidverse.Repository.CategoryRepository;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.SellerProductHistoryRow;
@@ -26,10 +28,20 @@ public class SellerService {
 
     private final DealRepository dealRepository;
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
 
-    public SellerService(DealRepository dealRepository, ProductRepository productRepository) {
+    public SellerService(
+            DealRepository dealRepository,
+            ProductRepository productRepository,
+            CategoryRepository categoryRepository
+    ) {
         this.dealRepository = dealRepository;
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+    }
+
+    public List<Categories> getCategories() {
+        return categoryRepository.findAll();
     }
 
     public List<Deal> getDeals(Long sellerId) {
@@ -92,6 +104,8 @@ public class SellerService {
     private SellerProductHistory toSellerProductHistory(SellerProductHistoryRow row) {
         return new SellerProductHistory(
                 row.getProductId(),
+            row.getCategoryId(),
+            row.getCategoryName(),
                 row.getName(),
                 row.getDescription(),
                 row.getBasePrice(),
@@ -106,20 +120,20 @@ public class SellerService {
         );
     }
 
-    public Product createProduct(CreateProductRequest request) {
-        if (request.basePrice() == null || request.basePrice().compareTo(BigDecimal.ZERO) <= 0) {
+    public Product createProduct(Product product2) {
+        if (product2.getBasePrice() == null || product2.getBasePrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "basePrice must be greater than 0");
         }
-        if (request.name() == null || request.name().isBlank()) {
+        if (product2.getName() == null || product2.getName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
         }
 
         Product product = new Product();
-        product.setSellerId(request.sellerId());
-        product.setCategoryId(request.categoryId());
-        product.setName(request.name());
-        product.setDescription(request.description());
-        product.setBasePrice(request.basePrice());
+        product.setSellerId(product2.getSellerId());
+        product.setCategoryId(product2.getCategoryId());
+        product.setName(product2.getName());
+        product.setDescription(product2.getDescription());
+        product.setBasePrice(product2.getBasePrice());
         product.setStatus(PRODUCT_STATUS_PENDING);
 
         return productRepository.save(product);

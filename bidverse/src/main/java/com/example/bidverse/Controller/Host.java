@@ -60,9 +60,8 @@ public class Host {
     }
 
     @PutMapping("/rooms/{roomId}/start")
-    public ResponseEntity<?> startRoom(@PathVariable Long roomId) {
-        hostService.startRoom(roomId);
-        return new ResponseEntity<>("Room Started Successfully", HttpStatus.OK);
+    public ResponseEntity<Room> startRoom(@PathVariable Long roomId) {
+        return ResponseEntity.ok(hostService.startRoom(roomId));
     }
 
     @GetMapping("/products")

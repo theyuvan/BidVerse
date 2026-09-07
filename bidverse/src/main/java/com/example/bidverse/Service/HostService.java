@@ -2,7 +2,6 @@ package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Dto.ProductDisplay;
-import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
@@ -61,6 +60,11 @@ public class HostService {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
+        String currentStatus = room.getStatus() == null ? "" : room.getStatus().trim().toLowerCase();
+        if (!currentStatus.equals("upcoming") && !currentStatus.equals("open")) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only an upcoming room can be started");
+        }
+
         room.setStatus(ROOM_STATUS_LIVE);
         room.setStartTime(OffsetDateTime.now());
         return roomRepo.save(room);
@@ -83,12 +87,16 @@ public class HostService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Product is already assigned to a room");
         }
 
-        auction_item item = new auction_item();
-        item.setRoomId(room.getRoomId());
-        item.setProductId(product.getProductId());
-        item.setStartPrice(product.getBasePrice());
-        item.setCurrentPrice(product.getBasePrice());
-        item.setStatus(AUCTION_ITEM_STATUS_WAITING);
+        auction_item item = new auction_item(
+                null,
+                room.getRoomId(),
+                product.getProductId(),
+                product.getBasePrice(),
+                product.getBasePrice(),
+                AUCTION_ITEM_STATUS_WAITING,
+                null,
+                null
+        );
 
         return auctionItemRepo.save(item);
     }

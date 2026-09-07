@@ -12,6 +12,10 @@ export const getRoomProducts = (roomId) => {
     return api.get(`/host/rooms/${roomId}/products`);
 };
 
+export const startRoom = (roomId) => {
+    return api.put(`/host/rooms/${roomId}/start`);
+};
+
 export const assignProductToRoom = (productId, roomId) => {
     return api.post(`http://localhost:8080/host/products/${productId}/assignRoom`, { roomId });
 };
