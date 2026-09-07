@@ -10,6 +10,7 @@ public record SellerProductHistory(
         String description,
         BigDecimal basePrice,
         String productStatus,
+        String imageUrl,
         Long roomId,
         String auctionStatus,
         String dealStatus,

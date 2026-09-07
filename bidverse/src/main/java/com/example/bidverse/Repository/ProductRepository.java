@@ -28,7 +28,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 d.buyer_id      as "buyerId",
                 buyer.name      as "buyerName",
                 buyer.email     as "buyerEmail",
-                buyer.phone     as "buyerPhone"
+                buyer.phone     as "buyerPhone",
+                p.image_url    as "imageUrl"
             from products p
             left join categories c on c.category_id = p.category_id
             left join auction_items ai on ai.product_id = p.product_id
@@ -49,7 +50,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 p.name         as "productName",
                 p.description  as "description",
                 p.base_price   as "basePrice",
-                p.status       as "status"
+                p.status       as "status",
+                p.image_url    as "imageUrl"
             from products p
             join categories c on c.category_id = p.category_id
             join users seller on seller.user_id = p.seller_id
@@ -67,7 +69,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 p.name         as "productName",
                 p.description  as "description",
                 p.base_price   as "basePrice",
-                p.status       as "status"
+                p.status       as "status",
+                p.image_url    as "imageUrl"
             from products p
             join categories c on c.category_id = p.category_id
             join users seller on seller.user_id = p.seller_id

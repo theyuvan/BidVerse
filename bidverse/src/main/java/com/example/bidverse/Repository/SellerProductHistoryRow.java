@@ -17,4 +17,5 @@ public interface SellerProductHistoryRow {
     String getBuyerName();
     String getBuyerEmail();
     String getBuyerPhone();
+    String getImageUrl();
 }

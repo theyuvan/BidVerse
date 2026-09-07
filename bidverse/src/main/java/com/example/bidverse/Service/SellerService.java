@@ -110,6 +110,7 @@ public class SellerService {
                 row.getDescription(),
                 row.getBasePrice(),
                 row.getProductStatus(),
+                row.getImageUrl(),
                 row.getRoomId(),
                 row.getAuctionStatus(),
                 row.getDealStatus(),

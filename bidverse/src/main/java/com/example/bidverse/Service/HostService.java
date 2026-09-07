@@ -127,16 +127,17 @@ public class HostService {
     private List<ProductDisplay> toProductDisplays(List<ProductDisplayRow> rows) {
         return rows.stream()
                 .map(row -> new ProductDisplay(
-                row.getProductId(),
-                row.getSellerId(),
-                row.getSellerName(),
-                row.getCategoryId(),
-                row.getCategoryName(),
-                row.getProductName(),
-                row.getDescription(),
-                row.getBasePrice(),
-                row.getStatus()
-        ))
+                        row.getProductId(),
+                        row.getSellerId(),
+                        row.getSellerName(),
+                        row.getCategoryId(),
+                        row.getCategoryName(),
+                        row.getProductName(),
+                        row.getDescription(),
+                        row.getBasePrice(),
+                        row.getStatus(),
+                        row.getImageUrl()
+                ))
                 .toList();
     }
 
@@ -161,7 +162,8 @@ public class HostService {
                 row.getName(),
                 row.getDescription(),
                 row.getBasePrice(),
-                row.getAuctionStatus()
+                row.getAuctionStatus(),
+                row.getImageUrl()
         );
     }
 

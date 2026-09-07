@@ -7,6 +7,7 @@ public record CreateProductRequest(
         Long categoryId,
         String name,
         String description,
-        BigDecimal basePrice
+        BigDecimal basePrice,
+        String imageUrl
 ) {
 }

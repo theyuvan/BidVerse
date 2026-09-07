@@ -9,4 +9,5 @@ public interface RoomProductRow {
     String getDescription();
     BigDecimal getBasePrice();
     String getAuctionStatus();
+    String getImageUrl();
 }

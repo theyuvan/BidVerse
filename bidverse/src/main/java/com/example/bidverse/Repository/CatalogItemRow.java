@@ -15,4 +15,5 @@ public interface CatalogItemRow {
     BigDecimal getBasePrice();
 
     String getCategoryName();
+    String getImageUrl();
 }

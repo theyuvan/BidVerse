@@ -5,6 +5,7 @@ public record CatalogItem(
         Long productId,
         String productName,
         String description,
-        String categoryName
+        String categoryName,
+        String imageUrl
 ) {
 }

@@ -67,7 +67,8 @@ public class BuyerService {
                         row.getProductId(),
                         row.getProductName(),
                         row.getDescription(),
-                        row.getCategoryName()
+                        row.getCategoryName(),
+                        row.getImageUrl()
                 ))
                 .toList();
     }
@@ -211,7 +212,8 @@ public class BuyerService {
                         row.getSellerName(),
                         row.getBasePrice(),
                         row.getCurrentPrice(),
-                        row.getAuctionStatus()
+                        row.getAuctionStatus(),
+                        row.getImageUrl()
                 ))
                 .toList();
     }

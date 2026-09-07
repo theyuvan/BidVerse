@@ -30,5 +30,7 @@ public class Product {
     private BigDecimal basePrice;
     @Column(name = "status", nullable = false)
     private String status;
+    @Column(name = "image_url")
+    private String imageUrl;
     
 }

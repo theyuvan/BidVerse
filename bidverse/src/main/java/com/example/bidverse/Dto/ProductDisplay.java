@@ -11,6 +11,7 @@ public record ProductDisplay(
         String productName,
         String description,
         BigDecimal basePrice,
-        String status
+        String status,
+        String imageUrl
 ) {
 }
