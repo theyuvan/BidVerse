@@ -12,14 +12,21 @@ import ListProduct from "./pages/Seller/ListProduct";
 import MyProducts from "./pages/Seller/MyProducts";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
+import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
+import BuyerNavbar from "./components/buyer/Navbar";
 
 function AppShell() {
     const location = useLocation();
     const isSellerRoute = location.pathname.startsWith("/seller");
+    const isBuyerRoute = location.pathname.startsWith("/buyer");
+
+    let navbar = <Navbar />;
+    if (isSellerRoute) navbar = <SellerNavbar />;
+    if (isBuyerRoute) navbar = <BuyerNavbar />;
 
     return (
         <div className="app-shell">
-            {isSellerRoute ? <SellerNavbar /> : <Navbar />}
+            {navbar}
             <div className="page-content">
                 <Routes>
                     <Route path="/" element={<Navigate to="/host/dashboard" replace />} />
@@ -34,6 +41,7 @@ function AppShell() {
                     {/* BUYER */}
                     <Route path="/buyer" element={<BuyerDashboard />}/>
                     <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
+                    <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
                 </Routes>
             </div>
         </div>

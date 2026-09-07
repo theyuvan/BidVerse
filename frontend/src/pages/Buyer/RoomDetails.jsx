@@ -5,11 +5,13 @@ import {
     getRoomCatalog,
     bookRoom
 } from "../../services/buyerService";
+import { getBuyerId } from "../../services/buyerSession";
 import "./RoomDetails.css";
 
 function RoomDetails() {
 
     const { roomId } = useParams();
+    const buyerId = getBuyerId();
 
     const [room, setRoom] = useState(null);
     const [products, setProducts] = useState([]);
@@ -35,7 +37,7 @@ function RoomDetails() {
                 setRoom(selectedRoom);
                 setProducts(productsResponse.data);
 
-            } catch (error) {
+            } catch {
 
                 setError("Unable to load room details.");
 
@@ -59,12 +61,9 @@ function RoomDetails() {
 
         try {
 
-            // Temporary buyer ID
-            const buyerId = 2;
-
             await bookRoom(roomId, buyerId);
 
-            setBookingMessage("Room booked successfully.");
+            setBookingMessage(`Room booked for buyer #${buyerId}. Return to buyer rooms to open the waiting room.`);
 
         } catch (error) {
 
@@ -73,7 +72,7 @@ function RoomDetails() {
             setError(
                 typeof responseData === "string"
                     ? responseData
-                    : responseData?.message || "Unable to book room."
+                    : responseData?.detail || responseData?.message || "Unable to book room."
             );
 
         } finally {

@@ -1,18 +1,65 @@
 .buyer-page {
-    padding: 40px;
+    min-height: 100vh;
+    padding: 110px 48px 48px;
+    box-sizing: border-box;
+    background: #f6f3ec;
 }
 
 .buyer-header {
-    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 36px;
 }
 
 .buyer-header h1 {
+    margin: 0 0 8px;
     font-size: 36px;
-    margin-bottom: 8px;
 }
 
 .buyer-header p {
-    color: #666;
+    margin: 0;
+    color: #64748b;
+}
+
+.buyer-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.buyer-switcher label {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.buyer-switcher div {
+    display: flex;
+    gap: 8px;
+}
+
+.buyer-switcher input {
+    width: 110px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+}
+
+.buyer-switcher button,
+.enter-room-link {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: #5b5fef;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.buyer-section {
+    margin-bottom: 42px;
 }
 
 .rooms-grid {
@@ -23,29 +70,86 @@
 
 .room-card {
     padding: 24px;
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-    background: white;
-    text-decoration: none;
     color: inherit;
+    background: #ffffff;
+    text-decoration: none;
     transition: 0.2s;
 }
 
 .room-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-.room-card h2 {
-    margin-bottom: 15px;
+.room-card h3 {
+    margin: 10px 0 14px;
 }
 
 .room-card p {
     margin: 8px 0;
+    color: #475569;
 }
 
-.room-card span {
+.buyer-room-status {
     display: inline-block;
-    margin-top: 15px;
-    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 999px;
+    color: #4338ca;
+    background: #eef2ff;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.buyer-room-status.live {
+    color: #166534;
+    background: #dcfce7;
+}
+
+.buyer-room-status.completed {
+    color: #475569;
+    background: #e2e8f0;
+}
+
+.enter-room-link,
+.room-complete-label {
+    display: inline-block;
+    margin-top: 14px;
+}
+
+.room-complete-label {
+    color: #64748b;
+    font-weight: 700;
+}
+
+.buyer-empty {
+    padding: 26px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #64748b;
+    background: #ffffff;
+    text-align: center;
+}
+
+@media (max-width: 1000px) {
+    .rooms-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .buyer-page {
+        padding: 96px 18px 30px;
+    }
+
+    .buyer-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
 }

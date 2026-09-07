@@ -20,6 +20,10 @@ export const createRoom = (room) => {
     return api.post("/host/rooms", room);
 };
 
+export const startRoom = (roomId) => {
+    return api.put(`/host/rooms/${roomId}/start`);
+};
+
 export const getPendingProducts = () => {
     return api.get("/host/products/pending");
 };

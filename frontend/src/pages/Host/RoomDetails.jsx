@@ -5,6 +5,7 @@ import {
 	getProducts,
 	getRoomDetails,
 	getRoomProducts,
+	startRoom,
 } from "../../services/hostService";
 import "./RoomDetails.css";
 
@@ -33,6 +34,7 @@ function RoomDetails() {
 	const [selectedProductId, setSelectedProductId] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [assigning, setAssigning] = useState(false);
+	const [starting, setStarting] = useState(false);
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
 
@@ -84,6 +86,28 @@ function RoomDetails() {
 		}
 	};
 
+	const handleStartRoom = async () => {
+		setStarting(true);
+		setError("");
+		setMessage("");
+
+		try {
+			await startRoom(roomId);
+			const data = await fetchRoomData(roomId);
+			setRoom(data.room);
+			setAssignedProducts(data.assignedProducts);
+			setApprovedProducts(data.approvedProducts);
+			setMessage("Auction started. The first product is now live.");
+		} catch (requestError) {
+			const responseData = requestError.response?.data;
+			setError(typeof responseData === "string"
+				? responseData
+				: responseData?.detail || responseData?.message || "Unable to start this room.");
+		} finally {
+			setStarting(false);
+		}
+	};
+
 	if (loading) {
 		return <main className="host-page"><p className="empty-state">Loading room details...</p></main>;
 	}
@@ -101,7 +125,14 @@ function RoomDetails() {
 			</header>
 
 			<section className="room-summary">
-				<span className="room-status">{room.status}</span>
+				<div className="room-summary-heading">
+					<span className="room-status">{room.status}</span>
+					{["upcoming", "open"].includes(room.status?.toLowerCase()) && (
+						<button type="button" onClick={handleStartRoom} disabled={starting}>
+							{starting ? "Starting..." : "Start auction now"}
+						</button>
+					)}
+				</div>
 				<dl>
 					<div><dt>Host ID</dt><dd>{room.hostId}</dd></div>
 					<div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
