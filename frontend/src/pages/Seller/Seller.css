@@ -430,7 +430,8 @@
 }
 
 .deal-status-pending { color: #8a5a00; background: #fff5d6; }
-.deal-status-confirmed { color: #19713d; background: #dcfce7; }
+.deal-status-confirmed,
+.deal-status-completed { color: #19713d; background: #dcfce7; }
 .deal-status-cancelled { color: #b42318; background: #fee4e2; }
 
 .deal-details-page {
@@ -466,6 +467,22 @@
     color: #5b5fef;
     background: linear-gradient(145deg, #f2efff, #dce5ff);
     font-size: 64px;
+}
+
+.deal-product-image {
+    width: 130px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #eef2f7;
+}
+
+.deal-product-image {
+    width: 130px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #eef2f7;
 }
 
 .deal-product-panel h2 {
@@ -551,6 +568,32 @@
 .button-success { border: 1px solid #6d9e82; color: #20a94b; background: #f7fffa; }
 .secondary-button { margin-top: 20px; }
 
+.deal-contact-card {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.deal-contact-card a { color: #4f46e5; overflow-wrap: anywhere; }
+.deal-cancel-reason { padding: 14px; color: #991b1b; background: #fef2f2; border-radius: 8px; }
+
+.deal-contact-card {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.deal-contact-card a { color: #4f46e5; overflow-wrap: anywhere; }
+.deal-cancel-reason { padding: 14px; color: #991b1b; background: #fef2f2; border-radius: 8px; }
+
 @media (max-width: 850px) {
     .seller-action-grid,
     .deal-details-grid { grid-template-columns: 1fr; }
@@ -572,6 +615,8 @@
     .deal-list-card { align-items: flex-start; flex-direction: column; }
     .deal-list-summary { justify-items: start; }
     .deal-product-panel { grid-template-columns: 1fr; }
+    .deal-product-image { width: 100%; max-height: 280px; aspect-ratio: auto; }
+    .deal-product-image { width: 100%; max-height: 280px; aspect-ratio: auto; }
     .deal-progress { padding: 16px; }
     .deal-progress li { grid-template-columns: 24px 1fr; }
     .deal-progress time { grid-column: 2; }

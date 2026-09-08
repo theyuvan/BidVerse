@@ -4,8 +4,8 @@ import com.example.bidverse.Dto.BookSeatRequest;
 import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Dto.DealDecisionRequest;
 import com.example.bidverse.Dto.LiveAuctionItem;
-import com.example.bidverse.Dto.RejectRequest;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.BuyerService;
 
@@ -78,8 +78,8 @@ public class Buyer {
     }
 
     @GetMapping("/deals/{dealId}")
-    public ResponseEntity<?> getDealById(@PathVariable Long dealId) {
-        return ResponseEntity.ok(buyerService.getDealId(dealId));
+    public ResponseEntity<BuyerWonDeal> getDealById(@PathVariable Long dealId) {
+        return ResponseEntity.ok(buyerService.getDealDetails(dealId));
     }
 
     // GET /buyer/{buyerId}/deals -> everything this buyer has won (mirrors /seller/{sellerId}/deals)
@@ -95,13 +95,11 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
     }
 
-    @PostMapping("/deals/{dealId}/Confirm")
-    public ResponseEntity<?> confirmDeal(@PathVariable Long dealId) {
-        return ResponseEntity.ok(buyerService.confirmDeal(dealId));
-    }
-
-    @PostMapping("/deals/{dealId}/Reject")
-    public ResponseEntity<?> rejectDeal(@PathVariable Long dealId, @RequestBody RejectRequest reason) {
-        return ResponseEntity.ok(buyerService.rejectDeal(dealId, reason.getReason()));
+    @PostMapping("/deals/{dealId}/decision")
+    public ResponseEntity<BuyerWonDeal> decideDeal(
+            @PathVariable Long dealId,
+            @RequestBody DealDecisionRequest decision
+    ) {
+        return ResponseEntity.ok(buyerService.decideDeal(dealId, decision.decision(), decision.reason()));
     }
 }

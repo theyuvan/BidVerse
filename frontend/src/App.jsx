@@ -18,6 +18,8 @@ import SellerDealDetails from "./pages/Seller/SellerDealDetails";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
+import BuyerDeals from "./pages/Buyer/BuyerDeals";
+import BuyerDealDetails from "./pages/Buyer/BuyerDealDetails";
 import BuyerNavbar from "./components/buyer/Navbar";
 import "./pages/Seller/Seller.css";
 
@@ -49,6 +51,8 @@ function AppShell() {
                     <Route path="/buyer" element={<BuyerDashboard />}/>
                     <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
                     <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
+                    <Route path="/buyer/deals" element={<BuyerDeals />} />
+                    <Route path="/buyer/deals/:dealId" element={<BuyerDealDetails />} />
                 </Routes>
             </div>
         </div>

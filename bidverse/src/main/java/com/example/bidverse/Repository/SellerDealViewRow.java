@@ -2,7 +2,7 @@ package com.example.bidverse.Repository;
 
 import java.math.BigDecimal;
 
-public interface BuyerWonDealRow {
+public interface SellerDealViewRow {
     Long getDealId();
     Long getAuctionItemId();
     Long getRoomId();
@@ -11,12 +11,13 @@ public interface BuyerWonDealRow {
     String getProductDescription();
     String getImageUrl();
     BigDecimal getFinalPrice();
-    String getDealStatus();
+    String getStatus();
     String getCancelReason();
     String getBuyerStatus();
     String getSellerStatus();
     Long getSellerId();
-    String getSellerName();
-    String getSellerEmail();
-    String getSellerPhone();
+    Long getBuyerId();
+    String getBuyerName();
+    String getBuyerEmail();
+    String getBuyerPhone();
 }

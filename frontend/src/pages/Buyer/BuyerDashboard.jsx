@@ -141,6 +141,7 @@ function BuyerDashboard() {
                                         <div><dt>Email</dt><dd>{deal.sellerEmail || "Unavailable"}</dd></div>
                                         <div><dt>Phone</dt><dd>{deal.sellerPhone || "Unavailable"}</dd></div>
                                     </dl>
+                                    <Link className="enter-room-link" to={`/buyer/deals/${deal.dealId}`}>Review deal</Link>
                                 </div>
                             </article>
                         ))}

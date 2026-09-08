@@ -147,6 +147,43 @@ class BuyerServiceTest {
         assertEquals("9876543210", deals.getFirst().sellerPhone());
     }
 
+    @Test
+    void buyerConfirmationCompletesDealWhenSellerAlreadyConfirmed() {
+        com.example.bidverse.Entity.Deal deal = pendingDeal();
+        deal.setSellerStatus("confirmed");
+        when(dealRepo.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+        when(dealRepo.findWonDealById(31L)).thenReturn(Optional.of(wonDealRow));
+
+        buyerService.decideDeal(31L, "confirm", null);
+
+        assertEquals("confirmed", deal.getBuyerStatus());
+        assertEquals("completed", deal.getStatus());
+        verify(dealRepo).saveAndFlush(deal);
+    }
+
+    @Test
+    void buyerRejectionRequiresReason() {
+        com.example.bidverse.Entity.Deal deal = pendingDeal();
+        when(dealRepo.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> buyerService.decideDeal(31L, "reject", "  ")
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
+        verify(dealRepo, never()).saveAndFlush(any());
+    }
+
+    private com.example.bidverse.Entity.Deal pendingDeal() {
+        com.example.bidverse.Entity.Deal deal = new com.example.bidverse.Entity.Deal();
+        deal.setDealId(31L);
+        deal.setStatus("pending");
+        deal.setBuyerStatus("pending");
+        deal.setSellerStatus("pending");
+        return deal;
+    }
+
     private Room room(String status) {
         Room room = new Room();
         room.setRoomId(1L);

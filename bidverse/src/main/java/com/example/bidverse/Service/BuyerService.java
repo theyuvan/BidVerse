@@ -39,6 +39,13 @@ public class BuyerService {
     private static final String ATTENDANCE_STATUS_BOOKED = "booked";
     private static final String ATTENDANCE_STATUS_JOINED = "joined";
     private static final String REFUND_STATUS_PENDING = "pending";
+    private static final String DEAL_STATUS_PENDING = "pending";
+    private static final String DEAL_STATUS_COMPLETED = "completed";
+    private static final String DEAL_STATUS_CANCELLED = "cancelled";
+    private static final String PARTY_STATUS_CONFIRMED = "confirmed";
+    private static final String PARTY_STATUS_REJECTED = "rejected";
+    private static final String DECISION_CONFIRM = "confirm";
+    private static final String DECISION_REJECT = "reject";
     private static final int BID_DURATION_SECONDS = 10;
     private static final long MIN_ROOM_DURATION_SECONDS = 3600;
 
@@ -71,6 +78,7 @@ public class BuyerService {
                 row.getImageUrl(),
                 row.getFinalPrice(),
                 row.getDealStatus(),
+                row.getCancelReason(),
                 row.getBuyerStatus(),
                 row.getSellerStatus(),
                 row.getSellerId(),
@@ -300,41 +308,44 @@ public class BuyerService {
         return dealRepo.findById(dealId).map(Collections::singletonList).orElse(Collections.emptyList());
     }
 
-    public List<Deal> confirmDeal(Long dealId) {
-        Deal deal = dealRepo.findById(dealId)
+    public BuyerWonDeal getDealDetails(Long dealId) {
+        return dealRepo.findWonDealById(dealId)
+                .map(this::toBuyerWonDeal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
-
-        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
-        }
-
-        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
-        }
-
-        deal.setBuyerStatus("confirmed");
-        dealRepo.save(deal);
-
-        return Collections.singletonList(deal);
     }
 
-    public List<Deal> rejectDeal(Long dealId , String reason) {
-        Deal deal = dealRepo.findById(dealId)
+    @Transactional
+    public BuyerWonDeal decideDeal(Long dealId, String decision, String reason) {
+        String normalizedDecision = decision == null ? "" : decision.trim().toLowerCase();
+        if (!DECISION_CONFIRM.equals(normalizedDecision) && !DECISION_REJECT.equals(normalizedDecision)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be CONFIRM or REJECT");
+        }
+
+        Deal deal = dealRepo.findByIdForDecision(dealId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
 
-        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is already completed or cancelled");
         }
-        
-        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getBuyerStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer decision has already been submitted");
         }
 
-        deal.setBuyerStatus("rejected");
-        deal.setCancelReason(reason);
+        if (DECISION_REJECT.equals(normalizedDecision)) {
+            if (reason == null || reason.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
+            }
+            deal.setBuyerStatus(PARTY_STATUS_REJECTED);
+            deal.setStatus(DEAL_STATUS_CANCELLED);
+            deal.setCancelReason(reason.trim());
+        } else {
+            deal.setBuyerStatus(PARTY_STATUS_CONFIRMED);
+            if (PARTY_STATUS_CONFIRMED.equalsIgnoreCase(deal.getSellerStatus())) {
+                deal.setStatus(DEAL_STATUS_COMPLETED);
+            }
+        }
 
-        dealRepo.save(deal);
-
-        return Collections.singletonList(deal);
+        dealRepo.saveAndFlush(deal);
+        return getDealDetails(dealId);
     }
 }

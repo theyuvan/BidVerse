@@ -1,7 +1,8 @@
 package com.example.bidverse.Controller;
 
 import com.example.bidverse.Dto.CreateProductRequest;
-import com.example.bidverse.Dto.SellerDealDecision;
+import com.example.bidverse.Dto.DealDecisionRequest;
+import com.example.bidverse.Dto.SellerDealView;
 import com.example.bidverse.Entity.Categories;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
@@ -63,19 +64,19 @@ public class Seller {
     }
 
     @GetMapping("/deals")
-    public ResponseEntity<List<Deal>> getSellerDeals(@RequestParam Long sellerId) {
+    public ResponseEntity<List<SellerDealView>> getSellerDeals(@RequestParam Long sellerId) {
         return ResponseEntity.ok(sellerService.getDeals(sellerId));
     }
 
     @GetMapping("/deals/{dealId}")
-    public ResponseEntity<Deal> getDealDetails(@PathVariable Long dealId) {
+    public ResponseEntity<SellerDealView> getDealDetails(@PathVariable Long dealId) {
         return ResponseEntity.ok(sellerService.getDetails(dealId));
     }
 
     @PostMapping("/deals/{dealId}/decision")
-    public ResponseEntity<Deal> decideDeal(
+    public ResponseEntity<SellerDealView> decideDeal(
             @PathVariable Long dealId,
-            @RequestBody SellerDealDecision decision
+            @RequestBody DealDecisionRequest decision
     ) {
         return ResponseEntity.ok(sellerService.confirmDeal(
                 dealId,
