@@ -1,0 +1,226 @@
+.page-head-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    max-width: 360px;
+    color: var(--text-faint);
+}
+.search-bar svg {
+    flex-shrink: 0;
+}
+.search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13.5px;
+    width: 100%;
+}
+
+.room-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+}
+.room-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+.room-card h3 {
+    font-size: 16px;
+    margin-top: 2px;
+}
+.room-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+}
+.room-card-meta strong {
+    color: var(--text-dim);
+    font-weight: 600;
+}
+.room-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+}
+
+.deal-card,
+.booking-card {
+    display: flex;
+    gap: 14px;
+    padding: 16px;
+    align-items: center;
+}
+.deal-card .thumb,
+.booking-card .thumb {
+    width: 64px;
+    height: 64px;
+    aspect-ratio: 1;
+    flex-shrink: 0;
+}
+.deal-card-body,
+.booking-card-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.deal-card-body h3,
+.booking-card-body h3 {
+    font-size: 15px;
+}
+.deal-card-meta,
+.booking-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12.5px;
+    color: var(--text-faint);
+}
+.deal-card-price {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 17px;
+    white-space: nowrap;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 860px) {
+    .detail-grid { grid-template-columns: 1fr; }
+}
+
+.detail-media {
+    padding: 18px;
+}
+.detail-media .thumb {
+    aspect-ratio: 16/11;
+    margin-bottom: 16px;
+}
+
+.fact-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 20px;
+    margin: 0;
+}
+.fact-list div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.fact-list dt {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.fact-list dd {
+    margin: 0;
+    font-weight: 600;
+    color: var(--text);
+    font-size: 14px;
+}
+
+.contact-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-soft);
+}
+.contact-card strong {
+    font-size: 15px;
+}
+.contact-card a {
+    color: var(--info);
+    font-size: 13.5px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-faint);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+.back-link:hover {
+    color: var(--text);
+}
+
+.section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 28px;
+}
+.section-block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.section-block-head h2 {
+    font-size: 17px;
+}
+.section-block-head span {
+    font-size: 12.5px;
+    color: var(--text-faint);
+}
+
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+.stat-card {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.stat-card .icon-chip {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stat-card strong {
+    font-family: var(--font-display);
+    font-size: 24px;
+}
+.stat-card span.label {
+    font-size: 12.5px;
+    color: var(--text-faint);
+}

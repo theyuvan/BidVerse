@@ -1,26 +1,20 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { apiErrorMessage } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { IconGavel } from "../components/layout/icons";
 import "./auth.css";
 
-const HOME_BY_ROLE = {
-    buyer: "/buyer/rooms",
-    seller: "/seller/products",
-    host: "/host/rooms"
-};
-
-function Login() {
+// Host accounts are provisioned directly in the database, not through self-service
+// signup -- this page is intentionally not linked from the public nav or landing page.
+// A host is simply given this URL.
+function HostLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("buyer");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
-
     const navigate = useNavigate();
-    const location = useLocation();
     const { setSession } = useAuth();
 
     const handleSubmit = async (event) => {
@@ -29,12 +23,11 @@ function Login() {
         setError("");
 
         try {
-            const session = await loginUser({ email, password, role });
+            const session = await loginUser({ email, password, role: "host" });
             setSession(session);
-            const redirectTo = location.state?.from?.pathname || HOME_BY_ROLE[session.role] || "/";
-            navigate(redirectTo, { replace: true });
+            navigate("/host/rooms", { replace: true });
         } catch (requestError) {
-            setError(apiErrorMessage(requestError, "Invalid email or password."));
+            setError(apiErrorMessage(requestError, "Invalid host credentials."));
         } finally {
             setSubmitting(false);
         }
@@ -51,30 +44,24 @@ function Login() {
                     <span className="brand-word">BidVerse</span>
                 </div>
                 <div className="auth-showcase-copy">
-                    <span className="eyebrow" style={{ color: "var(--accent-strong)" }}>Welcome back</span>
-                    <h1>Pick up right where the bidding left off.</h1>
-                    <p>Your rooms, bookings and deals are waiting for you.</p>
+                    <span className="eyebrow" style={{ color: "var(--accent-strong)" }}>Host Panel</span>
+                    <h1>Run the room.</h1>
+                    <p>Verify products, build the lineup, and open the floor.</p>
                 </div>
                 <div />
             </section>
 
             <section className="auth-panel">
                 <div className="auth-card">
-                    <span className="eyebrow">Sign in</span>
-                    <h2>Welcome back</h2>
-                    <p>Log in to your BidVerse account.</p>
+                    <span className="eyebrow">Host access</span>
+                    <h2>Host sign in</h2>
+                    <p>Host accounts are set up by the BidVerse team.</p>
 
                     <form className="auth-form" onSubmit={handleSubmit}>
-                        <div className="role-toggle" role="radiogroup" aria-label="Account type">
-                            <button type="button" className={role === "buyer" ? "active" : ""} onClick={() => setRole("buyer")}>Buyer</button>
-                            <button type="button" className={role === "seller" ? "active" : ""} onClick={() => setRole("seller")}>Seller</button>
-                        </div>
-
                         <label className="field">
                             <span className="field-label">Email</span>
                             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
                         </label>
-
                         <label className="field">
                             <span className="field-label">Password</span>
                             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
@@ -83,17 +70,13 @@ function Login() {
                         {error && <p className="alert alert-error" role="alert">{error}</p>}
 
                         <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-                            {submitting ? "Signing in..." : "Log in"}
+                            {submitting ? "Signing in..." : "Enter host panel"}
                         </button>
                     </form>
-
-                    <p className="auth-switch">
-                        New to BidVerse? <Link to="/register">Create an account</Link>
-                    </p>
                 </div>
             </section>
         </main>
     );
 }
 
-export default Login;
+export default HostLogin;

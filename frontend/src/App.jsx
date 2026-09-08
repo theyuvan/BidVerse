@@ -1,68 +1,77 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import RequireRole from "./components/RequireRole";
+import DashboardLayout from "./components/layout/DashboardLayout";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Navbar from "./components/host/Navbar";
-import HostDashboard from "./pages/Host/HostDashboard";
-import MyRooms from "./pages/Host/MyRooms";
-import Products from "./pages/Host/Products";
-import CreateRoom from "./pages/Host/CreateRoom";
-import RoomDetails from "./pages/Host/RoomDetails";
-import SellerNavbar from "./components/seller/Navbar";
-import SellerDashboard from "./pages/Seller/SellerDashboard";
-import ListProduct from "./pages/Seller/ListProduct";
-import MyProducts from "./pages/Seller/MyProducts";
-import SellerDeals from "./pages/Seller/SellerDeals";
-import SellerDealDetails from "./pages/Seller/SellerDealDetails";
-import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
+import HostLogin from "./pages/HostLogin";
+import Profile from "./pages/Profile";
+
+import BuyerRooms from "./pages/Buyer/Rooms";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
-import BuyerDeals from "./pages/Buyer/BuyerDeals";
-import BuyerDealDetails from "./pages/Buyer/BuyerDealDetails";
-import BuyerNavbar from "./components/buyer/Navbar";
-import "./pages/Seller/Seller.css";
+import BuyerBookings from "./pages/Buyer/Bookings";
+import BuyerDeals from "./pages/Buyer/Deals";
+import BuyerDealDetails from "./pages/Buyer/DealDetails";
 
-function AppShell() {
-    const location = useLocation();
-    const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
-    const isSellerRoute = location.pathname.startsWith("/seller");
-    const isBuyerRoute = location.pathname.startsWith("/buyer");
+import SellerAddProduct from "./pages/Seller/AddProduct";
+import SellerProducts from "./pages/Seller/Products";
+import SellerDeals from "./pages/Seller/Deals";
+import SellerDealDetails from "./pages/Seller/DealDetails";
 
-    return (
-        <div className="app-shell">
-            {isAuthRoute ? null : isSellerRoute ? <SellerNavbar /> : isBuyerRoute ? <BuyerNavbar /> : <Navbar />}
-            <div className="page-content">
-                <Routes>
-                    <Route path="/" element={<Landing />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Signup />} />
-                    <Route path="/host/dashboard" element={<HostDashboard />} />
-                    <Route path="/host/rooms/create" element={<CreateRoom />} />
-                    <Route path="/host/rooms" element={<MyRooms />} />
-                    <Route path="/host/rooms/:roomId" element={<RoomDetails />} />
-                    <Route path="/host/products" element={<Products />} />
-                    <Route path="/seller" element={<SellerDashboard />} />
-                    <Route path="/seller/list-product" element={<ListProduct />} />
-                    <Route path="/seller/products" element={<MyProducts />} />
-                    <Route path="/seller/deals" element={<SellerDeals />} />
-                    <Route path="/seller/deals/:dealId" element={<SellerDealDetails />} />
-                    {/* BUYER */}
-                    <Route path="/buyer" element={<BuyerDashboard />}/>
-                    <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
-                    <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
-                    <Route path="/buyer/deals" element={<BuyerDeals />} />
-                    <Route path="/buyer/deals/:dealId" element={<BuyerDealDetails />} />
-                </Routes>
-            </div>
-        </div>
-    );
-}
+import HostRooms from "./pages/Host/Rooms";
+import HostCreateRoom from "./pages/Host/CreateRoom";
+import HostRoomDetails from "./pages/Host/RoomDetails";
+import HostVerifyProducts from "./pages/Host/VerifyProducts";
 
 function App() {
     return (
         <BrowserRouter>
-            <AppShell />
+            <AuthProvider>
+                <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Signup />} />
+                    <Route path="/host/login" element={<HostLogin />} />
+
+                    <Route
+                        path="/buyer"
+                        element={<RequireRole role="buyer"><DashboardLayout /></RequireRole>}
+                    >
+                        <Route path="rooms" element={<BuyerRooms />} />
+                        <Route path="rooms/:roomId" element={<BuyerRoomDetails />} />
+                        <Route path="rooms/:roomId/live" element={<LiveAuctionRoom />} />
+                        <Route path="bookings" element={<BuyerBookings />} />
+                        <Route path="deals" element={<BuyerDeals />} />
+                        <Route path="deals/:dealId" element={<BuyerDealDetails />} />
+                        <Route path="profile" element={<Profile />} />
+                    </Route>
+
+                    <Route
+                        path="/seller"
+                        element={<RequireRole role="seller"><DashboardLayout /></RequireRole>}
+                    >
+                        <Route path="products/new" element={<SellerAddProduct />} />
+                        <Route path="products" element={<SellerProducts />} />
+                        <Route path="deals" element={<SellerDeals />} />
+                        <Route path="deals/:dealId" element={<SellerDealDetails />} />
+                        <Route path="profile" element={<Profile />} />
+                    </Route>
+
+                    <Route
+                        path="/host"
+                        element={<RequireRole role="host"><DashboardLayout /></RequireRole>}
+                    >
+                        <Route path="rooms" element={<HostRooms />} />
+                        <Route path="rooms/new" element={<HostCreateRoom />} />
+                        <Route path="rooms/:roomId" element={<HostRoomDetails />} />
+                        <Route path="products" element={<HostVerifyProducts />} />
+                        <Route path="profile" element={<Profile />} />
+                    </Route>
+                </Routes>
+            </AuthProvider>
         </BrowserRouter>
     );
 }

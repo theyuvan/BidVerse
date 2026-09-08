@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import {
-    getRoomDetails,
-    getRoomCatalog,
-    bookRoom
-} from "../../services/buyerService";
-import { getBuyerId } from "../../services/buyerSession";
-import "./RoomDetails.css";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getRoomDetails, getRoomCatalog, bookRoom } from "../../services/buyerService";
+import { apiErrorMessage } from "../../services/api";
+import { IconGavel } from "../../components/layout/icons";
+import "../shared.css";
 
-function RoomDetails() {
-
+export default function RoomDetails() {
     const { roomId } = useParams();
-    const buyerId = getBuyerId();
+    const navigate = useNavigate();
 
     const [room, setRoom] = useState(null);
     const [products, setProducts] = useState([]);
@@ -21,289 +17,115 @@ function RoomDetails() {
     const [bookingMessage, setBookingMessage] = useState("");
 
     useEffect(() => {
-
-        const fetchRoomData = async () => {
-
-            try {
-
-                const [roomResponse, productsResponse] = await Promise.all([
-                    getRoomDetails(roomId),
-                    getRoomCatalog(roomId),
-                ]);
-
+        let cancelled = false;
+        Promise.all([getRoomDetails(roomId), getRoomCatalog(roomId)])
+            .then(([roomResponse, productsResponse]) => {
+                if (cancelled) return;
                 setRoom(roomResponse.data);
                 setProducts(productsResponse.data);
-
-            } catch {
-
-                setError("Unable to load room details.");
-
-            } finally {
-
-                setLoading(false);
-
-            }
-        };
-
-        fetchRoomData();
-
+            })
+            .catch((requestError) => { if (!cancelled) setError(apiErrorMessage(requestError, "Unable to load room details.")); })
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
     }, [roomId]);
 
-
     const handleBookRoom = async () => {
-
         setBooking(true);
         setError("");
         setBookingMessage("");
-
         try {
-
-            await bookRoom(roomId, buyerId);
-
-            setBookingMessage(`Room booked for buyer #${buyerId}. Return to buyer rooms to open the waiting room.`);
-
-        } catch (error) {
-
-            const responseData = error.response?.data;
-
-            setError(
-                typeof responseData === "string"
-                    ? responseData
-                    : responseData?.detail || responseData?.message || "Unable to book room."
-            );
-
+            await bookRoom(roomId);
+            setBookingMessage("Seat booked! You'll be able to join once the room opens.");
+        } catch (requestError) {
+            setError(apiErrorMessage(requestError, "Unable to book this room."));
         } finally {
-
             setBooking(false);
-
         }
     };
 
-    if (loading) {
+    if (loading) return <p className="spinner-row">Loading room details...</p>;
+    if (error && !room) return <p className="alert alert-error">{error}</p>;
+    if (!room) return <p className="empty-state">Room not found.</p>;
 
-        return (
-            <main className="buyer-room-details-page">
-                <p>Loading room details...</p>
-            </main>
-        );
-
-    }
-
-
-    if (error && !room) {
-
-        return (
-            <main className="buyer-room-details-page">
-                <p className="form-error">
-                    {error}
-                </p>
-            </main>
-        );
-
-    }
-
-
-    if (!room) {
-
-        return (
-            <main className="buyer-room-details-page">
-                <p>Room not found.</p>
-            </main>
-        );
-
-    }
-
-
-    const canBook =
-        room.status?.toLowerCase() === "upcoming" ||
-        room.status?.toLowerCase() === "open";
-
+    const status = room.status?.toLowerCase();
+    const canBook = ["upcoming", "open", "waiting", "live"].includes(status);
+    const canEnterLive = ["waiting", "live"].includes(status);
 
     return (
-        <main className="buyer-room-details-page">
+        <div>
+            <Link className="back-link" to="/buyer/rooms">← Back to rooms</Link>
 
-            <Link
-                className="back-link"
-                to="/buyer"
-            >
-                ← Back to Rooms
-            </Link>
-
-
-            {/* ROOM INFORMATION */}
-
-            <header className="page-header">
-
-                <h1>{room.title}</h1>
-
-                <p>
-                    Room #{room.roomId}
-                </p>
-
-            </header>
-
-
-            <section className="room-summary">
-
+            <div className="page-head">
                 <div>
-                    <strong>Room ID</strong>
-                    <span>{room.roomId}</span>
+                    <span className="eyebrow">Room #{room.roomId}</span>
+                    <h1>{room.title}</h1>
                 </div>
+                <span className={`badge ${status === "live" ? "badge-danger" : "badge-info"}`}>{room.status}</span>
+            </div>
 
-                <div>
-                    <strong>Host ID</strong>
-                    <span>{room.hostId}</span>
-                </div>
-
-                <div>
-                    <strong>Seats</strong>
-                    <span>{room.seatLimit}</span>
-                </div>
-
-                <div>
-                    <strong>Advance</strong>
-                    <span>₹{room.advanceAmount}</span>
-                </div>
-
-                <div>
-                    <strong>Status</strong>
-                    <span>{room.status}</span>
-                </div>
-
-                <div>
-                    <strong>Start Time</strong>
-
-                    <span>
-                        {room.startTime
-                            ? new Date(room.startTime).toLocaleString()
-                            : "Not scheduled"}
-                    </span>
-
-                </div>
-
-            </section>
-
-
-            {/* BOOK ROOM */}
+            <div className="card" style={{ padding: 20, marginBottom: 24 }}>
+                <dl className="fact-list">
+                    <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
+                    <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
+                    <div><dt>Status</dt><dd style={{ textTransform: "capitalize" }}>{room.status}</dd></div>
+                    <div><dt>Start time</dt><dd>{room.startTime ? new Date(room.startTime).toLocaleString() : "Not scheduled"}</dd></div>
+                </dl>
+            </div>
 
             {canBook && (
-
-                <section className="booking-section">
-
-                    <h2>Book This Room</h2>
-
-                    <p>
-                        Advance amount: ₹{room.advanceAmount}
-                    </p>
-
-                    <button
-                        onClick={handleBookRoom}
-                        disabled={booking}
-                    >
-                        {booking
-                            ? "Booking..."
-                            : "Book Room"}
+                <div className="card" style={{ padding: 20, marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 14 }}>
+                    <div>
+                        <h2 style={{ fontSize: 16, marginBottom: 4 }}>Book your seat</h2>
+                        <p>Reserve a seat in this room to join and bid once it opens.</p>
+                    </div>
+                    <button className="btn btn-primary" onClick={handleBookRoom} disabled={booking}>
+                        {booking ? "Booking..." : "Book this room"}
                     </button>
-
-                    {bookingMessage && (
-                        <p
-                            className="form-success"
-                            role="status"
-                        >
-                            {bookingMessage}
-                        </p>
-                    )}
-
-                    {error && (
-                        <p
-                            className="form-error"
-                            role="alert"
-                        >
-                            {error}
-                        </p>
-                    )}
-
-                </section>
-
+                </div>
             )}
+            {bookingMessage && <p className="alert alert-success" role="status">{bookingMessage}</p>}
+            {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-            {["waiting", "live"].includes(room.status?.toLowerCase()) && (
-                <section className="booking-section">
-                    <h2>{room.status?.toLowerCase() === "waiting" ? "Waiting room is open" : "Live auction"}</h2>
-                    <p>Enter as buyer #{buyerId} to record attendance and join the auction.</p>
-                    <Link className="enter-room-link" to={`/buyer/rooms/${roomId}/live`}>
+            {canEnterLive && (
+                <div className="card" style={{ padding: 20, marginBottom: 24, borderColor: "var(--accent)" }}>
+                    <h2 style={{ fontSize: 16, marginBottom: 4 }}>
+                        {status === "waiting" ? "Waiting room is open" : "Bidding is live"}
+                    </h2>
+                    <p style={{ marginBottom: 12 }}>Already booked a seat? Join to record your attendance and start bidding.</p>
+                    <button className="btn btn-primary" onClick={() => navigate(`/buyer/rooms/${roomId}/live`)}>
                         Enter auction room
-                    </Link>
-                </section>
+                    </button>
+                </div>
             )}
 
-
-            {/* PRODUCTS */}
-
-            <section className="room-products-section">
-
-                <div className="section-heading">
-
-                    <h2>Products Available</h2>
-
-                    <span>
-                        {products.length} products
-                    </span>
-
+            <div className="section-block">
+                <div className="section-block-head">
+                    <h2>Products in this room</h2>
+                    <span>{products.length} products</span>
                 </div>
 
-
                 {products.length === 0 ? (
-
-                    <p className="empty-state">
-                        No products are available in this room.
-                    </p>
-
+                    <div className="empty-state">No products have been added to this room yet.</div>
                 ) : (
-
-                    <div className="assigned-product-list">
-
+                    <div className="grid-cards">
                         {products.map((product) => (
-
-                            <article
-                                className="assigned-product"
-                                key={product.auctionItemId}
-                            >
-
-                                {product.imageUrl && (
-                                    <img src={product.imageUrl} alt={product.productName} />
-                                )}
-
-                                <div>
-
-                                    <h3>
-                                        {product.productName}
-                                    </h3>
-
-                                    <p>
-                                        {product.description ||
-                                            "No description available."}
-                                    </p>
-
-                                    <p>
-                                        Category:{" "}
-                                        {product.categoryName}
-                                    </p>
-
+                            <article className="card" style={{ padding: 14 }} key={product.auctionItemId}>
+                                <div className="thumb" style={{ marginBottom: 12 }}>
+                                    {product.imageUrl
+                                        ? <img src={product.imageUrl} alt={product.productName} />
+                                        : <span className="thumb-fallback"><IconGavel width={26} height={26} /></span>}
                                 </div>
-
+                                <h3 style={{ fontSize: 15, marginBottom: 4 }}>{product.productName}</h3>
+                                <p style={{ fontSize: 13, marginBottom: 8 }}>{product.description || "No description available."}</p>
+                                <div className="room-card-meta">
+                                    <span>Category <strong>{product.categoryName}</strong></span>
+                                    <span>Base price <strong>₹{product.basePrice}</strong></span>
+                                </div>
                             </article>
-
                         ))}
-
                     </div>
-
                 )}
-
-            </section>
-
-        </main>
+            </div>
+        </div>
     );
 }
-
-export default RoomDetails;

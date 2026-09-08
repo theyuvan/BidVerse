@@ -1,31 +1,13 @@
 import api from "./api";
 
-const API_URL = "/seller";
+const BASE = "/seller";
 
-export const getSellerCategories = () => {
-    return api.get(`${API_URL}/categories`);
-};
+export const getCategories = () => api.get(`${BASE}/categories`);
+export const getProducts = () => api.get(`${BASE}/products`);
+export const getProductHistory = () => api.get(`${BASE}/products/history`);
+export const createProduct = (product) => api.post(`${BASE}/products`, product);
 
-export const getSellerProducts = (sellerId) => {
-    return api.get(`${API_URL}/products`, { params: { sellerId } });
-};
-
-export const getSellerProductHistory = (sellerId) => {
-    return api.get(`${API_URL}/products/history`, { params: { sellerId } });
-};
-
-export const createSellerProduct = (product) => {
-    return api.post(`${API_URL}/products`, product);
-};
-
-export const getSellerDeals = (sellerId) => {
-    return api.get(`${API_URL}/deals`, { params: { sellerId } });
-};
-
-export const getSellerDeal = (dealId) => {
-    return api.get(`${API_URL}/deals/${dealId}`);
-};
-
-export const decideSellerDeal = (dealId, decision, reason = "") => {
-    return api.post(`${API_URL}/deals/${dealId}/decision`, { decision, reason });
-};
+export const getDeals = () => api.get(`${BASE}/deals`);
+export const getDeal = (dealId) => api.get(`${BASE}/deals/${dealId}`);
+export const decideDeal = (dealId, decision, reason = "") =>
+    api.post(`${BASE}/deals/${dealId}/decision`, { decision, reason });

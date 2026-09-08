@@ -1,4 +1,5 @@
 import { Client } from "@stomp/stompjs";
+import { getAuthHeader } from "./session";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 const socketUrl = `${apiBaseUrl.replace(/^http/, "ws").replace(/\/$/, "")}/ws`;
@@ -21,6 +22,9 @@ export function connectToAuction({
 }) {
     const client = new Client({
         brokerURL: socketUrl,
+        connectHeaders: {
+            Authorization: getAuthHeader() || ""
+        },
         reconnectDelay: 3000,
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000
