@@ -1,33 +1,44 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import { saveAuthSession } from "../services/authSession";
 import "./Login.css";
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("buyer");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const handleSubmit = async(e) => {
         e.preventDefault();
+        setError("");
+        setLoading(true);
+
         try{
             const response = await loginUser({email,password,role});
-            console.log(response.data);
+            const user = response.data;
+            saveAuthSession(user, password);
 
-            if(response.data === "Login successful"){
-                if(role === "buyer"){
-                    navigate("/buyer");
-                }
-                else if(role === "seller"){
-                    navigate("/seller");
-                }
-                else if( role === "host"){
-                    navigate("/host/dashboard");
-                }
+            if(user.role === "buyer"){
+                navigate("/buyer");
+            }
+            else if(user.role === "seller"){
+                navigate("/seller");
+            }
+            else if(user.role === "host"){
+                navigate("/host/dashboard");
             }
         }
         catch(error){
-            console.error(error);
+            setError(
+                error.response?.data?.detail ||
+                error.response?.data?.message ||
+                "Login failed. Check your email, password and role."
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -39,10 +50,10 @@ function Login() {
 
             <form onSubmit={handleSubmit}>
                 <label>Email</label>
-                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
 
                 <label>Password</label>
-                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
 
                 <label>Role</label>
                 <select value={role} onChange={(event) => setRole(event.target.value)}>
@@ -51,7 +62,11 @@ function Login() {
                     <option value="host">Host</option>
                 </select>
 
-                <button type="submit">Login</button>
+                {error && <p className="form-error" role="alert">{error}</p>}
+
+                <button type="submit" disabled={loading}>
+                    {loading ? "Logging in..." : "Login"}
+                </button>
             </form>
         </main>
     );

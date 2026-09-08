@@ -108,7 +108,7 @@ function LiveAuctionRoom() {
 
         const enterAuction = async () => {
             try {
-                const response = await joinRoom(roomId, buyerId);
+                const response = await joinRoom(roomId);
                 if (stopped) return;
 
                 setProducts(response.data);

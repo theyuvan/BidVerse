@@ -58,7 +58,7 @@ function RoomDetails() {
 
         try {
 
-            await bookRoom(roomId, buyerId);
+            await bookRoom(roomId);
 
             setBookingMessage(`Room booked for buyer #${buyerId}. Return to buyer rooms to open the waiting room.`);
 

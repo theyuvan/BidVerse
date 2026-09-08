@@ -9,16 +9,26 @@ function Signup(){
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("buyer");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setLoading(true);
+
         try {
-            const response = await SignupUser({ name, email, phone, password, role });
-            console.log(response.data);
-            if (response.data === "Registration successful") navigate("/login");
+            await SignupUser({ name, email, phone, password, role });
+            navigate("/login");
         } catch (error) {
-            console.error(error);
+            setError(
+                error.response?.data?.detail ||
+                error.response?.data?.message ||
+                "Registration failed. Please check your details."
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -40,9 +50,11 @@ function Signup(){
                 <select value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value="buyer">Buyer</option>
                     <option value="seller">Seller</option>
-                    <option value="host">Host</option>
                 </select>
-                <button type="submit">Sign Up</button>
+                {error && <p className="form-error" role="alert">{error}</p>}
+                <button type="submit" disabled={loading}>
+                    {loading ? "Creating account..." : "Sign Up"}
+                </button>
             </form>
         </main>
     );

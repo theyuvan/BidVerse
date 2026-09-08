@@ -1,23 +1,16 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getBuyerId, saveBuyerId } from "../../services/buyerSession";
+import { Link } from "react-router-dom";
+import { getAuthUser } from "../../services/authSession";
 import {
     getAvailableRooms,
     getBuyerBookings,
     getBuyerDeals
 } from "../../services/buyerService";
 import "./BuyerDashboard.css";
-function BuyerDashboard() {
-    const { buyerId: urlBuyerId } = useParams();
-    const isBookingRoomsPage = !urlBuyerId;
-    const [buyerId, setBuyerId] = useState(
-        urlBuyerId ? Number(urlBuyerId) : getBuyerId()
-    );
-    const [buyerIdInput, setBuyerIdInput] = useState(
-        String(urlBuyerId ? Number(urlBuyerId) : getBuyerId())
-    );
-
-    const [username, setUsername] = useState("User");
+function BuyerDashboard({ roomsOnly = false }) {
+    const user = getAuthUser();
+    const username = user?.name || "Buyer";
+    const isBookingRoomsPage = roomsOnly;
 
     const [rooms, setRooms] = useState([]);
     const [bookings, setBookings] = useState([]);
@@ -29,46 +22,6 @@ function BuyerDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-
-    /* =========================
-       FETCH USERNAME
-    ========================= */
-
-    const fetchBuyerName = async (id) => {
-        try {
-            /*
-             * Replace this URL with your existing
-             * user API endpoint.
-             *
-             * Example:
-             * GET /users/{id}
-             */
-
-            const response = await fetch(
-                `http://localhost:8080/users/${id}`
-            );
-
-            if (!response.ok) {
-                throw new Error("Unable to fetch user");
-            }
-
-            const user = await response.json();
-
-            setUsername(
-                user.name ||
-                user.username ||
-                `User ${id}`
-            );
-
-        } catch (err) {
-            console.error("Unable to fetch buyer name:", err);
-
-            // Fallback
-            setUsername(`User ${id}`);
-        }
-    };
-
-
     /* =========================
        LOAD BUYER DATA
     ========================= */
@@ -76,16 +29,10 @@ function BuyerDashboard() {
     useEffect(() => {
         let cancelled = false;
 
-        setLoading(true);
-
-        if (buyerId) {
-            fetchBuyerName(buyerId);
-        }
-
         Promise.all([
             getAvailableRooms(),
-            getBuyerBookings(buyerId),
-            getBuyerDeals(buyerId)
+            getBuyerBookings(),
+            getBuyerDeals()
         ])
             .then(([roomsResponse, bookingsResponse, dealsResponse]) => {
 
@@ -113,33 +60,7 @@ function BuyerDashboard() {
             cancelled = true;
         };
 
-    }, [buyerId]);
-
-
-    /* =========================
-       CHANGE BUYER
-    ========================= */
-
-    const changeBuyer = (event) => {
-
-        event.preventDefault();
-
-        const nextBuyerId = Number(buyerIdInput);
-
-        if (
-            !Number.isInteger(nextBuyerId) ||
-            nextBuyerId <= 0
-        ) {
-            setError("Enter a valid buyer ID.");
-            return;
-        }
-
-        saveBuyerId(nextBuyerId);
-
-        setLoading(true);
-
-        setBuyerId(nextBuyerId);
-    };
+    }, []);
 
 
     /* =========================
@@ -173,6 +94,10 @@ function BuyerDashboard() {
             status === "open"
         );
     });
+
+    const liveRooms = bookings.filter(
+        (booking) => booking.roomStatus?.toLowerCase() === "live"
+    );
 
 
     /* =========================
@@ -415,7 +340,7 @@ function BuyerDashboard() {
         <main className="buyer-page">
 
             {/* ==================================================
-                /buyer
+                /buyer/rooms
                 BOOKING ROOMS PAGE
             ================================================== */}
 
@@ -425,14 +350,14 @@ function BuyerDashboard() {
 
                     <header className="buyer-header">
 
-                        <div className="buyer-welcome">
+                        <div>
 
                             <h1>
-                                Welcome back, {username}
+                                Booking Rooms
                             </h1>
 
                             <p>
-                                Find auctions, place bids and track your wins.
+                                Browse upcoming auctions and reserve your seat.
                             </p>
 
                         </div>
@@ -501,7 +426,7 @@ function BuyerDashboard() {
 
 
             {/* ==================================================
-                /buyer/:buyerId
+                /buyer
                 FULL BUYER DASHBOARD
             ================================================== */}
 
@@ -515,53 +440,34 @@ function BuyerDashboard() {
 
                     <header className="buyer-header">
 
-                        <div>
+                        <div className="buyer-welcome">
 
                             <h1>
-                                Buyer Auction Rooms
+                                Welcome back, {username}
                             </h1>
 
                             <p>
-                                Book a room, wait for the host, then bid live.
+                                Find auctions, place bids and track your wins.
                             </p>
 
                         </div>
 
-
-                        {/* BUYER ID SWITCHER */}
-
-                        <form
-                            className="buyer-switcher"
-                            onSubmit={changeBuyer}
-                        >
-
-                            <label htmlFor="buyer-id">
-                                Testing as buyer
-                            </label>
-
-                            <div>
-
-                                <input
-                                    id="buyer-id"
-                                    type="number"
-                                    min="1"
-                                    value={buyerIdInput}
-                                    onChange={(event) =>
-                                        setBuyerIdInput(
-                                            event.target.value
-                                        )
-                                    }
-                                />
-
-                                <button type="submit">
-                                    Load
-                                </button>
-
-                            </div>
-
-                        </form>
-
                     </header>
+
+                    <section className="buyer-stats" aria-label="Buyer activity summary">
+                        <article className="buyer-stat-box">
+                            <span className="buyer-stat-title">Bookings</span>
+                            <strong className="buyer-stat-number">{bookings.length}</strong>
+                        </article>
+                        <article className="buyer-stat-box">
+                            <span className="buyer-stat-title">Live</span>
+                            <strong className="buyer-stat-number">{liveRooms.length}</strong>
+                        </article>
+                        <article className="buyer-stat-box">
+                            <span className="buyer-stat-title">Deals Won</span>
+                            <strong className="buyer-stat-number">{wonDeals.length}</strong>
+                        </article>
+                    </section>
 
 
                     {/* ERROR */}

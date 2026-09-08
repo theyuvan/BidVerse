@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { clearAuthSession } from "../../services/authSession";
 import "./Navbar.css";
 
 function Navbar() {
@@ -11,6 +12,7 @@ function Navbar() {
                 <Link to="/host/rooms/create">Create Room</Link>
                 <Link to="/host/rooms">My Rooms</Link>
                 <Link to="/host/products">Products</Link>
+                <Link to="/login" onClick={clearAuthSession}>Logout</Link>
             </div>
         </nav>
     );

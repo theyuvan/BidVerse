@@ -1,8 +1,8 @@
-import axios from "axios";
+import api from "./api";
 
 export const loginUser = (loginData) => {
-    return axios.post("http://localhost:8080/auth/login",loginData);
+    return api.post("/auth/login", loginData);
 };
 export const SignupUser = (signupData) => {
-    return axios.post("http://localhost:8080/auth/register",signupData);
+    return api.post("/auth/register", signupData);
 };

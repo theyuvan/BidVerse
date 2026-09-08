@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -21,7 +21,29 @@ import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
 import BuyerDeals from "./pages/Buyer/BuyerDeals";
 import BuyerDealDetails from "./pages/Buyer/BuyerDealDetails";
 import BuyerNavbar from "./components/buyer/Navbar";
+import { getAuthUser } from "./services/authSession";
 import "./pages/Seller/Seller.css";
+
+const roleHome = {
+    buyer: "/buyer",
+    seller: "/seller",
+    host: "/host/dashboard"
+};
+
+function RequireRole({ role, children }) {
+    const user = getAuthUser();
+    const currentRole = user?.role?.toLowerCase();
+
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (currentRole !== role) {
+        return <Navigate to={roleHome[currentRole] || "/login"} replace />;
+    }
+
+    return children;
+}
 
 function AppShell() {
     const location = useLocation();
@@ -37,23 +59,23 @@ function AppShell() {
                     <Route path="/" element={<Landing />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Signup />} />
-                    <Route path="/host/dashboard" element={<HostDashboard />} />
-                    <Route path="/host/rooms/create" element={<CreateRoom />} />
-                    <Route path="/host/rooms" element={<MyRooms />} />
-                    <Route path="/host/rooms/:roomId" element={<RoomDetails />} />
-                    <Route path="/host/products" element={<Products />} />
-                    <Route path="/seller" element={<SellerDashboard />} />
-                    <Route path="/seller/list-product" element={<ListProduct />} />
-                    <Route path="/seller/products" element={<MyProducts />} />
-                    <Route path="/seller/deals" element={<SellerDeals />} />
-                    <Route path="/seller/deals/:dealId" element={<SellerDealDetails />} />
+                    <Route path="/host/dashboard" element={<RequireRole role="host"><HostDashboard /></RequireRole>} />
+                    <Route path="/host/rooms/create" element={<RequireRole role="host"><CreateRoom /></RequireRole>} />
+                    <Route path="/host/rooms" element={<RequireRole role="host"><MyRooms /></RequireRole>} />
+                    <Route path="/host/rooms/:roomId" element={<RequireRole role="host"><RoomDetails /></RequireRole>} />
+                    <Route path="/host/products" element={<RequireRole role="host"><Products /></RequireRole>} />
+                    <Route path="/seller" element={<RequireRole role="seller"><SellerDashboard /></RequireRole>} />
+                    <Route path="/seller/list-product" element={<RequireRole role="seller"><ListProduct /></RequireRole>} />
+                    <Route path="/seller/products" element={<RequireRole role="seller"><MyProducts /></RequireRole>} />
+                    <Route path="/seller/deals" element={<RequireRole role="seller"><SellerDeals /></RequireRole>} />
+                    <Route path="/seller/deals/:dealId" element={<RequireRole role="seller"><SellerDealDetails /></RequireRole>} />
                     {/* BUYER */}
-                    <Route path="/buyer" element={<BuyerDashboard />} />
-                    <Route path="/buyer/:buyerId" element={<BuyerDashboard />} />
-                    <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
-                    <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
-                    <Route path="/buyer/deals" element={<BuyerDeals />} />
-                    <Route path="/buyer/deals/:dealId" element={<BuyerDealDetails />} />
+                    <Route path="/buyer" element={<RequireRole role="buyer"><BuyerDashboard /></RequireRole>} />
+                    <Route path="/buyer/rooms" element={<RequireRole role="buyer"><BuyerDashboard roomsOnly /></RequireRole>} />
+                    <Route path="/buyer/rooms/:roomId" element={<RequireRole role="buyer"><BuyerRoomDetails /></RequireRole>} />
+                    <Route path="/buyer/rooms/:roomId/live" element={<RequireRole role="buyer"><LiveAuctionRoom /></RequireRole>} />
+                    <Route path="/buyer/deals" element={<RequireRole role="buyer"><BuyerDeals /></RequireRole>} />
+                    <Route path="/buyer/deals/:dealId" element={<RequireRole role="buyer"><BuyerDealDetails /></RequireRole>} />
                 </Routes>
             </div>
         </div>

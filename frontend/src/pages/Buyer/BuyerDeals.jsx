@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getAuthUser } from "../../services/authSession";
 import { getBuyerDeals } from "../../services/buyerService";
-import { getBuyerId } from "../../services/buyerSession";
 
 function BuyerDeals() {
-    const buyerId = getBuyerId();
+    const user = getAuthUser();
     const [deals, setDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
         let cancelled = false;
-        getBuyerDeals(buyerId)
+        getBuyerDeals()
             .then((response) => {
                 if (!cancelled) setDeals(response.data);
             })
@@ -25,12 +25,12 @@ function BuyerDeals() {
             });
 
         return () => { cancelled = true; };
-    }, [buyerId]);
+    }, []);
 
     return (
         <main className="seller-page buyer-deals-page">
             <header className="page-header seller-page-header">
-                <span className="eyebrow">Buyer #{buyerId}</span>
+                <span className="eyebrow">Signed in as {user?.name || "Buyer"}</span>
                 <h1>My deals</h1>
                 <p>Review products you won and confirm the deal after speaking with the seller.</p>
             </header>
