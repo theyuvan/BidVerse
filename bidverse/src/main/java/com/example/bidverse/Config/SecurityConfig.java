@@ -1,6 +1,5 @@
 package com.example.bidverse.Config;
 
-import com.example.bidverse.Security.AppUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,11 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-/**
- * Stateless REST API secured with HTTP Basic: every request to /buyer, /seller or /host
- * carries "Authorization: Basic base64(email:password)", checked against the users table.
- * CSRF protection is for browser session/cookie auth, which this API doesn't use, so it's off.
- */
+import com.example.bidverse.Security.AppUserDetailsService;
+
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -51,6 +48,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/ws/**", "/ws-sockjs/**").permitAll()
                         .requestMatchers("/buyer/**").hasRole("BUYER")
