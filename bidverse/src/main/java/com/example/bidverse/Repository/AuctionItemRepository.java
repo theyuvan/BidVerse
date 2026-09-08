@@ -30,7 +30,8 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
                 p.name             as "name",
                 p.description      as "description",
                 p.base_price       as "basePrice",
-                ai.status          as "auctionStatus"
+                ai.status          as "auctionStatus",
+                p.image_url        as "imageUrl"
             from auction_items ai
             join products p on p.product_id = ai.product_id
             where ai.room_id = :roomId
@@ -48,7 +49,8 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
                 c.name             as "categoryName",
                 p.base_price       as "basePrice",
                 ai.current_price   as "currentPrice",
-                ai.status          as "auctionStatus"
+                ai.status          as "auctionStatus",
+                p.image_url        as "imageUrl"
             from auction_items ai
             join products p on p.product_id = ai.product_id
             join categories c on c.category_id = p.category_id
@@ -66,7 +68,8 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
                 seller.name        as "sellerName",
                 p.base_price       as "basePrice",
                 ai.current_price   as "currentPrice",
-                ai.status          as "auctionStatus"
+                ai.status          as "auctionStatus",
+                p.image_url        as "imageUrl"
             from auction_items ai
             join products p on p.product_id = ai.product_id
             join categories c on c.category_id = p.category_id

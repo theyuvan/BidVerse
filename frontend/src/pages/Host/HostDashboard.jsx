@@ -1,26 +1,35 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getRooms, getProducts } from "../../services/hostService";
 import "./HostDashboard.css";
 
 function HostDashboard(){
     const [rooms, setRooms] = useState([]);
     const [products, setProducts] = useState([]);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        getRooms().then((response) => {
-            setRooms(response.data);
-        });
-        getProducts().then((response) => {
-            setProducts(response.data);
-        });
+        Promise.all([getRooms(), getProducts()])
+            .then(([roomsResponse, productsResponse]) => {
+                setRooms(roomsResponse.data);
+                setProducts(productsResponse.data);
+            })
+            .catch(() => setError("Unable to load dashboard data. Make sure the backend is running on port 8080."));
     }, []);
+    const upcomingRooms = rooms.filter(
+        (room) =>room.status?.toLowerCase() === "upcoming"
+    );
+    const liveRooms= rooms.filter(
+        (room) => room.status?.toLowerCase() === "live"
+    );
 
     return(
         <main className="host-page dashboard-page">
             <header className="page-header">
                 <h1>Host Dashboard</h1>
-                <button className="create-room-button"> + Create Room</button>
+                    <Link className="create-room-button" to="/host/rooms/create">+ Create Room</Link>
             </header>
+            {error && <p className="form-error" role="alert">{error}</p>}
             <section className="dashboard-overview">
                 <div className="overview-card">
                     <h3>Total Rooms</h3>
@@ -42,20 +51,49 @@ function HostDashboard(){
             </section>
 
             <section className="dashboard-section">
+            <div className="section-heading">
+                <h2>Upcoming Rooms</h2>
+                <span>{upcomingRooms.length} rooms</span>
+            </div>
+
+            <div className="dashboard-room-grid">
+                {upcomingRooms.map((room) => (
+                    <Link
+                        to={`/host/rooms/${room.roomId}`}
+                        className="dashboard-room-card"
+                        key={room.roomId}
+                    >
+                <h3>{room.title}</h3>
+                <span className={`room-status ${room.status?.trim().toLowerCase()}`}>{room.status}</span>
+                <dl>
+                    <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
+                    <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
+                </dl>
+            </Link>
+        ))}
+    </div>
+</section>
+
+            <section className="dashboard-section">
                 <div className="section-heading">
-                    <h2>My Rooms</h2>
-                    <span>{rooms.length} rooms</span>
+                    <h2>Live Rooms</h2>
+                    <span>{liveRooms.length} rooms</span>
                 </div>
+
                 <div className="dashboard-room-grid">
-                    {rooms.slice(0, 4).map((room) =>(
-                    <article className="dashboard-room-card" key={room.roomId}>
-                        <h3>{room.title}</h3>
-                        <span className="room-status">{room.status}</span>
-                        <dl>
-                            <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
-                            <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
-                        </dl>
-                    </article>
+                    {liveRooms.map((room) => (
+                        <Link
+                            to={`/host/rooms/${room.roomId}`}
+                            className="dashboard-room-card"
+                            key={room.roomId}
+                        >
+                            <h3>{room.title}</h3>
+                            <span className={`room-status ${room.status?.trim().toLowerCase()}`}>{room.status}</span>
+                            <dl>
+                                <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
+                                <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
+                            </dl>
+                        </Link>
                     ))}
                 </div>
             </section>

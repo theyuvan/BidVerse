@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createSellerProduct } from "../../services/sellerService";
+import { useEffect, useState } from "react";
+import { createSellerProduct, getSellerCategories } from "../../services/sellerService";
 
 const initialForm = {
     sellerId: "2",
@@ -14,6 +14,15 @@ function ListProduct() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [saving, setSaving] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+    useEffect(() => {
+        getSellerCategories()
+            .then((response) => setCategories(response.data))
+            .catch(() => setError("Unable to load categories."))
+            .finally(() => setCategoriesLoading(false));
+    }, []);
 
     const handleChange = (event) => {
         setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -47,14 +56,24 @@ function ListProduct() {
 
     return (
         <main className="host-page seller-page">
-            <header className="page-header">
+            <header className="page-header seller-page-header">
                 <span className="eyebrow">Seller workspace</span>
                 <h1>List a new product</h1>
                 <p>Every new listing starts as pending and goes to the host verification queue.</p>
             </header>
             <form className="seller-form" onSubmit={handleSubmit}>
                 <label><span>Seller ID</span><input type="number" name="sellerId" min="1" value={formData.sellerId} onChange={handleChange} required /></label>
-                <label><span>Category ID</span><input type="number" name="categoryId" min="1" value={formData.categoryId} onChange={handleChange} required /></label>
+                <label>
+                    <span>Category</span>
+                    <select name="categoryId" value={formData.categoryId} onChange={handleChange} required disabled={categoriesLoading}>
+                        <option value="">{categoriesLoading ? "Loading categories..." : "Choose a category"}</option>
+                        {categories.map((category) => (
+                            <option key={category.categoryId} value={category.categoryId}>
+                                {category.categoryId} - {category.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
                 <label className="seller-form-wide"><span>Product name</span><input type="text" name="name" value={formData.name} onChange={handleChange} required /></label>
                 <label className="seller-form-wide"><span>Description</span><textarea name="description" value={formData.description} onChange={handleChange} rows="4" required /></label>
                 <label><span>Base price</span><input type="number" name="basePrice" min="0.01" step="0.01" value={formData.basePrice} onChange={handleChange} required /></label>

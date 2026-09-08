@@ -12,6 +12,7 @@ public record CatalogItem(
         String categoryName,
         BigDecimal basePrice,
         BigDecimal currentPrice,
-        String auctionStatus
+        String auctionStatus,
+        String imageUrl
 ) {
 }

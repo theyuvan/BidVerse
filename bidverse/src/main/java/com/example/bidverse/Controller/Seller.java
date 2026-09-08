@@ -2,6 +2,7 @@ package com.example.bidverse.Controller;
 
 import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerDealDecision;
+import com.example.bidverse.Entity.Categories;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Dto.SellerProductHistory;
@@ -15,35 +16,39 @@ import java.util.List;
 @RestController
 @RequestMapping("/seller")
 public class Seller {
-
     private final SellerService sellerService;
-
     public Seller(SellerService sellerService) {
         this.sellerService = sellerService;
     }
-
-    @GetMapping("/{sellerId}/deals")
-    public ResponseEntity<List<Deal>> displayDeals(@PathVariable Long sellerId) {
-        return ResponseEntity.ok(sellerService.getDeals(sellerId));
-    }
-
-    @GetMapping("/deals/{dealId}")
-    public ResponseEntity<Deal> dealDetails(@PathVariable Long dealId) {
-        return ResponseEntity.ok(sellerService.getDetails(dealId));
-    }
-
-    @PostMapping("/deals/{dealId}/confirm")
-    public ResponseEntity<Deal> confirmDeal(@PathVariable Long dealId, @RequestBody SellerDealDecision request) {
-        return ResponseEntity.ok(sellerService.confirmDeal(dealId, request.decision(), request.reason()));
-    }
-
     @GetMapping("/products/{productId}")
-    public ResponseEntity<Product> getProductDetails(@PathVariable Long productId) {
-        return ResponseEntity.ok(sellerService.getProductDetails(productId));
+    public ResponseEntity<?> getProductDetails(
+        @PathVariable Long productId) {
+
+        Product product = sellerService.getProductDetails(productId);
+
+        if (product == null) {
+            return new ResponseEntity<>(
+                "Product Not Found",
+                HttpStatus.NOT_FOUND
+            );
+        }
+        return new ResponseEntity<>(
+            product,
+            HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/products")
+    public ResponseEntity<?> createProduct(@RequestBody Product product) {
+        sellerService.createProduct(product);
+        return new ResponseEntity<>(
+                "Product Created Successfully",
+                HttpStatus.CREATED
+        );
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts(@RequestParam Long sellerId) {
+    public ResponseEntity<List<Product>> getSellerProducts(@RequestParam Long sellerId) {
         return ResponseEntity.ok(sellerService.getProducts(sellerId));
     }
 
@@ -52,8 +57,30 @@ public class Seller {
         return ResponseEntity.ok(sellerService.getProductHistory(sellerId));
     }
 
-    @PostMapping("/products")
-    public ResponseEntity<Product> createProduct(@RequestBody CreateProductRequest request) {
-        return new ResponseEntity<>(sellerService.createProduct(request), HttpStatus.CREATED);
+    @GetMapping("/categories")
+    public ResponseEntity<List<Categories>> getCategories() {
+        return ResponseEntity.ok(sellerService.getCategories());
+    }
+
+    @GetMapping("/deals")
+    public ResponseEntity<List<Deal>> getSellerDeals(@RequestParam Long sellerId) {
+        return ResponseEntity.ok(sellerService.getDeals(sellerId));
+    }
+
+    @GetMapping("/deals/{dealId}")
+    public ResponseEntity<Deal> getDealDetails(@PathVariable Long dealId) {
+        return ResponseEntity.ok(sellerService.getDetails(dealId));
+    }
+
+    @PostMapping("/deals/{dealId}/decision")
+    public ResponseEntity<Deal> decideDeal(
+            @PathVariable Long dealId,
+            @RequestBody SellerDealDecision decision
+    ) {
+        return ResponseEntity.ok(sellerService.confirmDeal(
+                dealId,
+                decision.decision(),
+                decision.reason()
+        ));
     }
 }

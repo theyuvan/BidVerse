@@ -10,6 +10,7 @@ public record LiveAuctionItem(
         String sellerName,
         BigDecimal basePrice,
         BigDecimal currentPrice,
-        String auctionStatus
+        String auctionStatus,
+        String imageUrl
 ) {
 }

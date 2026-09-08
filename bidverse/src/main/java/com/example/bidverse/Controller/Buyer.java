@@ -36,6 +36,11 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.getRoomCatalog(roomId));
     }
 
+    @GetMapping("/rooms/{roomId}/details")
+    public ResponseEntity<Room> getRoomDetails(@PathVariable Long roomId) {
+        return ResponseEntity.ok(buyerService.getRoomDetails(roomId));
+    }
+
     @PostMapping("/rooms/{roomId}/book")
     public ResponseEntity<?> bookRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
         return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));

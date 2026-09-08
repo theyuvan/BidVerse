@@ -12,4 +12,5 @@ public interface ProductDisplayRow {
     String getDescription();
     BigDecimal getBasePrice();
     String getStatus();
+    String getImageUrl();
 }

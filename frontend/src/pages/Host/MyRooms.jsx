@@ -1,32 +1,65 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getRooms } from "../../services/hostService";
+import { getRooms, startRoom } from "../../services/hostService";
 import "./MyRooms.css";
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
+    const [filter,setFilter]=useState("all");
+    const [startingRoomId, setStartingRoomId] = useState(null);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
 
     useEffect(() => {
         getRooms()
             .then((response) => setRooms(response.data))
-            .catch((error) => console.error("Error fetching rooms:", error));
+            .catch(() => setError("Unable to load rooms."));
     }, []);
+
+    const filteredRooms = filter === "all" ? rooms : rooms.filter((room) => room.status?.toLowerCase() === filter);
+
+    const handleStartRoom = async (event, roomId) => {
+        event.stopPropagation();
+        setStartingRoomId(roomId);
+        setError("");
+
+        try {
+            const response = await startRoom(roomId);
+            setRooms((currentRooms) => currentRooms.map((room) =>
+                room.roomId === roomId ? response.data : room
+            ));
+        } catch (requestError) {
+            const responseData = requestError.response?.data;
+            setError(typeof responseData === "string"
+                ? responseData
+                : responseData?.message || "Unable to start this room.");
+        } finally {
+            setStartingRoomId(null);
+        }
+    };
 
     return (
         <main className="host-page rooms-page">
             <header className="page-header">
                 <h1>My Rooms</h1>
+                <p>Start an upcoming room and manage its approved auction products.</p>
             </header>
+            {error && <p className="form-error" role="alert">{error}</p>}
             <section className="rooms-section">
-                <div className="section-heading">
-                    <h2>Auction Rooms</h2>
-                    <span>{rooms.length} rooms</span>
+                <div className="room-filters">
+                    <button className ={filter ==="all"? "active" : ""} onClick={() => setFilter("all")}>All</button>
+                    <button className ={filter ==="live"? "active" : ""} onClick={() => setFilter("live")}>Live</button>
+                    <button className ={filter ==="upcoming"? "active" : ""} onClick={() => setFilter("upcoming")}>Upcoming</button>
+                    <button className ={filter ==="completed"? "active" : ""} onClick={() => setFilter("completed")}>Completed</button>
+
                 </div>
-                {rooms.length === 0 ? (
+                <div className="section-heading">
+                    <span>{filteredRooms.length} rooms</span>
+                </div>
+                {filteredRooms.length === 0 ? (
                     <p className="empty-state">No rooms available.</p>
                 ) : (
                     <div className="room-grid">
-                        {rooms.map((room) => (
+                        {filteredRooms.map((room) => (
                             <article
                                 className="room-card room-card-clickable"
                                 key={room.roomId}
@@ -40,12 +73,32 @@ function MyRooms() {
                                 tabIndex={0}
                             >
                                 <h3>{room.title}</h3>
-                                <span className="room-status">{room.status}</span>
+                                <span className={`room-status ${room.status?.trim().toLowerCase()}`}>{room.status}</span>
                                 <dl>
                                     <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
                                     <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
                                     <div><dt>Starts</dt><dd>{new Date(room.startTime).toLocaleString()}</dd></div>
                                 </dl>
+                                <div className="room-card-actions">
+                                    <button
+                                        type="button"
+                                        className="start-room-button"
+                                        disabled={startingRoomId === room.roomId || !["upcoming", "open"].includes(room.status?.toLowerCase())}
+                                        onClick={(event) => handleStartRoom(event, room.roomId)}
+                                    >
+                                        {startingRoomId === room.roomId ? "Starting..." : room.status?.toLowerCase() === "live" ? "Room ongoing" : "Start room"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="manage-room-button"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            navigate(`/host/rooms/${room.roomId}`);
+                                        }}
+                                    >
+                                        Manage products
+                                    </button>
+                                </div>
                             </article>
                         ))}
                     </div>

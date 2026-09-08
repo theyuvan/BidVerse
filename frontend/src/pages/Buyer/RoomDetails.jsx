@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-    getAvailableRooms,
+    getRoomDetails,
     getRoomCatalog,
     bookRoom
 } from "../../services/buyerService";
@@ -26,15 +26,12 @@ function RoomDetails() {
 
             try {
 
-                const roomsResponse = await getAvailableRooms();
+                const [roomResponse, productsResponse] = await Promise.all([
+                    getRoomDetails(roomId),
+                    getRoomCatalog(roomId),
+                ]);
 
-                const productsResponse = await getRoomCatalog(roomId);
-
-                const selectedRoom = roomsResponse.data.find(
-                    (room) => room.roomId === Number(roomId)
-                );
-
-                setRoom(selectedRoom);
+                setRoom(roomResponse.data);
                 setProducts(productsResponse.data);
 
             } catch {
@@ -82,11 +79,10 @@ function RoomDetails() {
         }
     };
 
-
     if (loading) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p>Loading room details...</p>
             </main>
         );
@@ -97,7 +93,7 @@ function RoomDetails() {
     if (error && !room) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p className="form-error">
                     {error}
                 </p>
@@ -110,7 +106,7 @@ function RoomDetails() {
     if (!room) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p>Room not found.</p>
             </main>
         );
@@ -124,7 +120,7 @@ function RoomDetails() {
 
 
     return (
-        <main className="room-details-page">
+        <main className="buyer-room-details-page">
 
             <Link
                 className="back-link"
@@ -231,6 +227,16 @@ function RoomDetails() {
 
             )}
 
+            {room.status?.toLowerCase() === "live" && (
+                <section className="booking-section">
+                    <h2>Live auction</h2>
+                    <p>Enter as buyer #{buyerId} to watch the timer and place bids.</p>
+                    <Link className="enter-room-link" to={`/buyer/rooms/${roomId}/live`}>
+                        Enter live auction
+                    </Link>
+                </section>
+            )}
+
 
             {/* PRODUCTS */}
 
@@ -263,6 +269,10 @@ function RoomDetails() {
                                 className="assigned-product"
                                 key={product.auctionItemId}
                             >
+
+                                {product.imageUrl && (
+                                    <img src={product.imageUrl} alt={product.productName} />
+                                )}
 
                                 <div>
 

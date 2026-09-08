@@ -8,6 +8,7 @@ public record RoomProduct(
         String name,
         String description,
         BigDecimal basePrice,
-        String auctionStatus
+        String auctionStatus,
+        String imageUrl
 ) {
 }

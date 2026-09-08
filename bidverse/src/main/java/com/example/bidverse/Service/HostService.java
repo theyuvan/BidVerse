@@ -1,7 +1,7 @@
 package com.example.bidverse.Service;
 
-import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Dto.RoomProduct;
+import com.example.bidverse.Dto.ProductDisplay;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -59,8 +58,6 @@ public class HostService {
     }
 
     public Room startRoom(Long roomId) {
-        // delegates to AuctionService so a host clicking "start now" and the scheduler's
-        // auto-start-at-scheduled-time can never race each other into double-starting a room
         return auctionService.startRoom(roomId);
     }
 
@@ -81,12 +78,16 @@ public class HostService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Product is already assigned to a room");
         }
 
-        auction_item item = new auction_item();
-        item.setRoomId(room.getRoomId());
-        item.setProductId(product.getProductId());
-        item.setStartPrice(product.getBasePrice());
-        item.setCurrentPrice(product.getBasePrice());
-        item.setStatus(AUCTION_ITEM_STATUS_WAITING);
+        auction_item item = new auction_item(
+                null,
+                room.getRoomId(),
+                product.getProductId(),
+                product.getBasePrice(),
+                product.getBasePrice(),
+                AUCTION_ITEM_STATUS_WAITING,
+                null,
+                null
+        );
 
         return auctionItemRepo.save(item);
     }
@@ -107,6 +108,14 @@ public class HostService {
             rows = productRepo.findDisplayProductsByStatus(normalizedStatus);
         }
 
+        return toProductDisplays(rows);
+    }
+
+    public List<ProductDisplay> getAvailableApprovedProducts() {
+        return toProductDisplays(productRepo.findAvailableApprovedProducts());
+    }
+
+    private List<ProductDisplay> toProductDisplays(List<ProductDisplayRow> rows) {
         return rows.stream()
                 .map(row -> new ProductDisplay(
                         row.getProductId(),
@@ -117,7 +126,8 @@ public class HostService {
                         row.getProductName(),
                         row.getDescription(),
                         row.getBasePrice(),
-                        row.getStatus()
+                        row.getStatus(),
+                        row.getImageUrl()
                 ))
                 .toList();
     }
@@ -143,7 +153,8 @@ public class HostService {
                 row.getName(),
                 row.getDescription(),
                 row.getBasePrice(),
-                row.getAuctionStatus()
+                row.getAuctionStatus(),
+                row.getImageUrl()
         );
     }
 

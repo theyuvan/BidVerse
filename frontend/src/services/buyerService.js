@@ -6,12 +6,14 @@ export const getAvailableRooms = () => {
 export const getRoomCatalog = (roomId) => {
     return api.get(`/buyer/rooms/${roomId}`);
 };
+export const getRoomDetails = (roomId) => {
+    return api.get(`/buyer/rooms/${roomId}/details`);
+};
 export const bookRoom = (roomId, buyerId) => {
     return api.post(`/buyer/rooms/${roomId}/book`, {
         buyerId
     });
 };
-
 export const getBuyerBookings = (buyerId) => {
     return api.get(`/buyer/${buyerId}/bookings`);
 };

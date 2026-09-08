@@ -82,10 +82,16 @@ public class BuyerService {
                             row.getCategoryName(),
                             row.getBasePrice(),
                             row.getCurrentPrice(),
-                            displayStatus
+                            displayStatus,
+                            row.getImageUrl()
                     );
                 })
                 .toList();
+    }
+
+    public Room getRoomDetails(Long roomId) {
+        return roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
     }
 
     public Room_Seat bookRoom(Long roomId, Long buyerId) {
@@ -222,7 +228,8 @@ public class BuyerService {
                         row.getSellerName(),
                         row.getBasePrice(),
                         row.getCurrentPrice(),
-                        row.getAuctionStatus()
+                        row.getAuctionStatus(),
+                        row.getImageUrl()
                 ))
                 .toList();
     }

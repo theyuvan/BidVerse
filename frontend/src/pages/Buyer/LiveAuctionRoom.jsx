@@ -202,6 +202,14 @@ function LiveAuctionRoom() {
                         </div>
                     </div>
 
+                    {currentProduct?.imageUrl && (
+                        <img
+                            className="current-product-image"
+                            src={currentProduct.imageUrl}
+                            alt={currentProduct.productName}
+                        />
+                    )}
+
                     <p className="lot-description">
                         {currentProduct?.description || "The host will present the product during bidding."}
                     </p>
@@ -270,6 +278,9 @@ function LiveAuctionRoom() {
                             key={product.auctionItemId}
                             className={product.auctionItemId === auction?.auctionItemId ? "active" : ""}
                         >
+                            {product.imageUrl && (
+                                <img src={product.imageUrl} alt="" />
+                            )}
                             <div>
                                 <span>Lot {product.auctionItemId}</span>
                                 <h3>{product.productName}</h3>

@@ -3,10 +3,11 @@ import "../host/Navbar.css";
 
 function BuyerNavbar() {
     return (
-        <nav className="navbar">
+        <nav className="navbar" aria-label="Buyer navigation">
             <Link className="navbar-brand" to="/buyer">Bidverse</Link>
             <div className="navbar-links">
-                <Link to="/buyer">Auction rooms</Link>
+                <Link to="/buyer">Available Rooms</Link>
+                <Link to="/host/dashboard">Host workspace</Link>
             </div>
         </nav>
     );

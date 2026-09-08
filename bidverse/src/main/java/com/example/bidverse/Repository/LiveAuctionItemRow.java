@@ -11,4 +11,5 @@ public interface LiveAuctionItemRow {
     BigDecimal getBasePrice();
     BigDecimal getCurrentPrice();
     String getAuctionStatus();
+    String getImageUrl();
 }

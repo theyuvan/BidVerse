@@ -50,7 +50,7 @@ function MyProducts() {
 
     return (
         <main className="host-page seller-page">
-            <header className="page-header">
+            <header className="page-header seller-page-header">
                 <span className="eyebrow">Seller workspace</span>
                 <h1>My products</h1>
                 <p>Follow each listing from host review to auction sale.</p>
@@ -76,6 +76,7 @@ function MyProducts() {
                                 </div>
                                 <p>{product.description || "No description available."}</p>
                                 <dl className="seller-product-meta">
+                                    <div><dt>Category</dt><dd>{product.categoryName ? `${product.categoryName} (#${product.categoryId})` : `ID ${product.categoryId}`}</dd></div>
                                     <div><dt>Base price</dt><dd>₹{product.basePrice}</dd></div>
                                     <div><dt>Room</dt><dd>{product.roomId ? `#${product.roomId}` : "Not assigned"}</dd></div>
                                     <div><dt>Auction</dt><dd>{product.auctionStatus || "Not started"}</dd></div>
