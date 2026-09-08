@@ -1,9 +1,11 @@
 package com.example.bidverse.Controller;
 
 import com.example.bidverse.Dto.BookSeatRequest;
+import com.example.bidverse.Dto.BookingSummary;
+import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
+import com.example.bidverse.Dto.DealDecisionRequest;
 import com.example.bidverse.Dto.LiveAuctionItem;
-import com.example.bidverse.Dto.RejectRequest;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.BuyerService;
 
@@ -52,6 +54,14 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
     }
 
+    @PostMapping("/rooms/{roomId}/enter")
+    public ResponseEntity<List<LiveAuctionItem>> enterRoom(
+            @PathVariable Long roomId,
+            @RequestParam Long buyerId
+    ) {
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
+    }
+
     @GetMapping("/rooms/available")
     public ResponseEntity<List<Room>> getAvailableRooms() {
         return ResponseEntity.ok(buyerService.getAvailableRooms());
@@ -68,17 +78,28 @@ public class Buyer {
     }
 
     @GetMapping("/deals/{dealId}")
-    public ResponseEntity<?> getDealById(@PathVariable Long dealId) {
-        return ResponseEntity.ok(buyerService.getDealId(dealId));
+    public ResponseEntity<BuyerWonDeal> getDealById(@PathVariable Long dealId) {
+        return ResponseEntity.ok(buyerService.getDealDetails(dealId));
     }
 
-    @PostMapping("/deals/{dealId}/Confirm")
-    public ResponseEntity<?> confirmDeal(@PathVariable Long dealId) {
-        return ResponseEntity.ok(buyerService.confirmDeal(dealId));
+    // GET /buyer/{buyerId}/deals -> everything this buyer has won (mirrors /seller/{sellerId}/deals)
+    @GetMapping("/{buyerId}/deals")
+    public ResponseEntity<List<BuyerWonDeal>> displayDeals(@PathVariable Long buyerId) {
+        return ResponseEntity.ok(buyerService.getDeals(buyerId));
     }
 
-    @PostMapping("/deals/{dealId}/Reject")
-    public ResponseEntity<?> rejectDeal(@PathVariable Long dealId, @RequestBody RejectRequest reason) {
-        return ResponseEntity.ok(buyerService.rejectDeal(dealId, reason.getReason()));
+    @GetMapping("/{buyerId}/bookings")
+    public ResponseEntity<List<BookingSummary>> displayBookings(
+            @PathVariable Long buyerId,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
+    }
+
+    @PostMapping("/deals/{dealId}/decision")
+    public ResponseEntity<BuyerWonDeal> decideDeal(
+            @PathVariable Long dealId,
+            @RequestBody DealDecisionRequest decision
+    ) {
+        return ResponseEntity.ok(buyerService.decideDeal(dealId, decision.decision(), decision.reason()));
     }
 }

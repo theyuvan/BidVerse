@@ -2,6 +2,7 @@ package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerProductHistory;
+import com.example.bidverse.Dto.SellerDealView;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Categories;
@@ -9,6 +10,7 @@ import com.example.bidverse.Repository.CategoryRepository;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.SellerProductHistoryRow;
+import com.example.bidverse.Repository.SellerDealViewRow;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,9 +22,11 @@ import java.util.List;
 public class SellerService {
 
     private static final String DEAL_STATUS_PENDING = "pending";
-    private static final String DEAL_STATUS_CONFIRMED = "confirmed";
+    private static final String DEAL_STATUS_COMPLETED = "completed";
     private static final String DEAL_STATUS_CANCELLED = "cancelled";
-    private static final String DECISION_ACCEPT = "accept";
+    private static final String PARTY_STATUS_CONFIRMED = "confirmed";
+    private static final String PARTY_STATUS_REJECTED = "rejected";
+    private static final String DECISION_CONFIRM = "confirm";
     private static final String DECISION_REJECT = "reject";
     private static final String PRODUCT_STATUS_PENDING = "pending";
 
@@ -44,40 +48,74 @@ public class SellerService {
         return categoryRepository.findAll();
     }
 
-    public List<Deal> getDeals(Long sellerId) {
-        return dealRepository.findBySellerId(sellerId);
+    public List<SellerDealView> getDeals(Long sellerId) {
+        return dealRepository.findDealViewsBySellerId(sellerId).stream()
+                .map(this::toSellerDealView)
+                .toList();
     }
 
-    public Deal getDetails(Long dealId) {
-        return dealRepository.findById(dealId)
+    public SellerDealView getDetails(Long dealId) {
+        return dealRepository.findDealViewById(dealId)
+                .map(this::toSellerDealView)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
     }
 
-    public Deal confirmDeal(Long dealId, String decision, String reason) {
+    @org.springframework.transaction.annotation.Transactional
+    public SellerDealView confirmDeal(Long dealId, String decision, String reason) {
         String currDecision = decision == null ? "" : decision.trim().toLowerCase();
 
-        if (!currDecision.equals(DECISION_ACCEPT) && !currDecision.equals(DECISION_REJECT)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be ACCEPT or REJECT");
+        if (!currDecision.equals(DECISION_CONFIRM) && !currDecision.equals(DECISION_REJECT)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be CONFIRM or REJECT");
         }
 
-        Deal deal = dealRepository.findById(dealId)
+        Deal deal = dealRepository.findByIdForDecision(dealId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
 
         if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is not pending confirmation");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is already completed or cancelled");
+        }
+        if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getSellerStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Seller decision has already been submitted");
         }
 
         if (currDecision.equals(DECISION_REJECT)) {
             if (reason == null || reason.isBlank()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
             }
+            deal.setSellerStatus(PARTY_STATUS_REJECTED);
             deal.setStatus(DEAL_STATUS_CANCELLED);
             deal.setCancelReason(reason.trim());
         } else {
-            deal.setStatus(DEAL_STATUS_CONFIRMED);
+            deal.setSellerStatus(PARTY_STATUS_CONFIRMED);
+            if (PARTY_STATUS_CONFIRMED.equalsIgnoreCase(deal.getBuyerStatus())) {
+                deal.setStatus(DEAL_STATUS_COMPLETED);
+            }
         }
 
-        return dealRepository.save(deal);
+        dealRepository.saveAndFlush(deal);
+        return getDetails(dealId);
+    }
+
+    private SellerDealView toSellerDealView(SellerDealViewRow row) {
+        return new SellerDealView(
+                row.getDealId(),
+                row.getAuctionItemId(),
+                row.getRoomId(),
+                row.getProductId(),
+                row.getProductName(),
+                row.getProductDescription(),
+                row.getImageUrl(),
+                row.getFinalPrice(),
+                row.getStatus(),
+                row.getCancelReason(),
+                row.getBuyerStatus(),
+                row.getSellerStatus(),
+                row.getSellerId(),
+                row.getBuyerId(),
+                row.getBuyerName(),
+                row.getBuyerEmail(),
+                row.getBuyerPhone()
+        );
     }
 
     public Product getProductDetails(Long productId) {
@@ -104,8 +142,8 @@ public class SellerService {
     private SellerProductHistory toSellerProductHistory(SellerProductHistoryRow row) {
         return new SellerProductHistory(
                 row.getProductId(),
-            row.getCategoryId(),
-            row.getCategoryName(),
+                row.getCategoryId(),
+                row.getCategoryName(),
                 row.getName(),
                 row.getDescription(),
                 row.getBasePrice(),

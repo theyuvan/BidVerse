@@ -11,6 +11,10 @@ public record BookingSummary(
         OffsetDateTime startTime,
         BigDecimal advanceAmount,
         String advanceStatus,
-        boolean canJoin
+        boolean canJoin,
+        OffsetDateTime waitingStartedAt,
+        OffsetDateTime joinedAt,
+        String attendanceStatus,
+        String refundStatus
 ) {
 }

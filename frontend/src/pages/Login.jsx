@@ -16,13 +16,13 @@ function Login() {
 
             if(response.data === "Login successful"){
                 if(role === "buyer"){
-                    navigate("/buyer/dashboard");
+                    navigate("/buyer");
                 }
                 else if(role === "seller"){
                     navigate("/seller");
                 }
                 else if( role === "host"){
-                    navigate("/host/dashboard"); 
+                    navigate("/host/dashboard");
                 }
             }
         }

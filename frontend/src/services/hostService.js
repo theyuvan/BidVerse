@@ -17,7 +17,7 @@ export const startRoom = (roomId) => {
 };
 
 export const assignProductToRoom = (productId, roomId) => {
-    return api.post(`http://localhost:8080/host/products/${productId}/assign-room`, { roomId });
+    return api.post(`/host/products/${productId}/assign-room`, { roomId });
 };
 
 export const createRoom = (room) => {
@@ -33,7 +33,7 @@ export const getProducts = () => {
 };
 
 export const getAvailableProducts = () => {
-    return api.get("http://localhost:8080/host/products/available");
+    return api.get("/host/products/available");
 };
 
 export const verifyProduct = (productId, status) => {

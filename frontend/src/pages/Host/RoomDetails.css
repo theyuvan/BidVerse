@@ -47,6 +47,26 @@
     color: #5B5FEF;
     font-size: 14px;
     font-weight: 600;
+.room-summary-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.room-summary-heading button {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: #ffffff;
+    background: #5b5fef;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.room-summary-heading button:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
 .room-summary dl {
@@ -134,6 +154,21 @@
 .product-details h3 {
     margin: 0 0 8px;
     color: #1E293B;
+.host-page .assigned-product img {
+    width: 72px;
+    height: 72px;
+    margin-right: 16px;
+    border-radius: 9px;
+    object-fit: cover;
+}
+
+.host-page .assigned-product > div {
+    flex: 1;
+}
+
+.assigned-product h3 {
+    margin: 0 0 6px;
+    color: #1e293b;
     font-size: 16px;
 }
 

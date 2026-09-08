@@ -3,14 +3,15 @@ import { Link, useParams } from "react-router-dom";
 import {
     getRoomDetails,
     getRoomCatalog,
-    bookRoom,
-    joinRoom
+    bookRoom
 } from "../../services/buyerService";
+import { getBuyerId } from "../../services/buyerSession";
 import "./RoomDetails.css";
 
 function RoomDetails() {
 
     const { roomId } = useParams();
+    const buyerId = getBuyerId();
 
     const [room, setRoom] = useState(null);
     const [products, setProducts] = useState([]);
@@ -18,8 +19,6 @@ function RoomDetails() {
     const [error, setError] = useState("");
     const [booking, setBooking] = useState(false);
     const [bookingMessage, setBookingMessage] = useState("");
-    const [liveItems, setLiveItems] = useState([]);
-    const [joining, setJoining] = useState(false);
 
     useEffect(() => {
 
@@ -59,12 +58,9 @@ function RoomDetails() {
 
         try {
 
-            // Temporary buyer ID
-            const buyerId = 2;
-
             await bookRoom(roomId, buyerId);
 
-            setBookingMessage("Room booked successfully.");
+            setBookingMessage(`Room booked for buyer #${buyerId}. Return to buyer rooms to open the waiting room.`);
 
         } catch (error) {
 
@@ -73,7 +69,7 @@ function RoomDetails() {
             setError(
                 typeof responseData === "string"
                     ? responseData
-                    : responseData?.message || "Unable to book room."
+                    : responseData?.detail || responseData?.message || "Unable to book room."
             );
 
         } finally {
@@ -83,28 +79,10 @@ function RoomDetails() {
         }
     };
 
-    const handleJoinRoom = async () => {
-        setJoining(true);
-        setError("");
-        try {
-            const response = await joinRoom(roomId, 2);
-            setLiveItems(response.data);
-            setBookingMessage("You joined the live auction.");
-        } catch (requestError) {
-            const responseData = requestError.response?.data;
-            setError(typeof responseData === "string"
-                ? responseData
-                : responseData?.message || "Unable to join the live auction.");
-        } finally {
-            setJoining(false);
-        }
-    };
-
-
     if (loading) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p>Loading room details...</p>
             </main>
         );
@@ -115,7 +93,7 @@ function RoomDetails() {
     if (error && !room) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p className="form-error">
                     {error}
                 </p>
@@ -128,7 +106,7 @@ function RoomDetails() {
     if (!room) {
 
         return (
-            <main className="room-details-page">
+            <main className="buyer-room-details-page">
                 <p>Room not found.</p>
             </main>
         );
@@ -142,7 +120,7 @@ function RoomDetails() {
 
 
     return (
-        <main className="room-details-page">
+        <main className="buyer-room-details-page">
 
             <Link
                 className="back-link"
@@ -249,25 +227,13 @@ function RoomDetails() {
 
             )}
 
-            {room.status?.toLowerCase() === "live" && (
+            {["waiting", "live"].includes(room.status?.toLowerCase()) && (
                 <section className="booking-section">
-                    <h2>Live auction</h2>
-                    <button onClick={handleJoinRoom} disabled={joining}>
-                        {joining ? "Joining..." : "Join live auction"}
-                    </button>
-                    {liveItems.length > 0 && (
-                        <div className="assigned-product-list">
-                            {liveItems.map((item) => (
-                                <article className="assigned-product" key={item.auctionItemId}>
-                                    <div>
-                                        <h3>{item.productName}</h3>
-                                        <p>{item.categoryName || "Uncategorized"} · Seller {item.sellerName || "Unknown"}</p>
-                                    </div>
-                                    <strong>₹{item.currentPrice}</strong>
-                                </article>
-                            ))}
-                        </div>
-                    )}
+                    <h2>{room.status?.toLowerCase() === "waiting" ? "Waiting room is open" : "Live auction"}</h2>
+                    <p>Enter as buyer #{buyerId} to record attendance and join the auction.</p>
+                    <Link className="enter-room-link" to={`/buyer/rooms/${roomId}/live`}>
+                        Enter auction room
+                    </Link>
                 </section>
             )}
 
@@ -303,6 +269,10 @@ function RoomDetails() {
                                 className="assigned-product"
                                 key={product.auctionItemId}
                             >
+
+                                {product.imageUrl && (
+                                    <img src={product.imageUrl} alt={product.productName} />
+                                )}
 
                                 <div>
 

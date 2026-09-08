@@ -1,102 +1,105 @@
-.room-details-page {
-    padding: 30px;
+.buyer-room-details-page {
+    min-height: 100vh;
+    padding: 110px 40px 40px;
+    box-sizing: border-box;
+    background: #f6f3ec;
 }
 
-.back-link {
+.buyer-room-details-page .back-link {
     display: inline-block;
     margin-bottom: 20px;
     text-decoration: none;
 }
 
-.page-header {
+.buyer-room-details-page .page-header {
     margin-bottom: 25px;
 }
 
-.page-header h1 {
+.buyer-room-details-page .page-header h1 {
     margin-bottom: 8px;
 }
 
-.room-summary {
+.buyer-room-details-page .room-summary,
+.buyer-room-details-page .booking-section {
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 12px;
+    background: #ffffff;
     margin-bottom: 30px;
 }
 
-.room-status {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    text-transform: capitalize;
+.buyer-room-details-page .room-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
 }
 
-.room-summary dl {
-    display: flex;
-    gap: 40px;
-    margin: 0;
-}
-
-.room-summary dl div {
+.buyer-room-details-page .room-summary > div {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-.room-summary dt {
-    font-weight: bold;
-}
-
-.room-summary dd {
-    margin: 0;
-}
-
-.room-products-section {
+.buyer-room-details-page .room-products-section {
     margin-top: 30px;
 }
 
-.section-heading {
+.buyer-room-details-page .section-heading {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 
-.section-heading h2 {
+.buyer-room-details-page .section-heading h2 {
     margin: 0;
 }
 
-.assigned-product-list {
+.buyer-room-details-page .assigned-product-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
 
-.assigned-product {
+.buyer-room-details-page .assigned-product {
     padding: 20px;
     border: 1px solid #ddd;
     border-radius: 12px;
+    background: #ffffff;
 }
 
-.assigned-product h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
+.buyer-room-details-page .assigned-product img {
+    width: 100%;
+    height: 180px;
+    margin-bottom: 14px;
+    border-radius: 9px;
+    object-fit: cover;
 }
 
-.assigned-product p {
+.buyer-room-details-page .assigned-product h3 {
+    margin: 0 0 10px;
+}
+
+.buyer-room-details-page .assigned-product p {
     margin-bottom: 12px;
 }
 
-.assigned-product small {
-    display: block;
-}
-
-.empty-state {
+.buyer-room-details-page .empty-state {
     padding: 20px;
     text-align: center;
 }
 
-.form-error {
+.buyer-room-details-page .form-error {
     padding: 15px;
     border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+    .buyer-room-details-page {
+        padding: 96px 18px 30px;
+    }
+
+    .buyer-room-details-page .room-summary {
+        grid-template-columns: 1fr;
+    }
 }

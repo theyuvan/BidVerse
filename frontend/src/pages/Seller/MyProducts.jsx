@@ -66,8 +66,7 @@ function MyProducts() {
             {!loading && !error && products.length > 0 && (
                 <div className="seller-product-list">
                     {products.map((product) => {
-                        const dealStatus = product.dealStatus?.toLowerCase();
-                        const sold = ["sold", "confirmed", "completed"].includes(dealStatus);
+                        const sold = product.auctionStatus?.toLowerCase() === "sold" && Boolean(product.buyerId);
                         return (
                             <article className="seller-product-card" key={product.productId}>
                                 <div className="seller-product-heading">

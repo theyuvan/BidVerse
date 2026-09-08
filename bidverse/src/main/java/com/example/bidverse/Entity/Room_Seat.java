@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -27,5 +28,11 @@ public class Room_Seat {
     private BigDecimal advanceAmount;
     @Column(name = "advance_status", nullable = false)
     private String advanceStatus;
+    @Column(name = "joined_at")
+    private OffsetDateTime joinedAt;
+    @Column(name = "attendance_status", nullable = false)
+    private String attendanceStatus;
+    @Column(name = "refund_status", nullable = false)
+    private String refundStatus;
     
 }

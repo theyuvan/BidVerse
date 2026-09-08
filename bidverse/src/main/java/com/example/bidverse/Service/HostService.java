@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -29,17 +28,19 @@ public class HostService {
             STATUS_PENDING,
             STATUS_REJECTED
     );
-    private static final String ROOM_STATUS_LIVE = "live";
+    private static final Set<String> EDITABLE_ROOM_STATUSES = Set.of("upcoming", "open");
     private static final String AUCTION_ITEM_STATUS_WAITING = "waiting";
 
     private final ProductRepository productRepo;
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
+    private final AuctionService auctionService;
 
-    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo) {
+    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, AuctionService auctionService) {
         this.productRepo = productRepo;
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
+        this.auctionService = auctionService;
     }
 
     public Product verifyProduct(Long productId, String status) {
@@ -57,17 +58,7 @@ public class HostService {
     }
 
     public Room startRoom(Long roomId) {
-        Room room = roomRepo.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
-
-        String currentStatus = room.getStatus() == null ? "" : room.getStatus().trim().toLowerCase();
-        if (!currentStatus.equals("upcoming") && !currentStatus.equals("open")) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Only an upcoming room can be started");
-        }
-
-        room.setStatus(ROOM_STATUS_LIVE);
-        room.setStartTime(OffsetDateTime.now());
-        return roomRepo.save(room);
+        return auctionService.startRoom(roomId);
     }
 
     public auction_item assignProductToRoom(Long productId, Long roomId) {
@@ -79,7 +70,7 @@ public class HostService {
 
         Room room = roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        if (ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus())) {
+        if (!EDITABLE_ROOM_STATUSES.contains(room.getStatus().toLowerCase())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add products to a room that has already started");
         }
 

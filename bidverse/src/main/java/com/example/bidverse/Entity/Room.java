@@ -32,5 +32,9 @@ public class Room {
     private String status;
     @Column(name = "start_time", nullable = false)
     private OffsetDateTime startTime;
+    @Column(name = "waiting_started_at")
+    private OffsetDateTime waitingStartedAt;
+    @Column(name = "live_started_at")
+    private OffsetDateTime liveStartedAt;
 
 }

@@ -17,10 +17,8 @@ function SellerDeals() {
             const response = await getSellerDeals(Number(id));
             setDeals(response.data);
         } catch (requestError) {
-            const responseData = requestError.response?.data;
-            setError(typeof responseData === "string"
-                ? responseData
-                : responseData?.message || "Unable to load seller deals.");
+            const data = requestError.response?.data;
+            setError(data?.detail || data?.message || "Unable to load seller deals.");
         } finally {
             setLoading(false);
         }
@@ -28,33 +26,28 @@ function SellerDeals() {
 
     useEffect(() => {
         let cancelled = false;
-
         getSellerDeals(Number(INITIAL_SELLER_ID))
             .then((response) => {
                 if (!cancelled) setDeals(response.data);
             })
             .catch((requestError) => {
                 if (cancelled) return;
-                const responseData = requestError.response?.data;
-                setError(typeof responseData === "string"
-                    ? responseData
-                    : responseData?.message || "Unable to load seller deals.");
+                const data = requestError.response?.data;
+                setError(data?.detail || data?.message || "Unable to load seller deals.");
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
             });
 
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, []);
 
     return (
-        <main className="host-page seller-page">
+        <main className="seller-page">
             <header className="page-header seller-page-header">
                 <span className="eyebrow">Seller workspace</span>
-                <h1>Deal verification</h1>
-                <p>Review winning bids and confirm the next step for each buyer.</p>
+                <h1>My deals</h1>
+                <p>Contact winning buyers, then confirm or reject each deal.</p>
             </header>
 
             <form className="seller-filter" onSubmit={(event) => { event.preventDefault(); loadDeals(); }}>
@@ -64,15 +57,15 @@ function SellerDeals() {
             </form>
 
             {error && <p className="form-error" role="alert">{error}</p>}
-            {!loading && !error && deals.length === 0 && <p className="empty-state">There are no deals waiting for verification.</p>}
+            {!loading && !error && deals.length === 0 && <p className="empty-state">There are no auction deals for this seller.</p>}
             {!error && deals.length > 0 && (
                 <section className="deal-list" aria-label="Seller deals">
                     {deals.map((deal) => (
                         <Link className="deal-list-card" to={`/seller/deals/${deal.dealId}`} key={deal.dealId}>
                             <div>
-                                <span className="product-id">Deal #{deal.dealId}</span>
-                                <h2>Auction item #{deal.auctionItemId}</h2>
-                                <p>Buyer #{deal.buyerId} · Seller #{deal.sellerId}</p>
+                                <span className="product-id">Deal #{deal.dealId} · Room #{deal.roomId}</span>
+                                <h2>{deal.productName || `Auction item #${deal.auctionItemId}`}</h2>
+                                <p>Buyer: {deal.buyerName || `#${deal.buyerId}`}</p>
                             </div>
                             <div className="deal-list-summary">
                                 <strong>₹{deal.finalPrice}</strong>

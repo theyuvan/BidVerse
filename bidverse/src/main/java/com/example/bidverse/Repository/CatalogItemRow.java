@@ -11,9 +11,10 @@ public interface CatalogItemRow {
     String getProductName();
 
     String getDescription();
-
-    BigDecimal getBasePrice();
-
+    Long getCategoryId();
     String getCategoryName();
+    BigDecimal getBasePrice();
+    BigDecimal getCurrentPrice();
+    String getAuctionStatus();
     String getImageUrl();
 }

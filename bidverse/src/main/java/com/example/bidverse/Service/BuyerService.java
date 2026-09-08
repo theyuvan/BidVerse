@@ -1,18 +1,21 @@
 package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.BookingSummary;
+import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.LiveAuctionItem;
-import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Deal;
+import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Repository.AuctionItemRepository;
+import com.example.bidverse.Repository.BuyerWonDealRow;
+import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
-import com.example.bidverse.Repository.DealRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -25,14 +28,25 @@ import java.util.stream.Collectors;
 @Service
 public class BuyerService {
 
-    private static final List<String> STARTED_ROOM_STATUSES = List.of("live", "completed", "cancelled");
+    private static final List<String> STARTED_ROOM_STATUSES = List.of("waiting", "live", "completed", "cancelled");
     private static final List<String> BOOKABLE_ROOM_STATUSES = List.of("upcoming", "open");
     private static final List<String> UPCOMING_ROOM_STATUSES = List.of("upcoming", "open");
     private static final String ROOM_STATUS_LIVE = "live";
+    private static final String ROOM_STATUS_WAITING = "waiting";
     private static final String ROOM_STATUS_COMPLETED = "completed";
     private static final String ROOM_STATUS_CANCELLED = "cancelled";
     private static final String ADVANCE_STATUS_PAID = "paid";
-    private static final int BID_DURATION_SECONDS = 90;
+    private static final String ATTENDANCE_STATUS_BOOKED = "booked";
+    private static final String ATTENDANCE_STATUS_JOINED = "joined";
+    private static final String REFUND_STATUS_PENDING = "pending";
+    private static final String DEAL_STATUS_PENDING = "pending";
+    private static final String DEAL_STATUS_COMPLETED = "completed";
+    private static final String DEAL_STATUS_CANCELLED = "cancelled";
+    private static final String PARTY_STATUS_CONFIRMED = "confirmed";
+    private static final String PARTY_STATUS_REJECTED = "rejected";
+    private static final String DECISION_CONFIRM = "confirm";
+    private static final String DECISION_REJECT = "reject";
+    private static final int BID_DURATION_SECONDS = 10;
     private static final long MIN_ROOM_DURATION_SECONDS = 3600;
 
     private final RoomRepo roomRepo;
@@ -45,6 +59,33 @@ public class BuyerService {
         this.auctionItemRepo = auctionItemRepo;
         this.roomSeatRepo = roomSeatRepo;
         this.dealRepo = dealRepo;
+    }
+
+    public List<BuyerWonDeal> getDeals(Long buyerId) {
+        return dealRepo.findWonDealsByBuyerId(buyerId).stream()
+                .map(this::toBuyerWonDeal)
+                .toList();
+    }
+
+    private BuyerWonDeal toBuyerWonDeal(BuyerWonDealRow row) {
+        return new BuyerWonDeal(
+                row.getDealId(),
+                row.getAuctionItemId(),
+                row.getRoomId(),
+                row.getProductId(),
+                row.getProductName(),
+                row.getProductDescription(),
+                row.getImageUrl(),
+                row.getFinalPrice(),
+                row.getDealStatus(),
+                row.getCancelReason(),
+                row.getBuyerStatus(),
+                row.getSellerStatus(),
+                row.getSellerId(),
+                row.getSellerName(),
+                row.getSellerEmail(),
+                row.getSellerPhone()
+        );
     }
 
     public List<Room> getAvailableRooms() {
@@ -61,15 +102,27 @@ public class BuyerService {
     public List<CatalogItem> getRoomCatalog(Long roomId) {
         roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        return auctionItemRepo.findCatalogByRoomId(roomId).stream()
-                .map(row -> new CatalogItem(
-                        row.getAuctionItemId(),
-                        row.getProductId(),
-                        row.getProductName(),
-                        row.getDescription(),
-                        row.getCategoryName(),
-                        row.getImageUrl()
-                ))
+        var rows = auctionItemRepo.findCatalogByRoomId(roomId);
+        return java.util.stream.IntStream.range(0, rows.size())
+                .mapToObj(index -> {
+                    var row = rows.get(index);
+                    String displayStatus = "waiting".equals(row.getAuctionStatus())
+                            ? "upcoming"
+                            : row.getAuctionStatus();
+                    return new CatalogItem(
+                            index + 1,
+                            row.getAuctionItemId(),
+                            row.getProductId(),
+                            row.getProductName(),
+                            row.getDescription(),
+                            row.getCategoryId(),
+                            row.getCategoryName(),
+                            row.getBasePrice(),
+                            row.getCurrentPrice(),
+                            displayStatus,
+                            row.getImageUrl()
+                    );
+                })
                 .toList();
     }
 
@@ -90,6 +143,11 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer already has a seat booked in this room");
         }
 
+        List<CatalogItem> catalogItemList = getRoomCatalog(roomId);
+        if(catalogItemList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room has no products. Booking is not allowed.");
+        }
+
         assertNoOverlappingBooking(room, buyerId);
 
         long bookedSeats = roomSeatRepo.countByRoomId(roomId);
@@ -102,6 +160,8 @@ public class BuyerService {
         seat.setBuyerId(buyerId);
         seat.setAdvanceAmount(room.getAdvanceAmount());
         seat.setAdvanceStatus(ADVANCE_STATUS_PAID);
+        seat.setAttendanceStatus(ATTENDANCE_STATUS_BOOKED);
+        seat.setRefundStatus(REFUND_STATUS_PENDING);
 
         return roomSeatRepo.save(seat);
     }
@@ -149,8 +209,10 @@ public class BuyerService {
     public List<BookingSummary> displayBookings(Long buyerId, String status) {
 
         String filter = status == null || status.isBlank() ? null : status.trim().toLowerCase();
-        if (filter != null && !filter.equals("upcoming") && !filter.equals("live") && !filter.equals("completed")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must be one of: upcoming, live, completed");
+        if (filter != null && !filter.equals("upcoming") && !filter.equals("waiting")
+                && !filter.equals("live") && !filter.equals("completed")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "status must be one of: upcoming, waiting, live, completed");
         }
 
         List<Room_Seat> bookings = roomSeatRepo.findByBuyerId(buyerId);
@@ -171,7 +233,12 @@ public class BuyerService {
                             room == null ? null : room.getStartTime(),
                             seat.getAdvanceAmount(),
                             seat.getAdvanceStatus(),
-                            ROOM_STATUS_LIVE.equalsIgnoreCase(roomStatus)
+                            ROOM_STATUS_WAITING.equalsIgnoreCase(roomStatus)
+                                    || ROOM_STATUS_LIVE.equalsIgnoreCase(roomStatus),
+                            room == null ? null : room.getWaitingStartedAt(),
+                            seat.getJoinedAt(),
+                            seat.getAttendanceStatus(),
+                            seat.getRefundStatus()
                     );
                 })
                 .filter(booking -> matchesStatusFilter(booking.roomStatus(), filter))
@@ -185,22 +252,37 @@ public class BuyerService {
         String normalizedStatus = roomStatus == null ? "" : roomStatus.toLowerCase();
         return switch (filter) {
             case "upcoming" -> UPCOMING_ROOM_STATUSES.contains(normalizedStatus);
+            case "waiting" -> ROOM_STATUS_WAITING.equals(normalizedStatus);
             case "live" -> ROOM_STATUS_LIVE.equals(normalizedStatus);
             case "completed" -> ROOM_STATUS_COMPLETED.equals(normalizedStatus);
             default -> false;
         };
     }
 
+    @Transactional
     public List<LiveAuctionItem> joinRoom(Long roomId, Long buyerId) {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        if (!ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room is not live yet");
+        String roomStatus = room.getStatus() == null ? "" : room.getStatus().toLowerCase();
+        if (ROOM_STATUS_COMPLETED.equals(roomStatus)) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Auction has completed");
+        }
+        if (ROOM_STATUS_CANCELLED.equals(roomStatus)) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Auction was cancelled");
+        }
+        if (!ROOM_STATUS_WAITING.equals(roomStatus) && !ROOM_STATUS_LIVE.equals(roomStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waiting room is not open yet");
         }
 
         if (!roomSeatRepo.existsByRoomIdAndBuyerId(roomId, buyerId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You must book a seat in this room before joining");
+        }
+
+        int joined = roomSeatRepo.markBuyerJoined(roomId, buyerId, OffsetDateTime.now());
+        if (joined == 0) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "The 90-second entry period ended and your advance was forfeited");
         }
 
         return auctionItemRepo.findLiveAuctionItemsByRoomId(roomId).stream()
@@ -226,41 +308,44 @@ public class BuyerService {
         return dealRepo.findById(dealId).map(Collections::singletonList).orElse(Collections.emptyList());
     }
 
-    public List<Deal> confirmDeal(Long dealId) {
-        Deal deal = dealRepo.findById(dealId)
+    public BuyerWonDeal getDealDetails(Long dealId) {
+        return dealRepo.findWonDealById(dealId)
+                .map(this::toBuyerWonDeal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
-
-        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
-        }
-
-        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a confirmable state");
-        }
-
-        deal.setBuyerStatus("confirmed");
-        dealRepo.save(deal);
-
-        return Collections.singletonList(deal);
     }
 
-    public List<Deal> rejectDeal(Long dealId , String reason) {
-        Deal deal = dealRepo.findById(dealId)
+    @Transactional
+    public BuyerWonDeal decideDeal(Long dealId, String decision, String reason) {
+        String normalizedDecision = decision == null ? "" : decision.trim().toLowerCase();
+        if (!DECISION_CONFIRM.equals(normalizedDecision) && !DECISION_REJECT.equals(normalizedDecision)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be CONFIRM or REJECT");
+        }
+
+        Deal deal = dealRepo.findByIdForDecision(dealId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
 
-        if (!"pending".equalsIgnoreCase(deal.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is already completed or cancelled");
         }
-        
-        if (!"pending".equalsIgnoreCase(deal.getBuyerStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Deal is not in a rejectable state");
+        if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getBuyerStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer decision has already been submitted");
         }
 
-        deal.setBuyerStatus("rejected");
-        deal.setCancelReason(reason);
+        if (DECISION_REJECT.equals(normalizedDecision)) {
+            if (reason == null || reason.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
+            }
+            deal.setBuyerStatus(PARTY_STATUS_REJECTED);
+            deal.setStatus(DEAL_STATUS_CANCELLED);
+            deal.setCancelReason(reason.trim());
+        } else {
+            deal.setBuyerStatus(PARTY_STATUS_CONFIRMED);
+            if (PARTY_STATUS_CONFIRMED.equalsIgnoreCase(deal.getSellerStatus())) {
+                deal.setStatus(DEAL_STATUS_COMPLETED);
+            }
+        }
 
-        dealRepo.save(deal);
-
-        return Collections.singletonList(deal);
+        dealRepo.saveAndFlush(deal);
+        return getDealDetails(dealId);
     }
 }

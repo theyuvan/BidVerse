@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -17,16 +17,19 @@ import SellerDeals from "./pages/Seller/SellerDeals";
 import SellerDealDetails from "./pages/Seller/SellerDealDetails";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
+import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
+import BuyerDeals from "./pages/Buyer/BuyerDeals";
+import BuyerDealDetails from "./pages/Buyer/BuyerDealDetails";
 import BuyerNavbar from "./components/buyer/Navbar";
 function AppShell() {
     const location = useLocation();
-    const isLoginRoute = location.pathname === "/login";
+    const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
     const isSellerRoute = location.pathname.startsWith("/seller");
     const isBuyerRoute = location.pathname.startsWith("/buyer");
 
     return (
         <div className="app-shell">
-            {isLoginRoute ? null : isSellerRoute ? <SellerNavbar /> : isBuyerRoute ? <BuyerNavbar /> : <Navbar />}
+            {isAuthRoute ? null : isSellerRoute ? <SellerNavbar /> : isBuyerRoute ? <BuyerNavbar /> : <Navbar />}
             <div className="page-content">
                 <Routes>
                     <Route path="/" element={<Landing />} />
@@ -45,6 +48,9 @@ function AppShell() {
                     {/* BUYER */}
                     <Route path="/buyer" element={<BuyerDashboard />}/>
                     <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
+                    <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
+                    <Route path="/buyer/deals" element={<BuyerDeals />} />
+                    <Route path="/buyer/deals/:dealId" element={<BuyerDealDetails />} />
                 </Routes>
             </div>
         </div>
