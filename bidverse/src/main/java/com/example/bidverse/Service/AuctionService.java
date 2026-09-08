@@ -41,9 +41,10 @@ public class AuctionService {
 
     private static final String DEAL_STATUS_PENDING = "pending";
 
-    private static final long BID_INACTIVITY_SECONDS = 10;
+    private static final long BID_INACTIVITY_SECONDS = 20;
     private static final long WAITING_ROOM_SECONDS = 90;
     private static final BigDecimal AUTO_BID_INCREMENT_PERCENT = new BigDecimal("0.05");
+    private static final List<String> AUTO_STARTABLE_ROOM_STATUSES = List.of("upcoming", "open");
 
     private final AuctionItemRepository auctionItemRepo;
     private final RoomRepo roomRepo;
@@ -105,6 +106,23 @@ public class AuctionService {
     }
 
     @Scheduled(fixedRate = 1000)
+    public void autoStartDueRooms() {
+        OffsetDateTime now = OffsetDateTime.now();
+        List<Room> dueRooms = roomRepo.findByStatusInAndStartTimeLessThanEqual(AUTO_STARTABLE_ROOM_STATUSES, now);
+
+        for (Room room : dueRooms) {
+            if (auctionItemRepo.findByRoomId(room.getRoomId()).isEmpty()) {
+                continue;
+            }
+            try {
+                self.getObject().startRoom(room.getRoomId());
+            } catch (ResponseStatusException ignored) {
+
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 1000)
     public void openWaitingRooms() {
         OffsetDateTime cutoff = OffsetDateTime.now().minusSeconds(WAITING_ROOM_SECONDS);
         List<Room> waitingRooms = roomRepo.findByStatus(ROOM_STATUS_WAITING);
@@ -125,7 +143,6 @@ public class AuctionService {
             return;
         }
 
-        roomSeatRepo.markAbsentBuyers(roomId);
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
         activateFirstItem(room);

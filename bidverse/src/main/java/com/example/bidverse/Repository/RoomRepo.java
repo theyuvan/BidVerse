@@ -15,6 +15,8 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
 
     List<Room> findByStatus(String status);
 
+    List<Room> findByStatusInAndStartTimeLessThanEqual(List<String> statuses, OffsetDateTime startTime);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Room r SET r.status = 'waiting', r.waitingStartedAt = :startedAt " +
             "WHERE r.roomId = :id AND r.status IN ('upcoming', 'open')")

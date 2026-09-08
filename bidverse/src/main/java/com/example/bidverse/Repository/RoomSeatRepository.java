@@ -18,13 +18,8 @@ public interface RoomSeatRepository extends JpaRepository<Room_Seat, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Room_Seat s SET s.joinedAt = :joinedAt, s.attendanceStatus = 'joined' " +
-            "WHERE s.roomId = :roomId AND s.buyerId = :buyerId AND s.attendanceStatus <> 'missed'")
+            "WHERE s.roomId = :roomId AND s.buyerId = :buyerId")
     int markBuyerJoined(@Param("roomId") Long roomId,
                         @Param("buyerId") Long buyerId,
                         @Param("joinedAt") OffsetDateTime joinedAt);
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Room_Seat s SET s.attendanceStatus = 'missed', s.refundStatus = 'forfeited' " +
-            "WHERE s.roomId = :roomId AND s.joinedAt IS NULL")
-    int markAbsentBuyers(@Param("roomId") Long roomId);
 }

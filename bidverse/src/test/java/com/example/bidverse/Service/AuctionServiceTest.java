@@ -83,7 +83,7 @@ class AuctionServiceTest {
     }
 
     @Test
-    void newlyActivatedItemGetsTenSecondDeadline() {
+    void newlyActivatedItemGetsTwentySecondDeadline() {
         auction_item item = liveItem(new BigDecimal("100.00"), null);
         item.setStatus("waiting");
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(item));
@@ -97,7 +97,7 @@ class AuctionServiceTest {
         ArgumentCaptor<OffsetDateTime> startedAt = ArgumentCaptor.forClass(OffsetDateTime.class);
         ArgumentCaptor<OffsetDateTime> endedAt = ArgumentCaptor.forClass(OffsetDateTime.class);
         verify(auctionItemRepo).activateIfWaiting(eq(11L), startedAt.capture(), endedAt.capture());
-        assertEquals(10, Duration.between(startedAt.getValue(), endedAt.getValue()).getSeconds());
+        assertEquals(20, Duration.between(startedAt.getValue(), endedAt.getValue()).getSeconds());
     }
 
     @Test
@@ -131,7 +131,7 @@ class AuctionServiceTest {
     }
 
     @Test
-    void waitingRoomForfeitsAbsentSeatsBeforeBiddingStarts() {
+    void goingLiveActivatesFirstItem() {
         Room room = room("live");
         auction_item item = liveItem(new BigDecimal("100.00"), null);
         item.setStatus("waiting");
@@ -143,12 +143,11 @@ class AuctionServiceTest {
 
         auctionService.openBidding(1L);
 
-        verify(roomSeatRepo).markAbsentBuyers(1L);
         verify(auctionItemRepo).activateIfWaiting(eq(11L), any(), any());
     }
 
     @Test
-    void joinedBuyerBidIsAcceptedAndResetsDeadlineToTenSeconds() {
+    void joinedBuyerBidIsAcceptedAndResetsDeadlineToTwentySeconds() {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(5));
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
         when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
@@ -163,7 +162,7 @@ class AuctionServiceTest {
         verify(auctionItemRepo).acceptBidAndResetDeadline(
                 eq(11L), eq(new BigDecimal("100.00")), eq(new BigDecimal("105.00")),
                 bidTime.capture(), deadline.capture());
-        assertEquals(10, Duration.between(bidTime.getValue(), deadline.getValue()).getSeconds());
+        assertEquals(20, Duration.between(bidTime.getValue(), deadline.getValue()).getSeconds());
         verify(bidRepository).upsertBid(11L, 21L, new BigDecimal("105.00"), bidTime.getValue());
     }
 
@@ -306,6 +305,31 @@ class AuctionServiceTest {
         assertEquals("pending", deal.getValue().getStatus());
         assertEquals("pending", deal.getValue().getBuyerStatus());
         assertEquals("pending", deal.getValue().getSellerStatus());
+    }
+
+    @Test
+    void dueUpcomingRoomWithProductsIsAutoStarted() {
+        Room room = room("upcoming");
+        when(self.getObject()).thenReturn(auctionService);
+        when(roomRepo.findByStatusInAndStartTimeLessThanEqual(any(), any())).thenReturn(List.of(room));
+        when(auctionItemRepo.findByRoomId(1L)).thenReturn(List.of(liveItem(new BigDecimal("100.00"), null)));
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room));
+        when(roomRepo.beginWaitingIfNotStarted(eq(1L), any())).thenReturn(1);
+
+        auctionService.autoStartDueRooms();
+
+        verify(roomRepo).beginWaitingIfNotStarted(eq(1L), any());
+    }
+
+    @Test
+    void dueRoomWithoutProductsIsNotAutoStarted() {
+        Room room = room("upcoming");
+        when(roomRepo.findByStatusInAndStartTimeLessThanEqual(any(), any())).thenReturn(List.of(room));
+        when(auctionItemRepo.findByRoomId(1L)).thenReturn(List.of());
+
+        auctionService.autoStartDueRooms();
+
+        verify(roomRepo, never()).beginWaitingIfNotStarted(any(), any());
     }
 
     private auction_item liveItem(BigDecimal currentPrice, OffsetDateTime deadline) {

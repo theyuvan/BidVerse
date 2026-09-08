@@ -1,12 +1,13 @@
 package com.example.bidverse.Controller;
 
-import com.example.bidverse.Dto.BookSeatRequest;
 import com.example.bidverse.Dto.BookingSummary;
 import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.DealDecisionRequest;
 import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Security.AuthenticatedUser;
+import com.example.bidverse.Security.CurrentUser;
 import com.example.bidverse.Service.BuyerService;
 
 import org.springframework.http.ResponseEntity;
@@ -42,24 +43,24 @@ public class Buyer {
     }
 
     @PostMapping("/rooms/{roomId}/book")
-    public ResponseEntity<?> bookRoom(@PathVariable Long roomId, @RequestBody BookSeatRequest request) {
-        return ResponseEntity.ok(buyerService.bookRoom(roomId, request.buyerId()));
+    public ResponseEntity<?> bookRoom(@PathVariable Long roomId, @CurrentUser AuthenticatedUser buyer) {
+        return ResponseEntity.ok(buyerService.bookRoom(roomId, buyer.userId()));
     }
 
     @GetMapping("/rooms/{roomId}/join")
     public ResponseEntity<List<LiveAuctionItem>> joinRoom(
             @PathVariable Long roomId,
-            @RequestParam Long buyerId
+            @CurrentUser AuthenticatedUser buyer
     ) {
-        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyer.userId()));
     }
 
     @PostMapping("/rooms/{roomId}/enter")
     public ResponseEntity<List<LiveAuctionItem>> enterRoom(
             @PathVariable Long roomId,
-            @RequestParam Long buyerId
+            @CurrentUser AuthenticatedUser buyer
     ) {
-        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyer.userId()));
     }
 
     @GetMapping("/rooms/available")
@@ -72,34 +73,30 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.searchRooms(query));
     }
 
-    @GetMapping("/deals")
-    public ResponseEntity<?> getAllDeals() {
-        return ResponseEntity.ok(buyerService.getAllDeals());
-    }
-
     @GetMapping("/deals/{dealId}")
-    public ResponseEntity<BuyerWonDeal> getDealById(@PathVariable Long dealId) {
-        return ResponseEntity.ok(buyerService.getDealDetails(dealId));
+    public ResponseEntity<BuyerWonDeal> getDealById(@PathVariable Long dealId, @CurrentUser AuthenticatedUser buyer) {
+        return ResponseEntity.ok(buyerService.getOwnDealDetails(dealId, buyer.userId()));
     }
 
-    // GET /buyer/{buyerId}/deals -> everything this buyer has won (mirrors /seller/{sellerId}/deals)
-    @GetMapping("/{buyerId}/deals")
-    public ResponseEntity<List<BuyerWonDeal>> displayDeals(@PathVariable Long buyerId) {
-        return ResponseEntity.ok(buyerService.getDeals(buyerId));
+    @GetMapping("/deals/mine")
+    public ResponseEntity<List<BuyerWonDeal>> displayDeals(@CurrentUser AuthenticatedUser buyer) {
+        return ResponseEntity.ok(buyerService.getDeals(buyer.userId()));
     }
 
-    @GetMapping("/{buyerId}/bookings")
+    @GetMapping("/bookings")
     public ResponseEntity<List<BookingSummary>> displayBookings(
-            @PathVariable Long buyerId,
+            @CurrentUser AuthenticatedUser buyer,
             @RequestParam(required = false) String status) {
-        return ResponseEntity.ok(buyerService.displayBookings(buyerId, status));
+        return ResponseEntity.ok(buyerService.displayBookings(buyer.userId(), status));
     }
 
     @PostMapping("/deals/{dealId}/decision")
     public ResponseEntity<BuyerWonDeal> decideDeal(
             @PathVariable Long dealId,
+            @CurrentUser AuthenticatedUser buyer,
             @RequestBody DealDecisionRequest decision
     ) {
-        return ResponseEntity.ok(buyerService.decideDeal(dealId, decision.decision(), decision.reason()));
+        return ResponseEntity.ok(buyerService.decideDeal(
+                buyer.userId(), dealId, decision.decision(), decision.reason()));
     }
 }

@@ -1,4 +1,5 @@
 package com.example.bidverse.Dto;
 
-public record BookSeatRequest(Long buyerId) {
+public record BookSeatRequest(
+        Long buyerId) {
 }
