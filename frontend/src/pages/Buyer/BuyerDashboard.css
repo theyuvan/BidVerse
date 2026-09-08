@@ -1,8 +1,13 @@
-/*.buyer-page {
+.buyer-page {
     min-height: 100vh;
-    padding: 110px 48px 48px;
+    padding: 112px clamp(22px, 5vw, 72px) 64px;
     box-sizing: border-box;
-    background: #f6f3ec;
+    background:
+        radial-gradient(circle at 88% 4%, rgba(224, 55, 79, 0.1), transparent 27%),
+        radial-gradient(circle at 5% 34%, rgba(86, 102, 255, 0.08), transparent 24%),
+        #101119;
+    color: #f7f7fa;
+    font-family: "Segoe UI", Arial, sans-serif;
 }
 
 .buyer-header {
@@ -10,614 +15,261 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 36px;
+    margin-bottom: 34px;
 }
 
 .buyer-header h1 {
-    margin: 0 0 8px;
-    font-size: 36px;
+    max-width: 760px;
+    margin: 7px 0 10px;
+    color: #ffffff;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 750;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
 }
 
 .buyer-header p {
     margin: 0;
-    color: #64748b;
+    color: #a8adc0;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
-.buyer-switcher {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
+.page-eyebrow,
+.section-kicker {
+    display: block;
+    color: #f05a70;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
 }
 
-.buyer-switcher label {
-    color: #64748b;
-    font-size: 13px;
-}
-
-.buyer-switcher div {
-    display: flex;
-    gap: 8px;
-}
-
-.buyer-switcher input {
-    width: 110px;
-    padding: 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-}
-
-.buyer-switcher button,
-.enter-room-link {
-    padding: 10px 16px;
-    border: 0;
-    border-radius: 8px;
-    color: #ffffff;
-    background: #5b5fef;
-    cursor: pointer;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.buyer-section {
-    margin-bottom: 42px;
-}
-
-
-.buyer-tabs {
-    display: flex;
-    gap: 12px;
-    margin: 30px 0;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 12px;
-}
-
-.buyer-tabs button {
-    padding: 10px 24px;
-    border: 1px solid #d5d8df;
-    border-radius: 6px;
-    background: #ffffff;
-    color: #172033;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.buyer-tabs button:hover {
-    border-color: #172033;
-}
-
-.buyer-tabs button.active {
-    background: #172033;
-    color: #ffffff;
-    border-color: #172033;
-}
-
-.rooms-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-}
-
-.room-card {
-    padding: 24px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    color: inherit;
-    background: #ffffff;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.room-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-}
-
-.room-card h3 {
-    margin: 10px 0 14px;
-}
-
-.room-card p {
-    margin: 8px 0;
-    color: #475569;
-}
-
-.buyer-room-status {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 999px;
-    color: #4338ca;
-    background: #eef2ff;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: capitalize;
-}
-
-.buyer-room-status.live {
-    color: #166534;
-    background: #dcfce7;
-}
-
-.buyer-room-status.completed {
-    color: #475569;
-    background: #e2e8f0;
-}
-
-.enter-room-link,
-.room-complete-label {
-    display: inline-block;
-    margin-top: 14px;
-}
-
-.room-complete-label {
-    color: #64748b;
-    font-weight: 700;
-}
-
-.buyer-empty {
-    padding: 26px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    color: #64748b;
-    background: #ffffff;
-    text-align: center;
-}
-
-.won-deals-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.won-deal-card {
-    display: grid;
-    grid-template-columns: 150px 1fr;
-    overflow: hidden;
-    border: 1px solid #dbe4f0;
-    border-radius: 14px;
-    background: #ffffff;
-}
-
-.won-deal-card > img {
-    width: 100%;
-    height: 100%;
-    min-height: 230px;
-    object-fit: cover;
-    background: #eef2f7;
-}
-
-.won-deal-content {
-    padding: 22px;
-}
-
-.won-deal-content h3 {
-    margin: 12px 0 8px;
-}
-
-.won-deal-content > p {
-    color: #64748b;
-}
-
-.won-deal-details {
-    display: grid;
-    gap: 9px;
-    margin: 18px 0 0;
-}
-
-.won-deal-details div {
-    display: grid;
-    grid-template-columns: 90px 1fr;
-    gap: 12px;
-}
-
-.won-deal-details dt {
-    color: #64748b;
-}
-
-.won-deal-details dd {
-    margin: 0;
-    overflow-wrap: anywhere;
-    font-weight: 700;
-}
-
-
-
-@media (max-width: 1000px) {
-    .rooms-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .won-deals-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-
-@media (max-width: 700px) {
-    .buyer-page {
-        padding: 96px 18px 30px;
-    }
-
-    .buyer-header {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .rooms-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .won-deal-card {
-        grid-template-columns: 1fr;
-    }
-
-    .won-deal-card > img {
-        height: 210px;
-        min-height: 0;
-    }
-
-    .buyer-tabs {
-        gap: 6px;
-        overflow-x: auto;
-    }
-
-    .buyer-tabs button {
-        padding: 9px 16px;
-        white-space: nowrap;
-    }
-}
-*//* =========================
-   GLOBAL PAGE FIX
-========================= */
-
-html,
-body,
-#root {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-    background: #12131c;
-}
-
-
-/* =========================
-   BUYER DASHBOARD
-========================= */
-
-.buyer-page {
-    width: 100%;
-    min-height: calc(100vh - 70px);
-
-    margin: 0;
-    padding: 100px 40px 50px;
-
-    box-sizing: border-box;
-
-    background: #12131c;
-    color: #e7e8ee;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-
-    overflow-x: hidden;
-}
-
-
-/* =========================
-   HEADER
-========================= */
-
-.buyer-header {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 30px;
-
+.dashboard-hero {
     margin-bottom: 30px;
 }
 
-.buyer-header h1 {
-    margin: 0 0 8px;
-
-    color: #ffffff;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 34px;
-    font-weight: 700;
-
-    letter-spacing: -0.5px;
+.buyer-welcome {
+    padding-left: 18px;
+    border-left: 3px solid #e63752;
 }
 
-.buyer-header p {
-    margin: 0;
-
-    color: #9296a8;
-
-    font-size: 15px;
+.buyer-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin: 0 0 56px;
 }
 
-
-/* =========================
-   BUYER ID SWITCHER
-========================= */
-
-.buyer-switcher {
-    display: flex;
-    flex-direction: column;
-
-    gap: 7px;
-
-    flex-shrink: 0;
-}
-
-.buyer-switcher label {
-    color: #9296a8;
-
-    font-size: 13px;
-}
-
-.buyer-switcher div {
-    display: flex;
-
-    gap: 8px;
-}
-
-.buyer-switcher input {
-    width: 100px;
-
-    padding: 10px 12px;
-
+.buyer-stat-box {
+    position: relative;
+    min-height: 152px;
+    overflow: hidden;
+    padding: 22px;
+    border: 1px solid #292d3b;
+    border-radius: 17px;
+    background: linear-gradient(145deg, rgba(30, 32, 44, 0.96), rgba(22, 23, 33, 0.96));
     box-sizing: border-box;
-
-    border: 1px solid #303341;
-    border-radius: 8px;
-
-    outline: none;
-
-    background: #1a1c26;
-    color: #ffffff;
-
-    font-size: 14px;
+    box-shadow: 0 16px 35px rgba(0, 0, 0, 0.16);
+    transition: transform 0.22s ease, border-color 0.22s ease;
 }
 
-.buyer-switcher input:focus {
-    border-color: #e0374f;
+.buyer-stat-box::after {
+    position: absolute;
+    right: -35px;
+    bottom: -45px;
+    width: 125px;
+    height: 125px;
+    border-radius: 50%;
+    background: rgba(224, 55, 79, 0.1);
+    content: "";
 }
 
-.buyer-switcher button {
-    padding: 10px 18px;
-
-    border: none;
-    border-radius: 8px;
-
-    background: #e0374f;
-    color: #ffffff;
-
-    font-size: 14px;
-    font-weight: 700;
-
-    cursor: pointer;
-
-    transition: 0.2s ease;
+.buyer-stat-box.live-stat::after {
+    background: rgba(43, 189, 104, 0.11);
 }
 
-.buyer-switcher button:hover {
-    background: #c92d43;
-
-    transform: translateY(-1px);
+.buyer-stat-box.won-stat::after {
+    background: rgba(245, 174, 44, 0.11);
 }
 
-
-/* =========================
-   TABS
-========================= */
-
-.buyer-tabs {
-    width: 100%;
-
-    display: flex;
-    align-items: center;
-
-    gap: 12px;
-
-    margin: 0 0 38px;
-    padding: 0 0 16px;
-
-    border-bottom: 1px solid #303341;
-
-    box-sizing: border-box;
+.buyer-stat-box:hover {
+    border-color: #464c61;
+    transform: translateY(-3px);
 }
 
-.buyer-tabs button {
-    min-width: 120px;
-
-    padding: 13px 24px;
-
-    border: 1px solid #303341;
-    border-radius: 9px;
-
-    background: #1a1c26;
-    color: #c5c8d5;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition: all 0.2s ease;
-}
-
-.buyer-tabs button:hover {
-    background: #222530;
-
-    border-color: #e0374f;
-
-    color: #ffffff;
-
-    transform: translateY(-1px);
-}
-
-.buyer-tabs button.active {
-    background: #e0374f;
-
-    border-color: #e0374f;
-
-    color: #ffffff;
-
-    box-shadow: 0 6px 18px rgba(224, 55, 79, 0.25);
-}
-
-
-/* =========================
-   SECTION
-========================= */
-
-.buyer-section {
-    width: 100%;
-
-    margin-bottom: 40px;
-}
-
-.section-heading {
-    width: 100%;
-
+.buyer-stat-box > div {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
 
-    gap: 15px;
+.buyer-stat-title {
+    color: #c4c8d5;
+    font-size: 14px;
+    font-weight: 650;
+}
 
-    margin-bottom: 20px;
+.stat-index {
+    color: #686d80;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.buyer-stat-number {
+    display: block;
+    margin: 10px 0 1px;
+    color: #ffffff;
+    font-size: 38px;
+    line-height: 1;
+}
+
+.buyer-stat-box small {
+    color: #7f8498;
+    font-size: 12px;
+}
+
+.booking-page-header {
+    padding-bottom: 26px;
+    border-bottom: 1px solid #272a37;
+}
+
+.buyer-tabs.booking-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0 0 42px;
+    padding: 5px;
+    border: 1px solid #2b2f3d;
+    border-radius: 13px;
+    background: #171923;
+}
+
+.buyer-tabs button {
+    min-width: 125px;
+    padding: 11px 19px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #aeb3c3;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.buyer-tabs button:hover {
+    color: #ffffff;
+    background: #20232f;
+}
+
+.buyer-tabs button.active {
+    color: #ffffff;
+    background: #e63752;
+    box-shadow: 0 7px 18px rgba(230, 55, 82, 0.23);
+}
+
+.buyer-section {
+    margin-bottom: 52px;
+}
+
+.dashboard-section {
+    padding-top: 6px;
+}
+
+.won-products-section {
+    margin-top: 16px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 22px;
 }
 
 .section-heading h2 {
-    margin: 0;
-
+    margin: 4px 0 0;
     color: #ffffff;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-
-    letter-spacing: -0.3px;
+    font-size: 25px;
+    letter-spacing: -0.025em;
 }
 
-.section-heading span {
-    color: #8f94a8;
-
+.section-heading > span {
+    color: #8c91a4;
     font-size: 13px;
 }
 
-
-/* =========================
-   ROOM GRID
-========================= */
-
-.rooms-grid {
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-
-    gap: 22px;
-
-    box-sizing: border-box;
+.section-link {
+    padding-bottom: 3px;
+    color: #f16b7e;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 
+.section-link:hover {
+    color: #ffffff;
+    transform: translateX(3px);
+}
 
-/* =========================
-   ROOM CARD
-========================= */
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+}
 
 .room-card {
-    width: 100%;
     min-width: 0;
-
     padding: 22px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #292c38;
-    border-radius: 14px;
-
-    background: #1a1c26;
+    border: 1px solid #292d3a;
+    border-radius: 16px;
+    background: #191b25;
     color: inherit;
-
+    box-sizing: border-box;
     text-decoration: none;
-
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .room-card:hover {
+    border-color: #4a5063;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.25);
     transform: translateY(-4px);
-
-    border-color: #e0374f;
-
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-}
-
-.room-card h3 {
-    margin: 12px 0 13px;
-
-    color: #ffffff;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-
-    line-height: 1.35;
-
-    overflow-wrap: anywhere;
-}
-
-.room-card p {
-    margin: 7px 0;
-
-    color: #9da1b3;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 14px;
-
-    line-height: 1.45;
 }
 
 .auction-room-card {
     position: relative;
     display: flex;
     flex-direction: column;
-    min-height: 315px;
+    min-height: 300px;
     overflow: hidden;
-    padding: 24px;
     isolation: isolate;
 }
 
 .auction-room-card::before {
     position: absolute;
-    top: -90px;
-    right: -70px;
-    width: 180px;
-    height: 180px;
+    top: -80px;
+    right: -65px;
+    width: 165px;
+    height: 165px;
     border-radius: 50%;
-    background: rgba(224, 55, 79, 0.1);
+    background: rgba(230, 55, 82, 0.08);
     content: "";
-    transition: transform 0.3s ease, background 0.3s ease;
+    transition: transform 0.3s ease;
     z-index: -1;
 }
 
 .auction-room-card:hover::before {
-    background: rgba(224, 55, 79, 0.18);
-    transform: scale(1.18);
+    transform: scale(1.25);
 }
 
-.auction-room-card:focus-visible {
-    outline: 3px solid rgba(224, 55, 79, 0.45);
+.room-card:focus-visible,
+.section-link:focus-visible,
+.buyer-tabs button:focus-visible {
+    outline: 3px solid rgba(240, 90, 112, 0.48);
     outline-offset: 3px;
 }
 
@@ -628,55 +280,81 @@ body,
     gap: 12px;
 }
 
+.buyer-room-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid rgba(240, 90, 112, 0.25);
+    border-radius: 999px;
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8193;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.buyer-room-status.live {
+    border-color: rgba(42, 194, 105, 0.28);
+    background: rgba(42, 194, 105, 0.1);
+    color: #63dd94;
+}
+
+.buyer-room-status.completed,
+.buyer-room-status.cancelled {
+    border-color: #3a3e4d;
+    background: #242631;
+    color: #aeb2c0;
+}
+
 .auction-room-number {
-    color: #85899b;
-    font-size: 12px;
-    font-weight: 600;
+    color: #777c90;
+    font-size: 11px;
+    font-weight: 650;
 }
 
-.auction-room-card h3 {
-    margin: 20px 0 18px;
-    font-size: 21px;
-    transition: color 0.2s ease;
-}
-
-.auction-room-card:hover h3 {
-    color: #ff7588;
+.room-card h3 {
+    margin: 19px 0 17px;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
 
 .auction-card-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 9px;
+    margin-bottom: 10px;
 }
 
 .auction-card-details > div,
 .auction-start-time {
-    padding: 12px;
-    border: 1px solid #303441;
+    padding: 10px 12px;
     border-radius: 10px;
-    background: rgba(18, 19, 28, 0.72);
+    background: #13151d;
 }
 
 .auction-card-details span,
-.auction-start-time > span {
+.auction-start-time > span,
+.booking-card-info span {
     display: block;
-    margin-bottom: 5px;
-    color: #85899b;
-    font-size: 11px;
+    margin-bottom: 4px;
+    color: #73798d;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
 }
 
 .auction-card-details strong,
 .auction-start-time strong {
-    color: #f4f5f8;
-    font-size: 14px;
+    color: #e8eaf0;
+    font-size: 13px;
 }
 
 .auction-start-time {
-    margin-bottom: 18px;
+    margin-bottom: 17px;
 }
 
 .auction-start-time strong {
@@ -684,377 +362,189 @@ body,
     line-height: 1.4;
 }
 
-.view-book-button {
+.view-book-button,
+.enter-room-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    width: 100%;
+    gap: 9px;
     margin-top: auto;
-    padding: 12px 16px;
+    padding: 11px 15px;
     border-radius: 9px;
-    background: #e0374f;
+    background: #e63752;
     color: #ffffff;
-    box-sizing: border-box;
-    font-size: 14px;
-    font-weight: 700;
-    box-shadow: 0 7px 18px rgba(224, 55, 79, 0.2);
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
     transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .view-book-button span {
-    font-size: 18px;
-    line-height: 1;
+    font-size: 17px;
     transition: transform 0.2s ease;
 }
 
-.auction-room-card:hover .view-book-button {
-    background: #f0445d;
-    box-shadow: 0 9px 24px rgba(224, 55, 79, 0.35);
+.auction-room-card:hover .view-book-button,
+.enter-room-link:hover {
+    background: #f0445f;
+    box-shadow: 0 8px 20px rgba(230, 55, 82, 0.26);
 }
 
 .auction-room-card:hover .view-book-button span {
-    transform: translateX(4px);
+    transform: translateX(3px);
 }
 
-
-/* =========================
-   STATUS BADGES
-========================= */
-
-.buyer-room-status {
-    display: inline-flex;
-    align-items: center;
-
-    padding: 5px 12px;
-
-    border-radius: 999px;
-
-    background: #ffffff;
-    color: #df3049;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-
-    text-transform: capitalize;
+.booking-room-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
 }
 
-.buyer-room-status.live {
-    background: #ffffff;
-    color: #16803c;
+.booking-card-info {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 18px;
 }
 
-.buyer-room-status.completed {
-    background: #ffffff;
-    color: #555b6e;
-}
-
-
-/* =========================
-   ROOM BUTTON
-========================= */
-
-.enter-room-link {
-    display: inline-block;
-
-    margin-top: 12px;
-
-    padding: 10px 16px;
-
-    border: none;
-    border-radius: 8px;
-
-    background: #e0374f;
-    color: #ffffff;
-
-    font-family: "Segoe UI", Arial, sans-serif;
+.booking-card-info p {
+    margin: 0;
+    color: #cbd0dc;
     font-size: 13px;
-    font-weight: 700;
-
-    text-decoration: none;
-
-    cursor: pointer;
-
-    transition: 0.2s ease;
+    line-height: 1.45;
 }
 
-.enter-room-link:hover {
-    background: #c92d43;
-
-    transform: translateY(-1px);
+.booking-warning {
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8193;
+    font-size: 12px;
 }
 
 .room-complete-label {
-    display: inline-block;
-
-    margin-top: 12px;
-
-    color: #85899b;
-
-    font-size: 13px;
-    font-weight: 600;
-}
-
-
-/* =========================
-   EMPTY MESSAGE
-========================= */
-
-.buyer-empty {
-    width: 100%;
-
-    padding: 28px;
-
-    box-sizing: border-box;
-
-    border: 1px solid #292c38;
-    border-radius: 13px;
-
-    background: #1a1c26;
-    color: #85899b;
-
+    display: block;
+    margin-top: auto;
+    padding: 11px;
+    border-radius: 9px;
+    background: #242631;
+    color: #9ca1b3;
+    font-size: 12px;
+    font-weight: 700;
     text-align: center;
-
-    font-size: 14px;
 }
-
-
-/* =========================
-   WON DEALS GRID
-========================= */
 
 .won-deals-grid {
-    width: 100%;
-
     display: grid;
-
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
     gap: 20px;
-
-    box-sizing: border-box;
 }
-
-
-/* =========================
-   WON DEAL CARD
-========================= */
 
 .won-deal-card {
-    width: 100%;
-    min-width: 0;
-
     display: grid;
-
     grid-template-columns: 175px minmax(0, 1fr);
-
-    height: 245px;
-
+    min-height: 260px;
     overflow: hidden;
-
-    border: 1px solid #292c38;
-    border-radius: 14px;
-
-    background: #1a1c26;
-
-    box-sizing: border-box;
+    border: 1px solid #292d3a;
+    border-radius: 16px;
+    background: #191b25;
 }
 
-
-/* =========================
-   PRODUCT IMAGE
-========================= */
+.won-deal-card > img,
+.won-deal-image-placeholder {
+    width: 175px;
+    height: 100%;
+    min-height: 260px;
+    box-sizing: border-box;
+}
 
 .won-deal-card > img {
-    display: block;
-
-    width: 175px;
-    height: 245px;
-
-    padding: 8px;
-
-    box-sizing: border-box;
-
-    object-fit: contain;
-    object-position: center;
-
+    padding: 10px;
     background: #ffffff;
+    object-fit: contain;
 }
 
-
-/* =========================
-   DEAL CONTENT
-========================= */
+.won-deal-image-placeholder {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(145deg, #292c3a, #20222e);
+    color: #72788d;
+    font-size: 20px;
+    font-weight: 800;
+}
 
 .won-deal-content {
     min-width: 0;
-
-    padding: 18px 20px;
-
+    padding: 20px;
     box-sizing: border-box;
 }
 
 .won-deal-content h3 {
-    margin: 10px 0 7px;
-
+    margin: 11px 0 7px;
     color: #ffffff;
-
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-
-    line-height: 1.3;
-
-    overflow-wrap: anywhere;
+    font-size: 19px;
 }
 
 .won-deal-content > p {
-    margin: 0 0 12px;
-
-    color: #8f93a5;
-
-    font-size: 13px;
-
-    line-height: 1.4;
+    margin: 0;
+    color: #888ea1;
+    font-size: 12px;
+    line-height: 1.45;
 }
-
-
-/* =========================
-   DEAL DETAILS
-========================= */
 
 .won-deal-details {
     display: grid;
-
     gap: 6px;
-
-    margin: 12px 0 0;
+    margin: 13px 0 15px;
 }
 
 .won-deal-details div {
     display: grid;
-
-    grid-template-columns: 75px minmax(0, 1fr);
-
-    gap: 8px;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 9px;
 }
 
 .won-deal-details dt {
-    color: #85899b;
-
-    font-size: 12px;
+    color: #777d90;
+    font-size: 11px;
 }
 
 .won-deal-details dd {
     min-width: 0;
-
     margin: 0;
-
     overflow-wrap: anywhere;
-
-    color: #e7e8ee;
-
-    font-size: 12px;
-    font-weight: 600;
+    color: #d9dce4;
+    font-size: 11px;
+    font-weight: 650;
 }
-
-
-/* =========================
-   REVIEW DEAL BUTTON
-========================= */
 
 .won-deal-content .enter-room-link {
-    display: inline-block;
-
-    margin-top: 12px;
-
-    padding: 9px 16px;
-
-    border-radius: 8px;
-
-    background: #e0374f;
-    color: #ffffff;
-
-    font-size: 12px;
-    font-weight: 700;
-
-    text-decoration: none;
-
-    transition: 0.2s ease;
+    display: inline-flex;
+    margin-top: 0;
+    padding: 9px 14px;
+    font-size: 11px;
 }
 
-.won-deal-content .enter-room-link:hover {
-    background: #c92d43;
-
-    transform: translateY(-2px);
-}
-
-
-/* =========================
-   ERROR
-========================= */
-
-.form-error {
-    color: #ff6b7d;
-
+.buyer-empty {
+    padding: 34px;
+    border: 1px dashed #343847;
+    border-radius: 14px;
+    background: rgba(25, 27, 37, 0.7);
+    color: #858a9d;
     font-size: 13px;
-}
-
-
-/* =========================
-   BUYER SUMMARY
-========================= */
-
-.buyer-welcome {
-    margin-bottom: 8px;
-}
-
-.buyer-stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(92px, 1fr));
-    gap: 14px;
-    width: min(100%, 420px);
-    margin: 0 0 42px;
-}
-
-.buyer-stat-box {
-    min-height: 72px;
-    padding: 11px;
-    border: 1px solid #d7e4e8;
-    background: #202020;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    box-sizing: border-box;
-}
-
-.buyer-stat-title,
-.buyer-stat-number {
-    color: #ffffff;
-    font-size: 14px;
-}
-
-.buyer-stat-title {
-    margin-bottom: 7px;
-}
-
-.buyer-stat-number {
     text-align: center;
 }
 
+.form-error {
+    margin: 0 0 24px;
+    padding: 13px 15px;
+    border: 1px solid rgba(230, 55, 82, 0.32);
+    border-radius: 10px;
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8496;
+    font-size: 13px;
+}
 
-/* =========================
-   TABLET
-========================= */
-
-@media (max-width: 1100px) {
-
-    .buyer-page {
-        padding-left: 30px;
-        padding-right: 30px;
-    }
-
+@media (max-width: 1050px) {
     .rooms-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1062,113 +552,65 @@ body,
     .won-deals-grid {
         grid-template-columns: 1fr;
     }
-
-    .won-deal-card {
-        height: 245px;
-    }
 }
 
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 700px) {
-
+@media (max-width: 760px) {
     .buyer-page {
-        padding: 90px 18px 40px;
-    }
-
-    .buyer-header {
-        align-items: stretch;
-
-        flex-direction: column;
-
-        gap: 20px;
+        padding: 98px 18px 42px;
     }
 
     .buyer-header h1 {
-        font-size: 28px;
+        font-size: 34px;
     }
 
-    .buyer-header p {
-        font-size: 14px;
+    .buyer-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 42px;
     }
 
-    .buyer-switcher {
+    .buyer-stat-box {
+        min-height: 125px;
+    }
+
+    .buyer-tabs.booking-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         width: 100%;
-    }
-
-    .buyer-switcher div {
-        width: 100%;
-    }
-
-    .buyer-switcher input {
-        flex: 1;
-
-        width: auto;
-    }
-
-    .buyer-tabs {
-        gap: 7px;
-
-        overflow-x: auto;
-
-        padding-bottom: 12px;
+        box-sizing: border-box;
     }
 
     .buyer-tabs button {
-        min-width: 105px;
-
-        padding: 11px 17px;
-
-        white-space: nowrap;
-    }
-
-    .rooms-grid {
-        grid-template-columns: 1fr;
-
-        gap: 16px;
-    }
-
-    .room-card {
-        padding: 20px;
+        min-width: 0;
+        padding: 10px 8px;
+        font-size: 12px;
     }
 
     .section-heading {
         align-items: flex-start;
     }
 
-    .section-heading h2 {
-        font-size: 19px;
-    }
-
-    .won-deals-grid {
+    .rooms-grid {
         grid-template-columns: 1fr;
     }
 
     .won-deal-card {
         grid-template-columns: 1fr;
-
-        height: auto;
     }
 
-    .won-deal-card > img {
+    .won-deal-card > img,
+    .won-deal-image-placeholder {
         width: 100%;
         height: 210px;
-
         min-height: 0;
-
-        padding: 10px;
-
-        object-fit: contain;
     }
+}
 
-    .won-deal-content {
-        padding: 18px;
-    }
-
-    .buyer-stats {
-        grid-template-columns: repeat(2, minmax(92px, 1fr));
+@media (prefers-reduced-motion: reduce) {
+    .buyer-stat-box,
+    .room-card,
+    .section-link,
+    .view-book-button span {
+        transition: none;
     }
 }
