@@ -104,8 +104,8 @@ public class Host {
     }
 
     @PostMapping("/rooms")
-    public ResponseEntity<?> createRoom(@RequestBody Room room, @CurrentUser AuthenticatedUser host) {
-        hostService.createRoom(host.userId(), room);
-        return new ResponseEntity<>("Room Created Successfully", HttpStatus.CREATED);
+    public ResponseEntity<Room> createRoom(@RequestBody Room room, @CurrentUser AuthenticatedUser host) {
+        Room created = hostService.createRoom(host.userId(), room);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 }
