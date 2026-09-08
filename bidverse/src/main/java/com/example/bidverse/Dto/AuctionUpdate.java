@@ -11,6 +11,7 @@ public record AuctionUpdate(
         Long highestBidderId,
         String itemStatus,
         Long secondsRemaining,
+        Long waitingSecondsRemaining,
         String roomStatus,
         String eventType,
         String message

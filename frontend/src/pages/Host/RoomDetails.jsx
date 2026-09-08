@@ -109,7 +109,7 @@ function RoomDetails() {
         try {
             await startRoom(roomId);
             await reloadRoom();
-            setMessage("Auction started. The first product is now live.");
+            setMessage("Waiting room opened. Bidding will start in 90 seconds.");
         } catch (requestError) {
             setError(getErrorMessage(requestError, "Unable to start this room."));
         } finally {
@@ -125,7 +125,7 @@ function RoomDetails() {
         return <main className="host-page"><p className="form-error">{error || "Room not found."}</p></main>;
     }
 
-    const roomIsLive = room.status?.toLowerCase() === "live";
+    const roomHasStarted = ["waiting", "live", "completed"].includes(room.status?.toLowerCase());
     const roomCanStart = ["upcoming", "open"].includes(room.status?.toLowerCase());
 
     return (
@@ -184,7 +184,7 @@ function RoomDetails() {
                     <span>{availableProducts.length} available</span>
                 </div>
 
-                {roomIsLive && (
+                {roomHasStarted && (
                     <p className="form-error" role="alert">Products cannot be added after this room has started.</p>
                 )}
 
@@ -195,7 +195,7 @@ function RoomDetails() {
                             id="approved-product"
                             value={selectedProductId}
                             onChange={(event) => setSelectedProductId(event.target.value)}
-                            disabled={adding || roomIsLive || availableProducts.length === 0}
+                            disabled={adding || roomHasStarted || availableProducts.length === 0}
                         >
                             <option value="">Choose a product</option>
                             {availableProducts.map((product) => (
@@ -205,17 +205,17 @@ function RoomDetails() {
                             ))}
                         </select>
                     </label>
-                    <button type="submit" disabled={adding || roomIsLive || !selectedProductId}>
+                    <button type="submit" disabled={adding || roomHasStarted || !selectedProductId}>
                         {adding ? "Adding..." : "Add Product"}
                     </button>
                 </form>
 
                 {message && <p className="form-success" role="status">{message}</p>}
                 {error && <p className="form-error" role="alert">{error}</p>}
-                {!roomIsLive && availableProducts.length === 0 && approvedProducts.length > 0 && (
+                {!roomHasStarted && availableProducts.length === 0 && approvedProducts.length > 0 && (
                     <p className="empty-state">All approved products are already assigned to rooms.</p>
                 )}
-                {!roomIsLive && approvedProducts.length === 0 && (
+                {!roomHasStarted && approvedProducts.length === 0 && (
                     <p className="empty-state">No approved products found in the database.</p>
                 )}
             </section>

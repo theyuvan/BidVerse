@@ -15,17 +15,17 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
 
     List<Room> findByStatus(String status);
 
-    List<Room> findByStatusInAndStartTimeLessThanEqual(List<String> statuses, OffsetDateTime time);
-
-    /**
-     * Atomic room start: only succeeds if the room hasn't already started (or ended/been
-     * cancelled). Used by both the host's manual "start now" and the scheduler's automatic
-     * start-at-scheduled-time, so the two can never race each other into double-starting a room.
-     */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE Room r SET r.status = 'live', r.startTime = :startedAt " +
+    @Query("UPDATE Room r SET r.status = 'waiting', r.waitingStartedAt = :startedAt " +
             "WHERE r.roomId = :id AND r.status IN ('upcoming', 'open')")
-    int startIfNotStarted(@Param("id") Long id, @Param("startedAt") OffsetDateTime startedAt);
+    int beginWaitingIfNotStarted(@Param("id") Long id, @Param("startedAt") OffsetDateTime startedAt);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Room r SET r.status = 'live', r.liveStartedAt = :liveAt " +
+            "WHERE r.roomId = :id AND r.status = 'waiting' AND r.waitingStartedAt <= :cutoff")
+    int goLiveIfWaiting(@Param("id") Long id,
+                        @Param("cutoff") OffsetDateTime cutoff,
+                        @Param("liveAt") OffsetDateTime liveAt);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Room r SET r.status = 'completed' WHERE r.roomId = :id AND r.status = 'live'")

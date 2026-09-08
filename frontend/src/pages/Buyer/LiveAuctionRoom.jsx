@@ -18,6 +18,7 @@ function LiveAuctionRoom() {
     const [products, setProducts] = useState([]);
     const [auction, setAuction] = useState(null);
     const [secondsRemaining, setSecondsRemaining] = useState(0);
+    const [waitingSecondsRemaining, setWaitingSecondsRemaining] = useState(0);
     const [manualAmount, setManualAmount] = useState("");
     const [connected, setConnected] = useState(false);
     const [waitingForHost, setWaitingForHost] = useState(false);
@@ -34,6 +35,7 @@ function LiveAuctionRoom() {
 
             setAuction(update);
             setSecondsRemaining(update.secondsRemaining ?? 0);
+            setWaitingSecondsRemaining(update.waitingSecondsRemaining ?? 0);
 
             if (update.auctionItemId) {
                 setProducts((currentProducts) => currentProducts.map((product) => (
@@ -114,6 +116,16 @@ function LiveAuctionRoom() {
         return () => window.clearInterval(timer);
     }, [auction?.auctionItemId, auction?.itemStatus]);
 
+    useEffect(() => {
+        if (auction?.roomStatus !== "waiting") return undefined;
+
+        const timer = window.setInterval(() => {
+            setWaitingSecondsRemaining((seconds) => Math.max(seconds - 1, 0));
+        }, 1000);
+
+        return () => window.clearInterval(timer);
+    }, [auction?.roomStatus]);
+
     const currentProduct = products.find(
         (product) => product.auctionItemId === auction?.auctionItemId
     );
@@ -176,7 +188,7 @@ function LiveAuctionRoom() {
             <div className="auction-topbar">
                 <div>
                     <Link className="back-link" to="/buyer">Back to buyer rooms</Link>
-                    <h1>Live Auction Room #{roomId}</h1>
+                    <h1>Auction Room #{roomId}</h1>
                     <p>Buyer #{buyerId}</p>
                 </div>
                 <span className={connected ? "connection online" : "connection offline"}>
@@ -184,7 +196,15 @@ function LiveAuctionRoom() {
                 </span>
             </div>
 
-            {auction?.roomStatus === "completed" ? (
+            {auction?.roomStatus === "waiting" ? (
+                <section className="waiting-card entered-waiting-room">
+                    <span className="waiting-dot" />
+                    <h2>You are in the waiting room</h2>
+                    <p>The auction will start automatically when this timer reaches zero.</p>
+                    <div className="waiting-countdown">{waitingSecondsRemaining}</div>
+                    <small>Keep this page open. Your attendance has been recorded.</small>
+                </section>
+            ) : auction?.roomStatus === "completed" ? (
                 <section className="auction-finished">
                     <h2>Auction completed</h2>
                     <p>All products in this room have finished bidding.</p>

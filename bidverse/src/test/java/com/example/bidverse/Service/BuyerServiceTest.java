@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,6 +54,7 @@ class BuyerServiceTest {
         Room room = room("live");
         when(roomRepo.findById(1L)).thenReturn(Optional.of(room));
         when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(true);
+        when(roomSeatRepo.markBuyerJoined(eq(1L), eq(21L), any())).thenReturn(1);
         when(auctionItemRepo.findLiveAuctionItemsByRoomId(1L)).thenReturn(List.of(liveItemRow));
         when(liveItemRow.getAuctionItemId()).thenReturn(11L);
         when(liveItemRow.getProductId()).thenReturn(101L);
@@ -67,6 +70,7 @@ class BuyerServiceTest {
         assertEquals(1, items.size());
         assertEquals(11L, items.getFirst().auctionItemId());
         assertEquals("live", items.getFirst().auctionStatus());
+        verify(roomSeatRepo).markBuyerJoined(eq(1L), eq(21L), any());
     }
 
     @Test
@@ -83,15 +87,42 @@ class BuyerServiceTest {
         verify(auctionItemRepo, never()).findLiveAuctionItemsByRoomId(1L);
     }
 
-    private Room room(String status) {
-        return new Room(
-                1L,
-                51L,
-                "Test auction",
-                10,
-                new BigDecimal("20.00"),
-                status,
-                OffsetDateTime.now()
+    @Test
+    void bookedBuyerCanEnterDuringWaitingPeriod() {
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room("waiting")));
+        when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(true);
+        when(roomSeatRepo.markBuyerJoined(eq(1L), eq(21L), any())).thenReturn(1);
+        when(auctionItemRepo.findLiveAuctionItemsByRoomId(1L)).thenReturn(List.of());
+
+        buyerService.joinRoom(1L, 21L);
+
+        verify(roomSeatRepo).markBuyerJoined(eq(1L), eq(21L), any());
+    }
+
+    @Test
+    void missedBuyerCannotEnterAfterWaitingPeriod() {
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room("live")));
+        when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(true);
+        when(roomSeatRepo.markBuyerJoined(eq(1L), eq(21L), any())).thenReturn(0);
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> buyerService.joinRoom(1L, 21L)
         );
+
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatusCode());
+        verify(auctionItemRepo, never()).findLiveAuctionItemsByRoomId(1L);
+    }
+
+    private Room room(String status) {
+        Room room = new Room();
+        room.setRoomId(1L);
+        room.setHostId(51L);
+        room.setTitle("Test auction");
+        room.setSeatLimit(10);
+        room.setAdvanceAmount(new BigDecimal("20.00"));
+        room.setStatus(status);
+        room.setStartTime(OffsetDateTime.now());
+        return room;
     }
 }

@@ -28,7 +28,7 @@ public class HostService {
             STATUS_PENDING,
             STATUS_REJECTED
     );
-    private static final String ROOM_STATUS_LIVE = "live";
+    private static final Set<String> EDITABLE_ROOM_STATUSES = Set.of("upcoming", "open");
     private static final String AUCTION_ITEM_STATUS_WAITING = "waiting";
 
     private final ProductRepository productRepo;
@@ -70,7 +70,7 @@ public class HostService {
 
         Room room = roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        if (ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus())) {
+        if (!EDITABLE_ROOM_STATUSES.contains(room.getStatus().toLowerCase())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add products to a room that has already started");
         }
 

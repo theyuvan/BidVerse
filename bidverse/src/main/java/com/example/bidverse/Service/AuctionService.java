@@ -36,11 +36,13 @@ public class AuctionService {
     private static final String ITEM_STATUS_LIVE = "live";
     private static final String ITEM_STATUS_SOLD = "sold";
     private static final String ITEM_STATUS_UNSOLD = "unsold";
+    private static final String ROOM_STATUS_WAITING = "waiting";
     private static final String ROOM_STATUS_LIVE = "live";
 
     private static final String DEAL_STATUS_PENDING = "pending";
 
     private static final long BID_INACTIVITY_SECONDS = 10;
+    private static final long WAITING_ROOM_SECONDS = 90;
     private static final BigDecimal AUTO_BID_INCREMENT_PERCENT = new BigDecimal("0.05");
 
     private final AuctionItemRepository auctionItemRepo;
@@ -85,29 +87,48 @@ public class AuctionService {
         roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        int started = roomRepo.startIfNotStarted(roomId, OffsetDateTime.now());
+        if (auctionItemRepo.findByRoomId(roomId).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Add at least one approved product before starting the room");
+        }
+
+        OffsetDateTime now = OffsetDateTime.now();
+        int started = roomRepo.beginWaitingIfNotStarted(roomId, now);
         if (started == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room is already live or has ended");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room has already started or ended");
         }
 
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
-        activateFirstItem(room);
+        broadcastCurrentState(roomId, null, "WAITING_STARTED", "Waiting room is open for 90 seconds");
         return room;
     }
 
     @Scheduled(fixedRate = 1000)
-    public void autoStartDueRooms() {
-        OffsetDateTime now = OffsetDateTime.now();
-        List<Room> dueRooms = roomRepo.findByStatusInAndStartTimeLessThanEqual(
-                List.of("upcoming", "open"), now);
-        for (Room room : dueRooms) {
-            try {
-                self.getObject().startRoom(room.getRoomId());
-            } catch (ResponseStatusException alreadyStarted) {
+    public void openWaitingRooms() {
+        OffsetDateTime cutoff = OffsetDateTime.now().minusSeconds(WAITING_ROOM_SECONDS);
+        List<Room> waitingRooms = roomRepo.findByStatus(ROOM_STATUS_WAITING);
 
+        for (Room room : waitingRooms) {
+            if (room.getWaitingStartedAt() != null && !room.getWaitingStartedAt().isAfter(cutoff)) {
+                self.getObject().openBidding(room.getRoomId());
             }
         }
+    }
+
+    @Transactional
+    public void openBidding(Long roomId) {
+        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime cutoff = now.minusSeconds(WAITING_ROOM_SECONDS);
+        int updated = roomRepo.goLiveIfWaiting(roomId, cutoff, now);
+        if (updated == 0) {
+            return;
+        }
+
+        roomSeatRepo.markAbsentBuyers(roomId);
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        activateFirstItem(room);
     }
 
     @Scheduled(fixedRate = 2000)
@@ -133,7 +154,7 @@ public class AuctionService {
             return buildUpdate(roomId, liveItem.get(), "SNAPSHOT", null);
         }
         return new AuctionUpdate(roomId, null, null, null, null, null, null, null,
-                room.getStatus(), "SNAPSHOT", null);
+                waitingSecondsRemaining(room), room.getStatus(), "SNAPSHOT", null);
     }
 
 
@@ -168,8 +189,8 @@ public class AuctionService {
             return;
         }
 
-        if (!roomSeatRepo.existsByRoomIdAndBuyerId(roomId, buyerId)) {
-            sendError(roomId, buyerId, auctionItemId, "You must join this room before bidding");
+        if (!roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(roomId, buyerId, "joined")) {
+            sendError(roomId, buyerId, auctionItemId, "You must enter this room during the waiting period before bidding");
             return;
         }
 
@@ -313,7 +334,7 @@ public class AuctionService {
 
         if (item == null) {
             return new AuctionUpdate(roomId, null, null, null, null, null, null, null,
-                    room == null ? null : room.getStatus(), eventType, message);
+                    waitingSecondsRemaining(room), room == null ? null : room.getStatus(), eventType, message);
         }
 
         Product product = productRepo.findById(item.getProductId()).orElse(null);
@@ -337,10 +358,21 @@ public class AuctionService {
                 highestBidderId,
                 displayStatus,
                 secondsRemaining,
+                null,
                 room == null ? null : room.getStatus(),
                 eventType,
                 message
         );
+    }
+
+    private Long waitingSecondsRemaining(Room room) {
+        if (room == null || !ROOM_STATUS_WAITING.equalsIgnoreCase(room.getStatus())
+                || room.getWaitingStartedAt() == null) {
+            return null;
+        }
+
+        OffsetDateTime liveAt = room.getWaitingStartedAt().plusSeconds(WAITING_ROOM_SECONDS);
+        return Math.max(Duration.between(OffsetDateTime.now(), liveAt).getSeconds(), 0);
     }
 
     private void sendError(Long roomId, Long buyerId, Long auctionItemId, String message) {

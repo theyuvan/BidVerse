@@ -2,6 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getRooms, startRoom } from "../../services/hostService";
 import "./MyRooms.css";
+
+function startButtonText(room, startingRoomId) {
+    if (startingRoomId === room.roomId) return "Opening...";
+
+    const status = room.status?.toLowerCase();
+    if (status === "waiting") return "Waiting room open";
+    if (status === "live") return "Room ongoing";
+    return "Start room";
+}
+
 function MyRooms() {
     const [rooms, setRooms] = useState([]);
     const [filter,setFilter]=useState("all");
@@ -47,6 +57,7 @@ function MyRooms() {
             <section className="rooms-section">
                 <div className="room-filters">
                     <button className ={filter ==="all"? "active" : ""} onClick={() => setFilter("all")}>All</button>
+                    <button className ={filter ==="waiting"? "active" : ""} onClick={() => setFilter("waiting")}>Waiting</button>
                     <button className ={filter ==="live"? "active" : ""} onClick={() => setFilter("live")}>Live</button>
                     <button className ={filter ==="upcoming"? "active" : ""} onClick={() => setFilter("upcoming")}>Upcoming</button>
                     <button className ={filter ==="completed"? "active" : ""} onClick={() => setFilter("completed")}>Completed</button>
@@ -86,7 +97,7 @@ function MyRooms() {
                                         disabled={startingRoomId === room.roomId || !["upcoming", "open"].includes(room.status?.toLowerCase())}
                                         onClick={(event) => handleStartRoom(event, room.roomId)}
                                     >
-                                        {startingRoomId === room.roomId ? "Starting..." : room.status?.toLowerCase() === "live" ? "Room ongoing" : "Start room"}
+                                        {startButtonText(room, startingRoomId)}
                                     </button>
                                     <button
                                         type="button"

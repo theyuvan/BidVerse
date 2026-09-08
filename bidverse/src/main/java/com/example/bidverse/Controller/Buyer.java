@@ -54,6 +54,14 @@ public class Buyer {
         return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
     }
 
+    @PostMapping("/rooms/{roomId}/enter")
+    public ResponseEntity<List<LiveAuctionItem>> enterRoom(
+            @PathVariable Long roomId,
+            @RequestParam Long buyerId
+    ) {
+        return ResponseEntity.ok(buyerService.joinRoom(roomId, buyerId));
+    }
+
     @GetMapping("/rooms/available")
     public ResponseEntity<List<Room>> getAvailableRooms() {
         return ResponseEntity.ok(buyerService.getAvailableRooms());

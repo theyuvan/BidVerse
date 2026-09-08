@@ -227,12 +227,12 @@ function RoomDetails() {
 
             )}
 
-            {room.status?.toLowerCase() === "live" && (
+            {["waiting", "live"].includes(room.status?.toLowerCase()) && (
                 <section className="booking-section">
-                    <h2>Live auction</h2>
-                    <p>Enter as buyer #{buyerId} to watch the timer and place bids.</p>
+                    <h2>{room.status?.toLowerCase() === "waiting" ? "Waiting room is open" : "Live auction"}</h2>
+                    <p>Enter as buyer #{buyerId} to record attendance and join the auction.</p>
                     <Link className="enter-room-link" to={`/buyer/rooms/${roomId}/live`}>
-                        Enter live auction
+                        Enter auction room
                     </Link>
                 </section>
             )}

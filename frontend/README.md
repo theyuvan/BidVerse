@@ -14,8 +14,11 @@ Copy `.env.example` to `.env` if the backend URL or default test buyer ID is dif
 ## Test the live auction
 
 1. Open `/buyer`, choose a buyer ID, and book an upcoming room.
-2. Open that room from **My booked rooms**. The waiting page will enter automatically when the room starts.
+2. Open that room from **My booked rooms**. Leave the page open while it waits for the host.
 3. In another browser tab, open the host room and select **Start auction now**.
-4. Return to the buyer tab and place a quick or manual bid.
+4. The buyer is entered into the 90-second waiting room automatically. Buyers who do not enter before the countdown ends are marked absent and their advance is forfeited.
+5. When the room becomes live, place a quick or manual bid. Every accepted bid restarts the product's 10-second timer.
 
 The live page connects to the Spring STOMP endpoint at `/ws`. Auction updates arrive on `/topic/room/{roomId}`, while buyer-specific bid errors arrive on `/topic/room/{roomId}/buyer/{buyerId}`.
+
+Before starting the backend against an existing database, run `bidverse/database/auction-waiting-room.sql` once.

@@ -94,13 +94,16 @@ function BuyerDashboard() {
                                 <p>Room #{booking.roomId}</p>
                                 <p>{new Date(booking.startTime).toLocaleString()}</p>
                                 <p>Advance paid: ₹{booking.advanceAmount}</p>
+                                {booking.attendanceStatus === "missed" && (
+                                    <p className="form-error">Entry missed. Advance forfeited.</p>
+                                )}
 
-                                {booking.roomStatus === "live" || booking.roomStatus === "upcoming" || booking.roomStatus === "open" ? (
+                                {["waiting", "live", "upcoming", "open"].includes(booking.roomStatus) ? (
                                     <Link
                                         className="enter-room-link"
                                         to={`/buyer/rooms/${booking.roomId}/live`}
                                     >
-                                        {booking.canJoin ? "Enter live auction" : "Open waiting room"}
+                                        {booking.canJoin ? "Enter auction room" : "Open waiting page"}
                                     </Link>
                                 ) : (
                                     <span className="room-complete-label">Auction finished</span>

@@ -13,6 +13,7 @@ import com.example.bidverse.Repository.RoomSeatRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -25,13 +26,17 @@ import java.util.stream.Collectors;
 @Service
 public class BuyerService {
 
-    private static final List<String> STARTED_ROOM_STATUSES = List.of("live", "completed", "cancelled");
+    private static final List<String> STARTED_ROOM_STATUSES = List.of("waiting", "live", "completed", "cancelled");
     private static final List<String> BOOKABLE_ROOM_STATUSES = List.of("upcoming", "open");
     private static final List<String> UPCOMING_ROOM_STATUSES = List.of("upcoming", "open");
     private static final String ROOM_STATUS_LIVE = "live";
+    private static final String ROOM_STATUS_WAITING = "waiting";
     private static final String ROOM_STATUS_COMPLETED = "completed";
     private static final String ROOM_STATUS_CANCELLED = "cancelled";
     private static final String ADVANCE_STATUS_PAID = "paid";
+    private static final String ATTENDANCE_STATUS_BOOKED = "booked";
+    private static final String ATTENDANCE_STATUS_JOINED = "joined";
+    private static final String REFUND_STATUS_PENDING = "pending";
     private static final int BID_DURATION_SECONDS = 10;
     private static final long MIN_ROOM_DURATION_SECONDS = 3600;
 
@@ -118,6 +123,8 @@ public class BuyerService {
         seat.setBuyerId(buyerId);
         seat.setAdvanceAmount(room.getAdvanceAmount());
         seat.setAdvanceStatus(ADVANCE_STATUS_PAID);
+        seat.setAttendanceStatus(ATTENDANCE_STATUS_BOOKED);
+        seat.setRefundStatus(REFUND_STATUS_PENDING);
 
         return roomSeatRepo.save(seat);
     }
@@ -165,8 +172,10 @@ public class BuyerService {
     public List<BookingSummary> displayBookings(Long buyerId, String status) {
 
         String filter = status == null || status.isBlank() ? null : status.trim().toLowerCase();
-        if (filter != null && !filter.equals("upcoming") && !filter.equals("live") && !filter.equals("completed")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "status must be one of: upcoming, live, completed");
+        if (filter != null && !filter.equals("upcoming") && !filter.equals("waiting")
+                && !filter.equals("live") && !filter.equals("completed")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "status must be one of: upcoming, waiting, live, completed");
         }
 
         List<Room_Seat> bookings = roomSeatRepo.findByBuyerId(buyerId);
@@ -187,7 +196,12 @@ public class BuyerService {
                             room == null ? null : room.getStartTime(),
                             seat.getAdvanceAmount(),
                             seat.getAdvanceStatus(),
-                            ROOM_STATUS_LIVE.equalsIgnoreCase(roomStatus)
+                            ROOM_STATUS_WAITING.equalsIgnoreCase(roomStatus)
+                                    || ROOM_STATUS_LIVE.equalsIgnoreCase(roomStatus),
+                            room == null ? null : room.getWaitingStartedAt(),
+                            seat.getJoinedAt(),
+                            seat.getAttendanceStatus(),
+                            seat.getRefundStatus()
                     );
                 })
                 .filter(booking -> matchesStatusFilter(booking.roomStatus(), filter))
@@ -201,22 +215,32 @@ public class BuyerService {
         String normalizedStatus = roomStatus == null ? "" : roomStatus.toLowerCase();
         return switch (filter) {
             case "upcoming" -> UPCOMING_ROOM_STATUSES.contains(normalizedStatus);
+            case "waiting" -> ROOM_STATUS_WAITING.equals(normalizedStatus);
             case "live" -> ROOM_STATUS_LIVE.equals(normalizedStatus);
             case "completed" -> ROOM_STATUS_COMPLETED.equals(normalizedStatus);
             default -> false;
         };
     }
 
+    @Transactional
     public List<LiveAuctionItem> joinRoom(Long roomId, Long buyerId) {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        if (!ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room is not live yet");
+        boolean roomCanBeEntered = ROOM_STATUS_WAITING.equalsIgnoreCase(room.getStatus())
+                || ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus());
+        if (!roomCanBeEntered) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waiting room is not open yet");
         }
 
         if (!roomSeatRepo.existsByRoomIdAndBuyerId(roomId, buyerId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You must book a seat in this room before joining");
+        }
+
+        int joined = roomSeatRepo.markBuyerJoined(roomId, buyerId, OffsetDateTime.now());
+        if (joined == 0) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "The 90-second entry period ended and your advance was forfeited");
         }
 
         return auctionItemRepo.findLiveAuctionItemsByRoomId(roomId).stream()

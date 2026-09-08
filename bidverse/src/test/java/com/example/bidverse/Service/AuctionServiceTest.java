@@ -4,6 +4,7 @@ import com.example.bidverse.Dto.BidError;
 import com.example.bidverse.Dto.BidMessage;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
+import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Entity.bid;
 import com.example.bidverse.Repository.AuctionItemRepository;
@@ -20,6 +21,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -34,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -96,10 +100,57 @@ class AuctionServiceTest {
     }
 
     @Test
+    void hostStartOpensWaitingRoomWithoutStartingFirstProduct() {
+        Room room = room("waiting");
+        auction_item item = liveItem(new BigDecimal("100.00"), null);
+        item.setStatus("waiting");
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room));
+        when(auctionItemRepo.findByRoomId(1L)).thenReturn(List.of(item));
+        when(roomRepo.beginWaitingIfNotStarted(eq(1L), any())).thenReturn(1);
+
+        Room startedRoom = auctionService.startRoom(1L);
+
+        assertEquals("waiting", startedRoom.getStatus());
+        verify(roomRepo).beginWaitingIfNotStarted(eq(1L), any());
+        verify(auctionItemRepo, never()).activateIfWaiting(any(), any(), any());
+    }
+
+    @Test
+    void roomCannotStartWithoutAnApprovedProduct() {
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room("upcoming")));
+        when(auctionItemRepo.findByRoomId(1L)).thenReturn(List.of());
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> auctionService.startRoom(1L)
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
+        verify(roomRepo, never()).beginWaitingIfNotStarted(any(), any());
+    }
+
+    @Test
+    void waitingRoomForfeitsAbsentSeatsBeforeBiddingStarts() {
+        Room room = room("live");
+        auction_item item = liveItem(new BigDecimal("100.00"), null);
+        item.setStatus("waiting");
+        when(roomRepo.goLiveIfWaiting(eq(1L), any(), any())).thenReturn(1);
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room));
+        when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(item));
+        when(auctionItemRepo.activateIfWaiting(eq(11L), any(), any())).thenReturn(1);
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
+
+        auctionService.openBidding(1L);
+
+        verify(roomSeatRepo).markAbsentBuyers(1L);
+        verify(auctionItemRepo).activateIfWaiting(eq(11L), any(), any());
+    }
+
+    @Test
     void joinedBuyerBidIsAcceptedAndResetsDeadlineToTenSeconds() {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(5));
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
-        when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(true);
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
         when(auctionItemRepo.acceptBidAndResetDeadline(
                 eq(11L), eq(new BigDecimal("100.00")), eq(new BigDecimal("105.00")), any(), any()))
                 .thenReturn(1);
@@ -119,7 +170,7 @@ class AuctionServiceTest {
     void buyerWithoutRoomSeatCannotBid() {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(10));
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
-        when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(false);
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(false);
 
         auctionService.placeBid(1L, new BidMessage(11L, 21L, "AUTO", null));
 
@@ -127,14 +178,14 @@ class AuctionServiceTest {
         verify(bidRepository, never()).upsertBid(any(), any(), any(), any());
         verify(messagingTemplate).convertAndSend(
                 eq("/topic/room/1/buyer/21"),
-                eq(new BidError(11L, "You must join this room before bidding")));
+                eq(new BidError(11L, "You must enter this room during the waiting period before bidding")));
     }
 
     @Test
     void firstConcurrentBidWinsTheAtomicPriceUpdate() throws Exception {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(10));
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
-        when(roomSeatRepo.existsByRoomIdAndBuyerId(eq(1L), any())).thenReturn(true);
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(eq(1L), any(), eq("joined"))).thenReturn(true);
 
         AtomicBoolean claimed = new AtomicBoolean();
         CountDownLatch firstBidReachedDatabase = new CountDownLatch(1);
@@ -220,5 +271,14 @@ class AuctionServiceTest {
                 OffsetDateTime.now().minusSeconds(1),
                 deadline
         );
+    }
+
+    private Room room(String status) {
+        Room room = new Room();
+        room.setRoomId(1L);
+        room.setTitle("Test auction");
+        room.setStatus(status);
+        room.setStartTime(OffsetDateTime.now().plusMinutes(5));
+        return room;
     }
 }

@@ -19,7 +19,7 @@ export const getBuyerBookings = (buyerId) => {
 };
 
 export const joinRoom = (roomId, buyerId) => {
-    return api.get(`/buyer/rooms/${roomId}/join`, {
+    return api.post(`/buyer/rooms/${roomId}/enter`, null, {
         params: { buyerId }
     });
 };

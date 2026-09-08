@@ -89,7 +89,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                 p.name         as "productName",
                 p.description  as "description",
                 p.base_price   as "basePrice",
-                p.status       as "status"
+                p.status       as "status",
+                p.image_url    as "imageUrl"
             from products p
             join categories c on c.category_id = p.category_id
             join users seller on seller.user_id = p.seller_id
