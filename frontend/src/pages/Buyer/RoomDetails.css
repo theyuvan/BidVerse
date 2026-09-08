@@ -1,124 +1,350 @@
 .buyer-room-details-page {
     min-height: 100vh;
-    padding: 110px 40px 40px;
+    padding: 108px clamp(22px, 5vw, 72px) 68px;
     box-sizing: border-box;
-    background: #f6f3ec;
+    background:
+        radial-gradient(circle at 92% 5%, rgba(230, 55, 82, 0.11), transparent 27%),
+        radial-gradient(circle at 4% 48%, rgba(86, 102, 255, 0.07), transparent 24%),
+        #101119;
+    color: #f5f6f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.buyer-room-details-page .back-link,
+.buyer-room-details-page .room-detail-hero,
+.buyer-room-details-page .room-summary,
+.buyer-room-details-page .booking-section,
+.buyer-room-details-page .room-products-section {
+    max-width: 1320px;
+    margin-right: auto;
+    margin-left: auto;
 }
 
 .buyer-room-details-page .back-link {
-    display: inline-block;
-    margin-bottom: 20px;
-    text-decoration: none;
-}
-
-.buyer-room-details-page .page-header {
-    margin-bottom: 25px;
-}
-
-.buyer-room-details-page .page-header h1 {
-    margin-bottom: 8px;
-}
-
-.buyer-room-details-page .room-summary,
-.buyer-room-details-page .booking-section {
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     margin-bottom: 30px;
+    color: #aeb3c3;
+    font-size: 14px;
+    font-weight: 650;
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.buyer-room-details-page .back-link:hover {
+    color: #ffffff;
+    transform: translateX(-3px);
+}
+
+.room-detail-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 34px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #292d3a;
+}
+
+.room-detail-hero h1 {
+    margin: 7px 0 10px;
+    color: #ffffff;
+    font-size: clamp(34px, 4vw, 50px);
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+}
+
+.room-detail-hero p {
+    max-width: 650px;
+    margin: 0;
+    color: #979daf;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+.room-detail-eyebrow {
+    display: block;
+    color: #f0677b;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.room-detail-status {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border: 1px solid rgba(240, 103, 123, 0.3);
+    border-radius: 999px;
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8497;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.room-detail-status.live {
+    border-color: rgba(50, 205, 116, 0.3);
+    background: rgba(50, 205, 116, 0.1);
+    color: #67df9a;
+}
+
+.buyer-room-details-page .room-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.buyer-room-details-page .room-summary > div {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    padding: 17px 18px;
+    border: 1px solid #292d3a;
+    border-radius: 13px;
+    background: linear-gradient(145deg, #1c1e29, #181a23);
+    box-sizing: border-box;
+}
+
+.buyer-room-details-page .room-summary strong {
+    color: #797f92;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.buyer-room-details-page .room-summary span {
+    overflow-wrap: anywhere;
+    color: #f4f5f8;
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.buyer-room-details-page .booking-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 52px;
+    padding: 25px 27px;
+    border: 1px solid #393040;
+    border-radius: 16px;
+    background:
+        linear-gradient(105deg, rgba(230, 55, 82, 0.13), transparent 50%),
+        #191b25;
+    box-sizing: border-box;
 }
 
 .buyer-room-details-page .booking-section h2 {
-    margin: 0 0 8px;
+    margin: 6px 0 6px;
+    color: #ffffff;
+    font-size: 24px;
+    letter-spacing: -0.02em;
 }
 
-.buyer-room-details-page .book-room-button {
-    min-width: 180px;
-    margin-top: 8px;
-    padding: 12px 20px;
-    border: 0;
-    border-radius: 9px;
-    background: #e0374f;
-    color: #ffffff;
-    cursor: pointer;
+.buyer-room-details-page .booking-section p {
+    margin: 0;
+    color: #989daf;
     font-size: 14px;
-    font-weight: 700;
-    box-shadow: 0 7px 18px rgba(224, 55, 79, 0.22);
+}
+
+.buyer-room-details-page .book-room-button,
+.buyer-room-details-page .booking-section .enter-room-link {
+    flex-shrink: 0;
+    min-width: 210px;
+    padding: 13px 22px;
+    border: 0;
+    border-radius: 10px;
+    background: #e63752;
+    color: #ffffff;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 750;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 9px 24px rgba(230, 55, 82, 0.24);
     transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.buyer-room-details-page .book-room-button:hover:not(:disabled) {
-    background: #c92d43;
-    box-shadow: 0 10px 24px rgba(224, 55, 79, 0.3);
+.buyer-room-details-page .book-room-button:hover:not(:disabled),
+.buyer-room-details-page .booking-section .enter-room-link:hover {
+    background: #f14861;
+    box-shadow: 0 12px 28px rgba(230, 55, 82, 0.32);
     transform: translateY(-2px);
 }
 
 .buyer-room-details-page .book-room-button:disabled {
     cursor: wait;
-    opacity: 0.72;
+    opacity: 0.7;
 }
 
 .buyer-room-details-page .book-room-button.booked {
-    background: #16803c;
+    background: #1b9850;
     cursor: default;
     opacity: 1;
-    box-shadow: 0 7px 18px rgba(22, 128, 60, 0.22);
+    box-shadow: 0 9px 24px rgba(27, 152, 80, 0.24);
+}
+
+.buyer-room-details-page .live-entry-panel {
+    border-color: rgba(50, 205, 116, 0.25);
+    background:
+        linear-gradient(105deg, rgba(50, 205, 116, 0.1), transparent 50%),
+        #191b25;
+}
+
+.buyer-room-details-page .room-products-section {
+    margin-top: 12px;
+}
+
+.buyer-room-details-page .section-heading {
+    display: block;
+    margin-bottom: 22px;
+}
+
+.buyer-room-details-page .section-heading h2 {
+    margin: 5px 0 0;
+    color: #ffffff;
+    font-size: 26px;
+    letter-spacing: -0.025em;
+}
+
+.buyer-room-details-page .assigned-product-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.buyer-room-details-page .assigned-product {
+    overflow: hidden;
+    border: 1px solid #292d3a;
+    border-radius: 16px;
+    background: #191b25;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.15);
+    transition: transform 0.22s ease, border-color 0.22s ease;
+}
+
+.buyer-room-details-page .assigned-product:hover {
+    border-color: #484e61;
+    transform: translateY(-3px);
+}
+
+.buyer-room-details-page .assigned-product img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    padding: 12px;
+    background: #f7f7f8;
+    box-sizing: border-box;
+    object-fit: contain;
+}
+
+.buyer-room-details-page .assigned-product > div {
+    padding: 19px;
+}
+
+.buyer-room-details-page .assigned-product h3 {
+    margin: 0 0 9px;
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.buyer-room-details-page .assigned-product p {
+    margin: 0 0 12px;
+    color: #8d93a6;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.buyer-room-details-page .assigned-product p:last-child {
+    margin-bottom: 0;
+}
+
+.product-category {
+    display: inline-flex;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #252834;
+    color: #b9bdca;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.buyer-room-details-page .empty-state,
+.buyer-room-details-page > .form-error {
+    padding: 30px;
+    border: 1px dashed #343846;
+    border-radius: 14px;
+    background: rgba(25, 27, 37, 0.72);
+    color: #878c9f;
+    text-align: center;
 }
 
 .booking-toast {
     position: fixed;
-    top: 88px;
+    top: 92px;
     right: 24px;
     z-index: 1200;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: start;
     gap: 12px;
-    width: min(420px, calc(100vw - 36px));
+    width: min(430px, calc(100vw - 36px));
     padding: 16px;
     border: 1px solid;
-    border-radius: 12px;
+    border-radius: 13px;
     box-sizing: border-box;
-    background: #ffffff;
-    box-shadow: 0 16px 42px rgba(15, 23, 42, 0.22);
+    background: #1d202a;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
     animation: booking-toast-in 0.25s ease-out;
 }
 
 .booking-toast-success {
-    border-color: #86d6a2;
+    border-color: rgba(50, 205, 116, 0.55);
 }
 
 .booking-toast-error {
-    border-color: #f3a1ae;
+    border-color: rgba(240, 72, 97, 0.58);
 }
 
 .booking-toast-icon {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
+    width: 29px;
+    height: 29px;
     border-radius: 50%;
     color: #ffffff;
     font-weight: 800;
 }
 
 .booking-toast-success .booking-toast-icon {
-    background: #16803c;
+    background: #1b9850;
 }
 
 .booking-toast-error .booking-toast-icon {
-    background: #d92d45;
+    background: #e63752;
 }
 
 .booking-toast strong {
     display: block;
     margin: 1px 0 4px;
-    color: #172033;
+    color: #ffffff;
 }
 
 .booking-toast p {
     margin: 0;
-    color: #566176;
+    color: #a6abbb;
     font-size: 13px;
     line-height: 1.45;
 }
@@ -127,14 +353,14 @@
     padding: 0 3px;
     border: 0;
     background: transparent;
-    color: #667085;
+    color: #858b9c;
     cursor: pointer;
     font-size: 22px;
     line-height: 1;
 }
 
 .booking-toast-close:hover {
-    color: #172033;
+    color: #ffffff;
 }
 
 @keyframes booking-toast-in {
@@ -149,93 +375,45 @@
     }
 }
 
-.buyer-room-details-page .room-summary {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-}
-
-.buyer-room-details-page .room-summary > div {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.buyer-room-details-page .room-products-section {
-    margin-top: 30px;
-}
-
-.buyer-room-details-page .section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.buyer-room-details-page .section-heading h2 {
-    margin: 0;
-}
-
-.buyer-room-details-page .assigned-product-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.buyer-room-details-page .assigned-product {
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    background: #ffffff;
-}
-
-.buyer-room-details-page .assigned-product img {
-    width: 100%;
-    height: 180px;
-    margin-bottom: 14px;
-    border-radius: 9px;
-    object-fit: cover;
-}
-
-.buyer-room-details-page .assigned-product h3 {
-    margin: 0 0 10px;
-}
-
-.buyer-room-details-page .assigned-product p {
-    margin-bottom: 12px;
-}
-
-.buyer-room-details-page .empty-state {
-    padding: 20px;
-    text-align: center;
-}
-
-.buyer-room-details-page .form-error {
-    padding: 15px;
-    border-radius: 8px;
+@media (max-width: 980px) {
+    .buyer-room-details-page .assigned-product-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 700px) {
     .buyer-room-details-page {
-        padding: 96px 18px 30px;
+        padding: 96px 18px 42px;
     }
 
-    .buyer-room-details-page .room-summary {
+    .room-detail-hero,
+    .buyer-room-details-page .booking-section {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .buyer-room-details-page .room-summary,
+    .buyer-room-details-page .assigned-product-list {
         grid-template-columns: 1fr;
     }
 
-    .booking-toast {
-        top: 82px;
-        right: 18px;
+    .buyer-room-details-page .book-room-button,
+    .buyer-room-details-page .booking-section .enter-room-link {
+        width: 100%;
     }
 
-    .buyer-room-details-page .book-room-button {
-        width: 100%;
+    .booking-toast {
+        top: 84px;
+        right: 18px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .booking-toast {
+    .booking-toast,
+    .buyer-room-details-page .assigned-product,
+    .buyer-room-details-page .book-room-button,
+    .buyer-room-details-page .back-link {
         animation: none;
+        transition: none;
     }
 }

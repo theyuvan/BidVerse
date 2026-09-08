@@ -369,12 +369,12 @@
     justify-content: center;
     gap: 9px;
     margin-top: auto;
-    padding: 11px 15px;
+    padding: 13px 16px;
     border-radius: 9px;
     background: #e63752;
     color: #ffffff;
-    font-size: 13px;
-    font-weight: 750;
+    font-size: 15px;
+    font-weight: 800;
     text-decoration: none;
     transition: background 0.2s ease, box-shadow 0.2s ease;
 }

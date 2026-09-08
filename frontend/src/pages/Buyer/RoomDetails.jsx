@@ -173,16 +173,15 @@ function RoomDetails() {
             </Link>
 
 
-            {/* ROOM INFORMATION */}
-
-            <header className="page-header">
-
-                <h1>{room.title}</h1>
-
-                <p>
-                    Room #{room.roomId}
-                </p>
-
+            <header className="page-header room-detail-hero">
+                <div>
+                    <span className="room-detail-eyebrow">Auction room #{room.roomId}</span>
+                    <h1>{room.title}</h1>
+                    <p>Review the auction schedule and products before reserving your seat.</p>
+                </div>
+                <span className={`room-detail-status ${room.status?.toLowerCase()}`}>
+                    {room.status}
+                </span>
             </header>
 
 
@@ -233,11 +232,11 @@ function RoomDetails() {
 
                 <section className="booking-section">
 
-                    <h2>Book This Room</h2>
-
-                    <p>
-                        Advance amount: ₹{room.advanceAmount}
-                    </p>
+                    <div>
+                        <span className="room-detail-eyebrow">Seat reservation</span>
+                        <h2>Book This Room</h2>
+                        <p>Secure your seat with an advance of ₹{room.advanceAmount}.</p>
+                    </div>
 
                     <button
                         onClick={handleBookRoom}
@@ -252,11 +251,14 @@ function RoomDetails() {
             )}
 
             {["waiting", "live"].includes(room.status?.toLowerCase()) && (
-                <section className="booking-section">
-                    <h2>{room.status?.toLowerCase() === "waiting" ? "Waiting room is open" : "Live auction"}</h2>
-                    <p>Enter as buyer #{buyerId} to record attendance and join the auction.</p>
+                <section className="booking-section live-entry-panel">
+                    <div>
+                        <span className="room-detail-eyebrow">Ready to enter</span>
+                        <h2>{room.status?.toLowerCase() === "waiting" ? "Waiting Room Is Open" : "Auction Is Live"}</h2>
+                        <p>Join as buyer #{buyerId} and take your place in the auction.</p>
+                    </div>
                     <Link className="enter-room-link" to={`/buyer/rooms/${roomId}/live`}>
-                        Enter auction room
+                        Enter Auction Room →
                     </Link>
                 </section>
             )}
@@ -267,13 +269,10 @@ function RoomDetails() {
             <section className="room-products-section">
 
                 <div className="section-heading">
-
-                    <h2>Products Available</h2>
-
-                    <span>
-                        {products.length} products
-                    </span>
-
+                    <div>
+                        <span className="room-detail-eyebrow">Auction catalogue</span>
+                        <h2>Products Available</h2>
+                    </div>
                 </div>
 
 
@@ -310,8 +309,7 @@ function RoomDetails() {
                                     </p>
 
                                     <p>
-                                        Category:{" "}
-                                        {product.categoryName}
+                                        <span className="product-category">{product.categoryName}</span>
                                     </p>
 
                                 </div>

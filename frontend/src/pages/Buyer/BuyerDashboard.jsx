@@ -230,9 +230,6 @@ function BuyerDashboard({ roomsOnly = false }) {
                 <section className="buyer-section">
                     <div className="section-heading">
                         <h2>{tabContent.title}</h2>
-                        <span>
-                            {tabContent.items.length} {tabContent.items.length === 1 ? "room" : "rooms"}
-                        </span>
                     </div>
                     {renderRoomCollection(
                         tabContent.items,
