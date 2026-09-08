@@ -254,11 +254,18 @@ public class AuctionService {
     }
 
     private void createDeal(auction_item item) {
+        if (dealRepository.existsByAuctionItemId(item.getAuctionItemId())) {
+            return;
+        }
+
         bid winningBid = bidRepository.findTopByAuctionItemIdOrderByAmountDesc(item.getAuctionItemId()).orElse(null);
+
         if (winningBid == null) {
             return;
         }
+
         Product product = productRepo.findById(item.getProductId()).orElse(null);
+
         if (product == null) {
             return;
         }
