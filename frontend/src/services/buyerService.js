@@ -17,6 +17,9 @@ export const bookRoom = (roomId, buyerId) => {
 export const getBuyerBookings = (buyerId) => {
     return api.get(`/buyer/${buyerId}/bookings`);
 };
+export const getBuyerDeals = (buyerId) => {
+    return api.get(`/buyer/${buyerId}/deals`);
+};
 
 export const joinRoom = (roomId, buyerId) => {
     return api.post(`/buyer/rooms/${roomId}/enter`, null, {

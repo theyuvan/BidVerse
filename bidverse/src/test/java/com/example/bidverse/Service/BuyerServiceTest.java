@@ -1,8 +1,10 @@
 package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.LiveAuctionItem;
+import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Repository.AuctionItemRepository;
+import com.example.bidverse.Repository.BuyerWonDealRow;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.LiveAuctionItemRow;
 import com.example.bidverse.Repository.RoomRepo;
@@ -41,6 +43,8 @@ class BuyerServiceTest {
     private DealRepository dealRepo;
     @Mock
     private LiveAuctionItemRow liveItemRow;
+    @Mock
+    private BuyerWonDealRow wonDealRow;
 
     private BuyerService buyerService;
 
@@ -112,6 +116,35 @@ class BuyerServiceTest {
 
         assertEquals(HttpStatus.FORBIDDEN, error.getStatusCode());
         verify(auctionItemRepo, never()).findLiveAuctionItemsByRoomId(1L);
+    }
+
+    @Test
+    void completedRoomStopsJoinRetriesWithGoneResponse() {
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room("completed")));
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> buyerService.joinRoom(1L, 21L)
+        );
+
+        assertEquals(HttpStatus.GONE, error.getStatusCode());
+        verify(roomSeatRepo, never()).markBuyerJoined(any(), any(), any());
+    }
+
+    @Test
+    void buyerWonDealsIncludeSellerContactAndProductDetails() {
+        when(dealRepo.findWonDealsByBuyerId(21L)).thenReturn(List.of(wonDealRow));
+        when(wonDealRow.getDealId()).thenReturn(31L);
+        when(wonDealRow.getProductName()).thenReturn("Camera");
+        when(wonDealRow.getSellerName()).thenReturn("Seller One");
+        when(wonDealRow.getSellerPhone()).thenReturn("9876543210");
+
+        List<BuyerWonDeal> deals = buyerService.getDeals(21L);
+
+        assertEquals(1, deals.size());
+        assertEquals("Camera", deals.getFirst().productName());
+        assertEquals("Seller One", deals.getFirst().sellerName());
+        assertEquals("9876543210", deals.getFirst().sellerPhone());
     }
 
     private Room room(String status) {

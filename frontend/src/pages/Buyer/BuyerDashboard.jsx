@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getBuyerId, saveBuyerId } from "../../services/buyerSession";
-import { getAvailableRooms, getBuyerBookings } from "../../services/buyerService";
+import { getAvailableRooms, getBuyerBookings, getBuyerDeals } from "../../services/buyerService";
 import "./BuyerDashboard.css";
 
 function BuyerDashboard() {
@@ -9,17 +9,19 @@ function BuyerDashboard() {
     const [buyerIdInput, setBuyerIdInput] = useState(String(getBuyerId()));
     const [rooms, setRooms] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [wonDeals, setWonDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     useEffect(() => {
         let cancelled = false;
 
-        Promise.all([getAvailableRooms(), getBuyerBookings(buyerId)])
-            .then(([roomsResponse, bookingsResponse]) => {
+        Promise.all([getAvailableRooms(), getBuyerBookings(buyerId), getBuyerDeals(buyerId)])
+            .then(([roomsResponse, bookingsResponse, dealsResponse]) => {
                 if (cancelled) return;
                 setRooms(roomsResponse.data);
                 setBookings(bookingsResponse.data);
+                setWonDeals(dealsResponse.data);
                 setError("");
             })
             .catch(() => {
@@ -108,6 +110,38 @@ function BuyerDashboard() {
                                 ) : (
                                     <span className="room-complete-label">Auction finished</span>
                                 )}
+                            </article>
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            <section className="buyer-section">
+                <div className="section-heading">
+                    <h2>Products I won</h2>
+                    <span>{wonDeals.length} sold products</span>
+                </div>
+
+                {loading ? (
+                    <p className="buyer-empty">Loading won products...</p>
+                ) : wonDeals.length === 0 ? (
+                    <p className="buyer-empty">You have not won an auction product yet.</p>
+                ) : (
+                    <div className="won-deals-grid">
+                        {wonDeals.map((deal) => (
+                            <article className="won-deal-card" key={deal.dealId}>
+                                {deal.imageUrl && <img src={deal.imageUrl} alt={deal.productName} />}
+                                <div className="won-deal-content">
+                                    <span className="buyer-room-status completed">Won · Room #{deal.roomId}</span>
+                                    <h3>{deal.productName}</h3>
+                                    <p>{deal.productDescription || "No product description available."}</p>
+                                    <dl className="won-deal-details">
+                                        <div><dt>Winning bid</dt><dd>₹{deal.finalPrice}</dd></div>
+                                        <div><dt>Seller</dt><dd>{deal.sellerName || `Seller #${deal.sellerId}`}</dd></div>
+                                        <div><dt>Email</dt><dd>{deal.sellerEmail || "Unavailable"}</dd></div>
+                                        <div><dt>Phone</dt><dd>{deal.sellerPhone || "Unavailable"}</dd></div>
+                                    </dl>
+                                </div>
                             </article>
                         ))}
                     </div>

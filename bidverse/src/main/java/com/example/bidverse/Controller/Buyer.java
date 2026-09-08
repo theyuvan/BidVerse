@@ -2,10 +2,10 @@ package com.example.bidverse.Controller;
 
 import com.example.bidverse.Dto.BookSeatRequest;
 import com.example.bidverse.Dto.BookingSummary;
+import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Dto.RejectRequest;
-import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Service.BuyerService;
 
@@ -84,7 +84,7 @@ public class Buyer {
 
     // GET /buyer/{buyerId}/deals -> everything this buyer has won (mirrors /seller/{sellerId}/deals)
     @GetMapping("/{buyerId}/deals")
-    public ResponseEntity<List<Deal>> displayDeals(@PathVariable Long buyerId) {
+    public ResponseEntity<List<BuyerWonDeal>> displayDeals(@PathVariable Long buyerId) {
         return ResponseEntity.ok(buyerService.getDeals(buyerId));
     }
 

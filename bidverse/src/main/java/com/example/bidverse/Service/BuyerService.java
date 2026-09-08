@@ -1,12 +1,14 @@
 package com.example.bidverse.Service;
 
 import com.example.bidverse.Dto.BookingSummary;
+import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Dto.CatalogItem;
 import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Room;
 import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Repository.AuctionItemRepository;
+import com.example.bidverse.Repository.BuyerWonDealRow;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
@@ -52,8 +54,30 @@ public class BuyerService {
         this.dealRepo = dealRepo;
     }
 
-    public List<Deal> getDeals(Long buyerId) {
-        return dealRepo.findByBuyerId(buyerId);
+    public List<BuyerWonDeal> getDeals(Long buyerId) {
+        return dealRepo.findWonDealsByBuyerId(buyerId).stream()
+                .map(this::toBuyerWonDeal)
+                .toList();
+    }
+
+    private BuyerWonDeal toBuyerWonDeal(BuyerWonDealRow row) {
+        return new BuyerWonDeal(
+                row.getDealId(),
+                row.getAuctionItemId(),
+                row.getRoomId(),
+                row.getProductId(),
+                row.getProductName(),
+                row.getProductDescription(),
+                row.getImageUrl(),
+                row.getFinalPrice(),
+                row.getDealStatus(),
+                row.getBuyerStatus(),
+                row.getSellerStatus(),
+                row.getSellerId(),
+                row.getSellerName(),
+                row.getSellerEmail(),
+                row.getSellerPhone()
+        );
     }
 
     public List<Room> getAvailableRooms() {
@@ -232,9 +256,14 @@ public class BuyerService {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        boolean roomCanBeEntered = ROOM_STATUS_WAITING.equalsIgnoreCase(room.getStatus())
-                || ROOM_STATUS_LIVE.equalsIgnoreCase(room.getStatus());
-        if (!roomCanBeEntered) {
+        String roomStatus = room.getStatus() == null ? "" : room.getStatus().toLowerCase();
+        if (ROOM_STATUS_COMPLETED.equals(roomStatus)) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Auction has completed");
+        }
+        if (ROOM_STATUS_CANCELLED.equals(roomStatus)) {
+            throw new ResponseStatusException(HttpStatus.GONE, "Auction was cancelled");
+        }
+        if (!ROOM_STATUS_WAITING.equals(roomStatus) && !ROOM_STATUS_LIVE.equals(roomStatus)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waiting room is not open yet");
         }
 

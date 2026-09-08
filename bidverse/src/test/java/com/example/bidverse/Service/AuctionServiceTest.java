@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -232,6 +233,53 @@ class AuctionServiceTest {
 
         verify(auctionItemRepo).resolveExpiredIfLive(eq(11L), eq("unsold"), any());
         verify(dealRepository, never()).save(any());
+    }
+
+    @Test
+    void expiredItemWithoutBidsActivatesNextProduct() {
+        auction_item expired = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
+        auction_item resolved = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
+        resolved.setStatus("unsold");
+        auction_item next = new auction_item(
+                12L, 1L, 102L, new BigDecimal("200.00"), new BigDecimal("200.00"),
+                "waiting", null, null
+        );
+
+        when(bidRepository.existsByAuctionItemId(11L)).thenReturn(false);
+        when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("unsold"), any())).thenReturn(1);
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(expired));
+        when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(resolved, next));
+        when(auctionItemRepo.activateIfWaiting(eq(12L), any(), any())).thenReturn(1);
+        when(auctionItemRepo.findById(12L)).thenReturn(Optional.of(next));
+
+        auctionService.resolveAndAdvance(expired);
+
+        verify(auctionItemRepo).resolveExpiredIfLive(eq(11L), eq("unsold"), any());
+        verify(auctionItemRepo).activateIfWaiting(eq(12L), any(), any());
+        verify(roomRepo, never()).completeIfLive(1L);
+    }
+
+    @Test
+    void lastExpiredProductCompletesRoom() {
+        auction_item expired = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
+        auction_item resolved = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
+        resolved.setStatus("unsold");
+        Room completedRoom = room("completed");
+
+        when(bidRepository.existsByAuctionItemId(11L)).thenReturn(false);
+        when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("unsold"), any())).thenReturn(1);
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(expired));
+        when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(resolved));
+        when(roomRepo.completeIfLive(1L)).thenReturn(1);
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(completedRoom));
+
+        auctionService.resolveAndAdvance(expired);
+
+        verify(roomRepo).completeIfLive(1L);
+        ArgumentCaptor<com.example.bidverse.Dto.AuctionUpdate> updates =
+                ArgumentCaptor.forClass(com.example.bidverse.Dto.AuctionUpdate.class);
+        verify(messagingTemplate, times(2)).convertAndSend(eq("/topic/room/1"), updates.capture());
+        assertEquals("ROOM_COMPLETED", updates.getAllValues().getLast().eventType());
     }
 
     @Test

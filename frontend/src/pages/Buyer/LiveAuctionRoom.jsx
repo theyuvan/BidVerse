@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { connectToAuction, sendBid } from "../../services/auctionSocket";
 import { getBuyerId } from "../../services/buyerSession";
-import { joinRoom } from "../../services/buyerService";
+import { getRoomDetails, joinRoom } from "../../services/buyerService";
 import "./LiveAuctionRoom.css";
 
 function requestErrorMessage(error, fallback) {
@@ -22,6 +22,7 @@ function LiveAuctionRoom() {
     const [manualAmount, setManualAmount] = useState("");
     const [connected, setConnected] = useState(false);
     const [waitingForHost, setWaitingForHost] = useState(false);
+    const [closedMessage, setClosedMessage] = useState("");
     const [loading, setLoading] = useState(true);
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
@@ -71,6 +72,40 @@ function LiveAuctionRoom() {
             socketRef.current = socket;
         };
 
+        const scheduleRoomCheck = () => {
+            retryTimer = window.setTimeout(checkRoomStatus, 1500);
+        };
+
+        const checkRoomStatus = async () => {
+            try {
+                const response = await getRoomDetails(roomId);
+                if (stopped) return;
+
+                const status = response.data?.status?.toLowerCase();
+                if (status === "waiting" || status === "live") {
+                    await enterAuction();
+                    return;
+                }
+                if (status === "completed" || status === "cancelled") {
+                    setClosedMessage(status === "completed"
+                        ? "This auction has completed."
+                        : "This auction was cancelled.");
+                    setWaitingForHost(false);
+                    setLoading(false);
+                    return;
+                }
+
+                setWaitingForHost(true);
+                setLoading(false);
+                scheduleRoomCheck();
+            } catch (requestError) {
+                if (stopped) return;
+                setWaitingForHost(false);
+                setError(requestErrorMessage(requestError, "Unable to check this auction room."));
+                setLoading(false);
+            }
+        };
+
         const enterAuction = async () => {
             try {
                 const response = await joinRoom(roomId, buyerId);
@@ -84,10 +119,17 @@ function LiveAuctionRoom() {
             } catch (requestError) {
                 if (stopped) return;
 
+                if (requestError.response?.status === 410) {
+                    setClosedMessage(requestErrorMessage(requestError, "This auction has ended."));
+                    setWaitingForHost(false);
+                    setLoading(false);
+                    return;
+                }
+
                 if (requestError.response?.status === 400) {
                     setWaitingForHost(true);
                     setLoading(false);
-                    retryTimer = window.setTimeout(enterAuction, 1500);
+                    scheduleRoomCheck();
                     return;
                 }
 
@@ -96,7 +138,7 @@ function LiveAuctionRoom() {
             }
         };
 
-        enterAuction();
+        checkRoomStatus();
 
         return () => {
             stopped = true;
@@ -165,6 +207,19 @@ function LiveAuctionRoom() {
             <main className="live-auction-page">
                 <Link className="back-link" to="/buyer">Back to buyer rooms</Link>
                 <p className="auction-error" role="alert">{error}</p>
+            </main>
+        );
+    }
+
+    if (closedMessage) {
+        return (
+            <main className="live-auction-page">
+                <Link className="back-link" to="/buyer">Back to buyer rooms</Link>
+                <section className="auction-finished">
+                    <h2>Auction completed</h2>
+                    <p>{closedMessage}</p>
+                    <p>Your winning products and seller contact details are available on the buyer dashboard.</p>
+                </section>
             </main>
         );
     }
