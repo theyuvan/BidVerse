@@ -1,0 +1,135 @@
+.seller-page {
+    min-height: 100vh;
+    padding: 115px 55px 50px;
+    box-sizing: border-box;
+    background: #F6F3EC;
+}
+
+.seller-page-header {
+    margin-bottom: 35px;
+}
+
+.seller-page-header .eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748B;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.seller-page-header h1 {
+    margin: 0 0 10px;
+    color: #172033;
+    font-size: 32px;
+}
+
+.seller-page-header p {
+    margin: 0;
+    color: #64748B;
+    font-size: 15px;
+}
+
+.seller-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 850px;
+    padding: 30px;
+    box-sizing: border-box;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+}
+
+.seller-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.seller-form-wide {
+    grid-column: 1 / -1;
+}
+
+.seller-form label span {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.seller-form input,
+.seller-form select,
+.seller-form textarea {
+    width: 100%;
+    padding: 11px 12px;
+    box-sizing: border-box;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    background: #FFFFFF;
+    color: #334155;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.seller-form textarea {
+    resize: vertical;
+}
+
+.seller-form input:focus,
+.seller-form select:focus,
+.seller-form textarea:focus {
+    outline: none;
+    border-color: #172033;
+}
+
+.seller-form button {
+    width: fit-content;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 7px;
+    background: #172033;
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.seller-form button:hover {
+    background: #0F172A;
+}
+
+.seller-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-success {
+    color: #16A34A;
+    font-size: 14px;
+}
+
+.form-error {
+    color: #DC2626;
+    font-size: 14px;
+}
+
+@media (max-width: 700px) {
+    .seller-page {
+        padding: 100px 20px 30px;
+    }
+
+    .seller-form {
+        grid-template-columns: 1fr;
+        padding: 22px;
+    }
+
+    .seller-form-wide {
+        grid-column: auto;
+    }
+
+    .seller-page-header h1 {
+        font-size: 26px;
+    }
+}

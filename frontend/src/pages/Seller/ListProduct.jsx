@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { createSellerProduct, getSellerCategories } from "../../services/sellerService";
+import "./ListProduct.css";
 
 const initialForm = {
     sellerId: "2",
@@ -55,8 +56,8 @@ function ListProduct() {
     };
 
     return (
-        <main className="host-page seller-page">
-            <header className="page-header seller-page-header">
+        <main className="seller-page">
+            <header className="seller-page-header">
                 <span className="eyebrow">Seller workspace</span>
                 <h1>List a new product</h1>
                 <p>Every new listing starts as pending and goes to the host verification queue.</p>

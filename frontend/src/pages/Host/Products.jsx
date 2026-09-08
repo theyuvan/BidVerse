@@ -66,57 +66,59 @@ function Products(){
                 {!loading && !error && products.length === 0 && (
                     <p className="empty-state">No products available.</p>
                 )}
-                {!loading && products.length > 0 && (
-                    <div className="product-table-wrapper">
-                        <table className="product-table">
-                           <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Description</th>
-                                <th>Seller Name</th>
-                                <th>Base Price</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                        {filteredProducts.map((product) => (
-                            <tr key={product.productId}>
-                                <td className="product-name">{product.productName}</td>
-                                <td>{product.description || "No description"}</td>
-                                <td>{product.sellerName || "Unknown"}</td>
-                                <td>₹{product.basePrice}</td>
-                                <td><span className={`product-status ${product.status}`}>{product.status}</span></td>
-                                <td>
-                                    {product.status?.toLowerCase() === "pending" ? (
-                                        <div className="product-actions">
-                                            <button
-                                                type="button"
-                                                className="approve-button"
-                                                disabled={updatingId === product.productId}
-                                                onClick={() => handleDecision(product.productId, "approved")}
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="reject-button"
-                                                disabled={updatingId === product.productId}
-                                                onClick={() => handleDecision(product.productId, "rejected")}
-                                            >
-                                                Reject
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <span className="action-complete">Reviewed</span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                            </tbody>
-                        </table>
-                    </div>
+                {!loading && !error && products.length > 0 && filteredProducts.length === 0 && (
+                    <p className="empty-state">No products found.</p>
                 )}
+                <div className="product-card-grid">
+                    {filteredProducts.map((product) => (
+                        <div className="product-card" key={product.productId}>
+
+                    <div className="product-image">
+                        <img
+                            src={product.imageUrl}
+                            alt={product.productName}
+                        />
+                    </div>
+
+                    <div className="product-details">
+                        <h2>{product.productName}</h2>
+
+                        <p>{product.description || "No description"}</p>
+
+                        <p>Seller: {product.sellerName || "Unknown"}</p>
+
+                        <p>Base Price: ₹{product.basePrice}</p>
+
+                        <span className={`product-status ${product.status?.toLowerCase()}`}>
+                            {product.status}
+                        </span>
+
+                        {product.status?.toLowerCase() === "pending" && (
+                            <div className="product-actions">
+                                <button
+                                    onClick={() =>
+                                        handleDecision(product.productId, "approved")
+                                    }
+                                    disabled={updatingId === product.productId}
+                                >
+                                    Approve
+                                </button>
+
+                                <button
+                                    onClick={() =>
+                                        handleDecision(product.productId, "rejected")
+                                    }
+                                    disabled={updatingId === product.productId}
+                                >
+                                    Reject
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+                    ))}
+                </div>
             </section>
         </main>
     );

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getSellerDeals } from "../../services/sellerService";
-
+import "./SellerDeals.css";
 const INITIAL_SELLER_ID = "2";
 
 function SellerDeals() {

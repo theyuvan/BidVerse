@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getSellerCategories } from "../../services/sellerService";
-import "./Seller.css";
+import "./SellerDashboard.css";
 
 function SellerDashboard() {
     const [categories, setCategories] = useState([]);
@@ -48,26 +48,31 @@ function SellerDashboard() {
                 </Link>
             </section>
 
-            <section className="category-panel" aria-labelledby="category-heading">
+            <section className="category-panel">
                 <div className="section-heading">
                     <div>
                         <span className="eyebrow">Product setup</span>
-                        <h2 id="category-heading">Available categories</h2>
+                        <h2>Categories</h2>
                     </div>
-                    <span>{categories.length} categories</span>
-                </div>
-                {categoryError && <p className="form-error" role="alert">{categoryError}</p>}
-                {!categoryError && categories.length === 0 && <p className="empty-state">No categories are available yet.</p>}
-                {!categoryError && categories.length > 0 && (
-                    <div className="category-grid">
+
+                    <select className="category-dropdown">
+                        <option value="">Choose a category</option>
+
                         {categories.map((category) => (
-                            <div className="category-card" key={category.categoryId}>
-                                <span>Category ID</span>
-                                <strong>{category.categoryId}</strong>
-                                <h3>{category.name}</h3>
-                            </div>
+                            <option
+                                key={category.categoryId}
+                                value={category.categoryId}
+                            >
+                                {category.name}
+                            </option>
                         ))}
-                    </div>
+                    </select>
+                </div>
+
+                {categoryError && (
+                    <p className="form-error" role="alert">
+                        {categoryError}
+                    </p>
                 )}
             </section>
         </main>

@@ -17,7 +17,7 @@
 .product-filters {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .product-filters button {
@@ -41,69 +41,58 @@
     border-color: #172033;
 }
 
-.product-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
+.product-card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.product-card {
+    display: grid;
+    grid-template-columns: 140px 1fr;
     background: #FFFFFF;
     border: 1px solid #ECE8DC;
     border-radius: 12px;
+    overflow: hidden;
 }
 
-.product-table {
+.product-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #F8F8F8;
+}
+
+.product-image img {
     width: 100%;
-    border-collapse: collapse;
+    height: 180px;
+    object-fit: contain;
+    display: block;
 }
 
-.product-table th,
-.product-table td {
-    padding: 15px 18px;
-    text-align: left;
-    border-bottom: 1px solid #ECE8DC;
+.product-details {
+    padding: 25px;
 }
 
-.product-table th {
-    background: #FEFDF8;
+.product-details h2 {
+    margin: 0 0 10px;
     color: #1C2127;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 18px;
 }
 
-.product-table td {
+.product-details p {
+    margin: 6px 0;
     color: #6B7280;
-    font-size: 14px;
-}
-
-.product-table tr:last-child td {
-    border-bottom: none;
-}
-
-.product-table tr:hover {
-    background: #FEFDF8;
-}
-
-.product-table button {
-    padding: 7px 12px;
-    border: none;
-    border-radius: 6px;
-    color: #FFFFFF;
     font-size: 13px;
-    cursor: pointer;
-}
-
-.product-table button:first-child {
-    background: #22C55E;
-}
-
-.product-table button:last-child {
-    background: #EF4444;
-    margin-left: 6px;
 }
 
 .product-status {
     display: inline-block;
-    padding: 5px 10px;
+    margin-top: 8px;
+    padding: 4px 8px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: capitalize;
 }
@@ -121,4 +110,50 @@
 .product-status.rejected {
     background: #FEE2E2;
     color: #DC2626;
+}
+
+.product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.product-actions button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 6px;
+    color: #FFFFFF;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.product-actions button:first-child {
+    background: #22C55E;
+}
+
+.product-actions button:last-child {
+    background: #EF4444;
+}
+
+.empty-state {
+    color: #6B7280;
+}
+
+.form-error {
+    color: #DC2626;
+}
+
+@media (max-width: 600px) {
+
+    .host-page {
+        padding: 90px 20px 40px;
+    }
+
+    .product-card {
+        grid-template-columns: 1fr;
+    }
+
+    .product-filters {
+        flex-wrap: wrap;
+    }
 }

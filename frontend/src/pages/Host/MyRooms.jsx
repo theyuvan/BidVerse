@@ -41,7 +41,6 @@ function MyRooms() {
         <main className="host-page rooms-page">
             <header className="page-header">
                 <h1>My Rooms</h1>
-                <p>Start an upcoming room and manage its approved auction products.</p>
             </header>
             {error && <p className="form-error" role="alert">{error}</p>}
             <section className="rooms-section">

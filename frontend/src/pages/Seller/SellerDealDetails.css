@@ -1,0 +1,317 @@
+.deal-details-page {
+    min-height: 100vh;
+    padding: 115px 55px 50px;
+    box-sizing: border-box;
+    background: #F6F3EC;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 25px;
+    color: #64748B;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: #172033;
+}
+
+.seller-page-header {
+    margin-bottom: 35px;
+}
+
+.seller-page-header .eyebrow {
+    display: block;
+    margin-bottom: 8px;
+    color: #64748B;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.seller-page-header h1 {
+    margin: 0 0 10px;
+    color: #172033;
+    font-size: 32px;
+}
+
+.seller-page-header p {
+    margin: 0;
+    color: #64748B;
+    font-size: 15px;
+}
+
+.deal-details-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.deal-product-panel,
+.deal-progress-panel,
+.deal-decision-panel {
+    padding: 30px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+}
+
+.product-art {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    background: #172033;
+    color: #FFFFFF;
+    font-size: 22px;
+}
+
+.product-id {
+    color: #64748B;
+    font-size: 13px;
+}
+
+.deal-product-panel h2,
+.deal-progress-panel h2 {
+    margin: 8px 0;
+    color: #172033;
+    font-size: 22px;
+}
+
+.deal-product-panel p {
+    margin: 0 0 25px;
+    color: #64748B;
+    font-size: 14px;
+}
+
+.deal-facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 0;
+}
+
+.deal-facts div {
+    padding: 15px;
+    background: #F8FAFC;
+    border-radius: 8px;
+}
+
+.deal-facts dt {
+    margin-bottom: 6px;
+    color: #94A3B8;
+    font-size: 12px;
+}
+
+.deal-facts dd {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.advance-status {
+    margin-bottom: 30px;
+    padding: 18px;
+    background: #F8FAFC;
+    border-radius: 8px;
+}
+
+.advance-status span {
+    display: block;
+    margin-bottom: 6px;
+    color: #64748B;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.advance-status strong {
+    display: block;
+    color: #172033;
+    font-size: 14px;
+}
+
+.advance-status p {
+    margin: 6px 0 0;
+    color: #64748B;
+    font-size: 13px;
+}
+
+.deal-progress {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.deal-progress li {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.deal-progress li span {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #E2E8F0;
+    color: #64748B;
+    font-size: 13px;
+}
+
+.deal-progress li.complete span {
+    background: #172033;
+    color: #FFFFFF;
+}
+
+.deal-progress li.active span {
+    background: #F59E0B;
+    color: #FFFFFF;
+}
+
+.deal-progress strong {
+    color: #334155;
+    font-size: 14px;
+}
+
+.deal-progress time {
+    color: #94A3B8;
+    font-size: 12px;
+}
+
+.deal-decision-panel {
+    max-width: 700px;
+    margin-bottom: 20px;
+}
+
+.deal-decision-panel label {
+    display: block;
+    margin-bottom: 10px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.deal-decision-panel label span {
+    color: #94A3B8;
+    font-weight: 400;
+}
+
+.deal-decision-panel textarea {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    border: 1px solid #CBD5E1;
+    border-radius: 7px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.deal-decision-panel textarea:focus {
+    outline: none;
+    border-color: #172033;
+}
+
+.deal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.deal-actions button,
+.secondary-button {
+    padding: 11px 20px;
+    border: none;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.button-danger {
+    background: #DC2626;
+    color: #FFFFFF;
+}
+
+.button-success {
+    background: #172033;
+    color: #FFFFFF;
+}
+
+.deal-actions button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.form-success {
+    color: #16A34A;
+    font-size: 14px;
+}
+
+.form-error {
+    color: #DC2626;
+    font-size: 14px;
+}
+
+.empty-state {
+    color: #64748B;
+    font-size: 14px;
+}
+
+.secondary-button {
+    background: #E2E8F0;
+    color: #172033;
+}
+
+@media (max-width: 850px) {
+    .deal-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .deal-details-page {
+        padding: 100px 20px 30px;
+    }
+
+    .seller-page-header h1 {
+        font-size: 26px;
+    }
+
+    .deal-product-panel,
+    .deal-progress-panel,
+    .deal-decision-panel {
+        padding: 20px;
+    }
+
+    .deal-facts {
+        grid-template-columns: 1fr;
+    }
+
+    .deal-progress li {
+        grid-template-columns: 30px 1fr;
+    }
+
+    .deal-progress time {
+        grid-column: 2;
+    }
+
+    .deal-actions {
+        flex-direction: column;
+    }
+}

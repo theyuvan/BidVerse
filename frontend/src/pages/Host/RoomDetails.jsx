@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import {assignProductToRoom,getAvailableProducts,getProducts,getRoomDetails,getRoomProducts,} from "../../services/hostService";
+import {
+	assignProductToRoom,
+	getProducts,
+	getRoomDetails,
+	getRoomProducts,
+} from "../../services/hostService";
 import "./RoomDetails.css";
 
 async function fetchRoomData(roomId) {
@@ -25,63 +30,66 @@ function RoomDetails() {
 	const [room, setRoom] = useState(null);
 	const [assignedProducts, setAssignedProducts] = useState([]);
 	const [approvedProducts, setApprovedProducts] = useState([]);
-	const [allApprovedProducts, setAllApprovedProducts] = useState([]);
-	const [selectedProduct, setSelectedProduct] = useState("");
+	const [selectedProductId, setSelectedProductId] = useState("");
+	const [loading, setLoading] = useState(true);
+	const [assigning, setAssigning] = useState(false);
 	const [error, setError] = useState("");
 	const [message, setMessage] = useState("");
 
-	const loadRoom = useCallback(async () => {
-		try{
-			const [roomResponse, roomProductsResponse, productsResponse] = await Promise.all([
-				getRoomDetails(roomId),
-				getRoomProducts(roomId),
-				getAvailableProducts(),
-			]);
-			const allProductsResponse = await getProducts();
+	useEffect(() => {
+		let cancelled = false;
 
-			const roomProducts = roomProductsResponse.data;
+		fetchRoomData(roomId)
+			.then((data) => {
+				if (cancelled) return;
+				setRoom(data.room);
+				setAssignedProducts(data.assignedProducts);
+				setApprovedProducts(data.approvedProducts);
+			})
+			.catch(() => {
+				if (!cancelled) setError("Unable to load room details.");
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
 
-			setRoom(roomResponse.data);
-			setAssignedProducts(roomProducts);
-			setApprovedProducts(productsResponse.data);
-			setAllApprovedProducts(allProductsResponse.data.filter(
-				(product) => product.status?.toLowerCase() === "approved"
-			));
-		} catch(error){
-			console.error("Error loading room:",error);
-		}
+		return () => {
+			cancelled = true;
+		};
 	}, [roomId]);
 
-	useEffect(() => {
-		loadRoom();
-	}, [loadRoom]);
-
-
-	const handleAddProduct = async (event) => {
+	const handleAssign = async (event) => {
 		event.preventDefault();
-		if (!selectedProduct){
-			return;
-		}
+		if (!selectedProductId) return;
+
+		setAssigning(true);
 		setError("");
 		setMessage("");
 
 		try {
-			await assignProductToRoom(Number(selectedProduct), Number(roomId));
-			setSelectedProduct("");
-			await loadRoom();
+			await assignProductToRoom(Number(selectedProductId), Number(roomId));
+			const data = await fetchRoomData(roomId);
+			setRoom(data.room);
+			setAssignedProducts(data.assignedProducts);
+			setApprovedProducts(data.approvedProducts);
+			setSelectedProductId("");
 			setMessage("Product added to this room.");
-		} catch (error) {
-			const responseData = error.response?.data;
-			setError(
-				typeof responseData === "string"
-					? responseData
-					: responseData?.message || "Unable to add product to this room."
-			);
-		} 
+		} catch (requestError) {
+			const responseData = requestError.response?.data;
+			setError(typeof responseData === "string"
+				? responseData
+				: responseData?.message || "Unable to add product to this room.");
+		} finally {
+			setAssigning(false);
+		}
 	};
 
-	if (!room) {
-		return <p>Loading room details...</p>;
+	if (loading) {
+		return <main className="host-page"><p className="empty-state">Loading room details...</p></main>;
+	}
+
+	if (error && !room) {
+		return <main className="host-page"><p className="form-error" role="alert">{error}</p></main>;
 	}
 
 	return (
@@ -89,7 +97,7 @@ function RoomDetails() {
 			<Link className="back-link" to="/host/rooms">Back to My Rooms</Link>
 			<header className="page-header">
 				<h1>{room.title}</h1>
-				<p>Room {room.roomId} · Manage auction products</p>
+				<p>Room #{room.roomId} · Manage auction products</p>
 			</header>
 
 			<section className="room-summary">
@@ -112,13 +120,21 @@ function RoomDetails() {
 				) : (
 					<div className="assigned-product-list">
 						{assignedProducts.map((product) => (
-							<article className="assigned-product" key={product.productId}>
-								<div>
-									<h3>{product.name || "Product unavailable"}</h3>
-									<p>{product.description || "No description available."}</p>
-								</div>
-								<strong>₹{product.basePrice}</strong>
-							</article>
+							<article className="assigned-product" key={product.auctionItemId}>
+                                <div className="product-image">
+                                    <img
+                                        src={product.imageUrl}
+                                        alt={product.name || "Product"}
+                                    />
+                                </div>
+
+                                <div className="product-details">
+                                    <h3>{product.name || "Product unavailable"}</h3>
+                                    <p>{product.description || "No description available."}</p>
+                                </div>
+
+                                <strong>₹{product.basePrice}</strong>
+                            </article>
 						))}
 					</div>
 				)}
@@ -129,16 +145,13 @@ function RoomDetails() {
 					<h2>Add an approved product</h2>
 					<span>{approvedProducts.length} available</span>
 				</div>
-				{room.status?.toLowerCase() === "live" && (
-					<p className="form-error" role="alert">Products cannot be added after this room has started.</p>
-				)}
-				<form className="assign-product-form" onSubmit={handleAddProduct}>
+				<form className="assign-product-form" onSubmit={handleAssign}>
 					<label htmlFor="approved-product">Approved product</label>
 					<select
 						id="approved-product"
-						value={selectedProduct}
-						onChange={(event) => setSelectedProduct(event.target.value)}
-						disabled={approvedProducts.length === 0 || room.status?.toLowerCase() === "live"}
+						value={selectedProductId}
+						onChange={(event) => setSelectedProductId(event.target.value)}
+						disabled={assigning || approvedProducts.length === 0}
 					>
 						<option value="">Choose a product</option>
 						{approvedProducts.map((product) => (
@@ -147,34 +160,13 @@ function RoomDetails() {
 							</option>
 						))}
 					</select>
-					<button
-						type="submit"
-						disabled={!selectedProduct || room.status?.toLowerCase() === "live"}
-					>
-						Add Product
+					<button type="submit" disabled={assigning || !selectedProductId}>
+						{assigning ? "Adding..." : "Add Product"}
 					</button>
 				</form>
+				{approvedProducts.length === 0 && <p className="empty-state">No approved products are available.</p>}
 				{message && <p className="form-success" role="status">{message}</p>}
 				{error && <p className="form-error" role="alert">{error}</p>}
-				{approvedProducts.length === 0 && allApprovedProducts.length > 0 && (
-					<p className="empty-state">All approved products are already assigned to rooms.</p>
-				)}
-				{/* {allApprovedProducts.length > 0 && (
-					<div className="approved-product-list">
-						<h3>Approved products from the database</h3>
-						{allApprovedProducts.map((product) => (
-							<p key={product.productId}>
-								{product.productName} - ₹{product.basePrice}
-								{approvedProducts.some((availableProduct) => availableProduct.productId === product.productId)
-									? " (Available)"
-									: " (Already assigned)"}
-							</p>
-						))}
-					</div>
-				)} */}
-				{allApprovedProducts.length === 0 && (
-					<p className="empty-state">No approved products found in the database.</p>
-				)}
 			</section>
 		</main>
 	);

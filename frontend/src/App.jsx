@@ -18,8 +18,6 @@ import SellerDealDetails from "./pages/Seller/SellerDealDetails";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 import BuyerNavbar from "./components/buyer/Navbar";
-import "./pages/Seller/Seller.css";
-
 function AppShell() {
     const location = useLocation();
     const isLoginRoute = location.pathname === "/login";

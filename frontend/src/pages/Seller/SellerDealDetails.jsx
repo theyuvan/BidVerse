@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { decideSellerDeal, getSellerDeal } from "../../services/sellerService";
-
+import "./SellerDealDetails.css";
 function formatDate(value) {
     return value ? new Date(value).toLocaleDateString("en-IN", {
         day: "2-digit",
