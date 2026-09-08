@@ -14,6 +14,11 @@ public record AuctionUpdate(
         Long waitingSecondsRemaining,
         String roomStatus,
         String eventType,
-        String message
+        String message,
+        String winningBuyerName,
+        Long intermissionSecondsRemaining,
+        Long nextProductId,
+        String nextProductName,
+        String nextImageUrl
 ) {
 }

@@ -5,6 +5,7 @@ import com.example.bidverse.Dto.BidMessage;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Entity.User;
 import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Entity.bid;
 import com.example.bidverse.Repository.AuctionItemRepository;
@@ -13,6 +14,7 @@ import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
+import com.example.bidverse.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,6 +64,8 @@ class AuctionServiceTest {
     @Mock
     private DealRepository dealRepository;
     @Mock
+    private UserRepository userRepository;
+    @Mock
     private SimpMessagingTemplate messagingTemplate;
     @Mock
     private ObjectProvider<AuctionService> self;
@@ -77,6 +81,7 @@ class AuctionServiceTest {
                 productRepo,
                 bidRepository,
                 dealRepository,
+                userRepository,
                 messagingTemplate,
                 self
         );
@@ -225,7 +230,6 @@ class AuctionServiceTest {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
         when(bidRepository.existsByAuctionItemId(11L)).thenReturn(false);
         when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("unsold"), any())).thenReturn(1);
-        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(item));
 
         auctionService.resolveAndAdvance(item);
@@ -235,7 +239,7 @@ class AuctionServiceTest {
     }
 
     @Test
-    void expiredItemWithoutBidsActivatesNextProduct() {
+    void expiredItemWithoutBidsSchedulesIntermissionInsteadOfActivatingImmediately() {
         auction_item expired = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
         auction_item resolved = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().minusSeconds(1));
         resolved.setStatus("unsold");
@@ -243,19 +247,36 @@ class AuctionServiceTest {
                 12L, 1L, 102L, new BigDecimal("200.00"), new BigDecimal("200.00"),
                 "waiting", null, null
         );
+        Product nextProduct = new Product();
+        nextProduct.setProductId(102L);
+        nextProduct.setName("Antique Clock");
 
         when(bidRepository.existsByAuctionItemId(11L)).thenReturn(false);
         when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("unsold"), any())).thenReturn(1);
-        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(expired));
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(resolved, next));
-        when(auctionItemRepo.activateIfWaiting(eq(12L), any(), any())).thenReturn(1);
-        when(auctionItemRepo.findById(12L)).thenReturn(Optional.of(next));
+        when(productRepo.findById(101L)).thenReturn(Optional.empty());
+        when(productRepo.findById(102L)).thenReturn(Optional.of(nextProduct));
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room("live")));
+
+        ArgumentCaptor<com.example.bidverse.Dto.AuctionUpdate> update =
+                ArgumentCaptor.forClass(com.example.bidverse.Dto.AuctionUpdate.class);
 
         auctionService.resolveAndAdvance(expired);
 
         verify(auctionItemRepo).resolveExpiredIfLive(eq(11L), eq("unsold"), any());
-        verify(auctionItemRepo).activateIfWaiting(eq(12L), any(), any());
+        // The next item does not go live immediately -- it waits out the intermission.
+        verify(auctionItemRepo, never()).activateIfWaiting(any(), any(), any());
         verify(roomRepo, never()).completeIfLive(1L);
+
+        verify(messagingTemplate).convertAndSend(eq("/topic/room/1"), update.capture());
+        assertEquals("ITEM_RESOLVED", update.getValue().eventType());
+        assertEquals(15, update.getValue().intermissionSecondsRemaining());
+        assertEquals(102L, update.getValue().nextProductId());
+        assertEquals("Antique Clock", update.getValue().nextProductName());
+
+        // A sweep run immediately after (real 15s haven't elapsed) must not jump the gun.
+        auctionService.resolvePendingIntermissions();
+        verify(auctionItemRepo, never()).activateIfWaiting(any(), any(), any());
     }
 
     @Test
@@ -267,7 +288,6 @@ class AuctionServiceTest {
 
         when(bidRepository.existsByAuctionItemId(11L)).thenReturn(false);
         when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("unsold"), any())).thenReturn(1);
-        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(expired));
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(resolved));
         when(roomRepo.completeIfLive(1L)).thenReturn(1);
         when(roomRepo.findById(1L)).thenReturn(Optional.of(completedRoom));
@@ -288,13 +308,18 @@ class AuctionServiceTest {
         Product product = new Product();
         product.setProductId(101L);
         product.setSellerId(41L);
+        User winner = new User();
+        winner.setName("Priya Shah");
 
         when(bidRepository.existsByAuctionItemId(11L)).thenReturn(true);
         when(auctionItemRepo.resolveExpiredIfLive(eq(11L), eq("sold"), any())).thenReturn(1);
         when(bidRepository.findTopByAuctionItemIdOrderByAmountDesc(11L)).thenReturn(Optional.of(winningBid));
         when(productRepo.findById(101L)).thenReturn(Optional.of(product));
-        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
+        when(userRepository.findById(21L)).thenReturn(Optional.of(winner));
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(item));
+
+        ArgumentCaptor<com.example.bidverse.Dto.AuctionUpdate> update =
+                ArgumentCaptor.forClass(com.example.bidverse.Dto.AuctionUpdate.class);
 
         auctionService.resolveAndAdvance(item);
 
@@ -305,6 +330,11 @@ class AuctionServiceTest {
         assertEquals("pending", deal.getValue().getStatus());
         assertEquals("pending", deal.getValue().getBuyerStatus());
         assertEquals("pending", deal.getValue().getSellerStatus());
+
+        verify(messagingTemplate).convertAndSend(eq("/topic/room/1"), update.capture());
+        assertEquals("sold", update.getValue().itemStatus());
+        assertEquals("Priya Shah", update.getValue().winningBuyerName());
+        assertEquals("Sold to Priya Shah!", update.getValue().message());
     }
 
     @Test

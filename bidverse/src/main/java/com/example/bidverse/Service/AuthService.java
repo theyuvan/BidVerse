@@ -1,17 +1,20 @@
 package com.example.bidverse.Service;
 
-import com.example.bidverse.Dto.AuthResponse;
-import com.example.bidverse.Dto.LoginRequest;
-import com.example.bidverse.Dto.RegisterRequest;
-import com.example.bidverse.Entity.User;
-import com.example.bidverse.Repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.bidverse.Dto.AuthResponse;
+import com.example.bidverse.Dto.LoginRequest;
+import com.example.bidverse.Dto.RegisterRequest;
+import com.example.bidverse.Entity.User;
+import com.example.bidverse.Repository.UserRepository;
+
 @Service
 public class AuthService {
+    private static final java.util.Set<String> SELF_REGISTERABLE_ROLES = java.util.Set.of("buyer", "seller");
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -27,8 +30,8 @@ public class AuthService {
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is required");
         }
-        if (request.getRole() == null || request.getRole().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "role is required");
+        if (request.getRole() == null || !SELF_REGISTERABLE_ROLES.contains(request.getRole().trim().toLowerCase())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "role must be buyer or seller");
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");

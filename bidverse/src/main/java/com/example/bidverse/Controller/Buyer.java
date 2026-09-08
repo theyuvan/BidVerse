@@ -64,13 +64,13 @@ public class Buyer {
     }
 
     @GetMapping("/rooms/available")
-    public ResponseEntity<List<Room>> getAvailableRooms() {
-        return ResponseEntity.ok(buyerService.getAvailableRooms());
+    public ResponseEntity<List<Room>> getAvailableRooms(@CurrentUser AuthenticatedUser buyer) {
+        return ResponseEntity.ok(buyerService.getAvailableRooms(buyer.userId()));
     }
 
     @GetMapping("/rooms/search")
-    public ResponseEntity<List<Room>> searchRooms(@RequestParam String query) {
-        return ResponseEntity.ok(buyerService.searchRooms(query));
+    public ResponseEntity<List<Room>> searchRooms(@RequestParam String query, @CurrentUser AuthenticatedUser buyer) {
+        return ResponseEntity.ok(buyerService.searchRooms(buyer.userId(), query));
     }
 
     @GetMapping("/deals/{dealId}")

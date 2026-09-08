@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Service
 public class BuyerService {
 
-    private static final List<String> STARTED_ROOM_STATUSES = List.of("waiting", "live", "completed", "cancelled");
     private static final List<String> BOOKABLE_ROOM_STATUSES = List.of("upcoming", "open", "waiting", "live");
     private static final List<String> UPCOMING_ROOM_STATUSES = List.of("upcoming", "open");
     private static final String ROOM_STATUS_LIVE = "live";
@@ -87,15 +86,15 @@ public class BuyerService {
         );
     }
 
-    public List<Room> getAvailableRooms() {
-        return roomRepo.findByStatusNotIn(STARTED_ROOM_STATUSES);
+    public List<Room> getAvailableRooms(Long buyerId) {
+        return roomRepo.findAvailableForBuyer(buyerId);
     }
 
-    public List<Room> searchRooms(String query) {
+    public List<Room> searchRooms(Long buyerId, String query) {
         if (query == null || query.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "query must not be empty");
         }
-        return roomRepo.search(query.trim());
+        return roomRepo.searchAvailableForBuyer(buyerId, query.trim());
     }
 
     public List<CatalogItem> getRoomCatalog(Long roomId) {
