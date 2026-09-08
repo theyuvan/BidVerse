@@ -588,6 +588,135 @@ body,
     line-height: 1.45;
 }
 
+.auction-room-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 315px;
+    overflow: hidden;
+    padding: 24px;
+    isolation: isolate;
+}
+
+.auction-room-card::before {
+    position: absolute;
+    top: -90px;
+    right: -70px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(224, 55, 79, 0.1);
+    content: "";
+    transition: transform 0.3s ease, background 0.3s ease;
+    z-index: -1;
+}
+
+.auction-room-card:hover::before {
+    background: rgba(224, 55, 79, 0.18);
+    transform: scale(1.18);
+}
+
+.auction-room-card:focus-visible {
+    outline: 3px solid rgba(224, 55, 79, 0.45);
+    outline-offset: 3px;
+}
+
+.auction-card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.auction-room-number {
+    color: #85899b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.auction-room-card h3 {
+    margin: 20px 0 18px;
+    font-size: 21px;
+    transition: color 0.2s ease;
+}
+
+.auction-room-card:hover h3 {
+    color: #ff7588;
+}
+
+.auction-card-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.auction-card-details > div,
+.auction-start-time {
+    padding: 12px;
+    border: 1px solid #303441;
+    border-radius: 10px;
+    background: rgba(18, 19, 28, 0.72);
+}
+
+.auction-card-details span,
+.auction-start-time > span {
+    display: block;
+    margin-bottom: 5px;
+    color: #85899b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.auction-card-details strong,
+.auction-start-time strong {
+    color: #f4f5f8;
+    font-size: 14px;
+}
+
+.auction-start-time {
+    margin-bottom: 18px;
+}
+
+.auction-start-time strong {
+    display: block;
+    line-height: 1.4;
+}
+
+.view-book-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding: 12px 16px;
+    border-radius: 9px;
+    background: #e0374f;
+    color: #ffffff;
+    box-sizing: border-box;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 7px 18px rgba(224, 55, 79, 0.2);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.view-book-button span {
+    font-size: 18px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.auction-room-card:hover .view-book-button {
+    background: #f0445d;
+    box-shadow: 0 9px 24px rgba(224, 55, 79, 0.35);
+}
+
+.auction-room-card:hover .view-book-button span {
+    transform: translateX(4px);
+}
+
 
 /* =========================
    STATUS BADGES

@@ -18,7 +18,8 @@ function RoomDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [booking, setBooking] = useState(false);
-    const [bookingMessage, setBookingMessage] = useState("");
+    const [booked, setBooked] = useState(false);
+    const [bookingNotice, setBookingNotice] = useState(null);
 
     useEffect(() => {
 
@@ -49,28 +50,44 @@ function RoomDetails() {
 
     }, [roomId]);
 
+    useEffect(() => {
+        if (!bookingNotice) return undefined;
+
+        const timeoutId = window.setTimeout(() => {
+            setBookingNotice(null);
+        }, 5000);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [bookingNotice]);
+
 
     const handleBookRoom = async () => {
 
         setBooking(true);
-        setError("");
-        setBookingMessage("");
+        setBookingNotice(null);
 
         try {
 
             await bookRoom(roomId);
 
-            setBookingMessage(`Room booked for buyer #${buyerId}. Return to buyer rooms to open the waiting room.`);
+            setBooked(true);
+            setBookingNotice({
+                type: "success",
+                message: "Room booked successfully. You can open it from your booked rooms."
+            });
 
         } catch (error) {
 
             const responseData = error.response?.data;
 
-            setError(
-                typeof responseData === "string"
-                    ? responseData
-                    : responseData?.detail || responseData?.message || "Unable to book room."
-            );
+            const message = typeof responseData === "string"
+                ? responseData
+                : responseData?.detail || responseData?.message;
+
+            setBookingNotice({
+                type: "error",
+                message: message || "Unable to book this room. Please try again."
+            });
 
         } finally {
 
@@ -122,9 +139,35 @@ function RoomDetails() {
     return (
         <main className="buyer-room-details-page">
 
+            {bookingNotice && (
+                <div
+                    className={`booking-toast booking-toast-${bookingNotice.type}`}
+                    role={bookingNotice.type === "error" ? "alert" : "status"}
+                    aria-live="polite"
+                >
+                    <span className="booking-toast-icon" aria-hidden="true">
+                        {bookingNotice.type === "success" ? "✓" : "!"}
+                    </span>
+                    <div>
+                        <strong>
+                            {bookingNotice.type === "success" ? "Booking confirmed" : "Booking failed"}
+                        </strong>
+                        <p>{bookingNotice.message}</p>
+                    </div>
+                    <button
+                        type="button"
+                        className="booking-toast-close"
+                        aria-label="Close notification"
+                        onClick={() => setBookingNotice(null)}
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
+
             <Link
                 className="back-link"
-                to="/buyer"
+                to="/buyer/rooms"
             >
                 ← Back to Rooms
             </Link>
@@ -198,30 +241,11 @@ function RoomDetails() {
 
                     <button
                         onClick={handleBookRoom}
-                        disabled={booking}
+                        disabled={booking || booked}
+                        className={booked ? "book-room-button booked" : "book-room-button"}
                     >
-                        {booking
-                            ? "Booking..."
-                            : "Book Room"}
+                        {booking ? "Booking..." : booked ? "✓ Booked Successfully" : "Book Room"}
                     </button>
-
-                    {bookingMessage && (
-                        <p
-                            className="form-success"
-                            role="status"
-                        >
-                            {bookingMessage}
-                        </p>
-                    )}
-
-                    {error && (
-                        <p
-                            className="form-error"
-                            role="alert"
-                        >
-                            {error}
-                        </p>
-                    )}
 
                 </section>
 

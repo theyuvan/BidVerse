@@ -22,10 +22,6 @@ function BuyerDashboard({ roomsOnly = false }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    /* =========================
-       LOAD BUYER DATA
-    ========================= */
-
     useEffect(() => {
         let cancelled = false;
 
@@ -63,10 +59,6 @@ function BuyerDashboard({ roomsOnly = false }) {
     }, []);
 
 
-    /* =========================
-       UPCOMING ROOMS
-    ========================= */
-
     const upcomingRooms = rooms.filter((room) => {
 
         const status = room.status?.toLowerCase();
@@ -76,11 +68,6 @@ function BuyerDashboard({ roomsOnly = false }) {
             status === "open"
         );
     });
-
-
-    /* =========================
-       BOOKED ROOMS
-    ========================= */
 
     const bookedRooms = bookings.filter((booking) => {
 
@@ -125,36 +112,44 @@ function BuyerDashboard({ roomsOnly = false }) {
         <Link
             key={room.roomId}
             to={`/buyer/rooms/${room.roomId}`}
-            className="room-card"
+            className="room-card auction-room-card"
+            aria-label={`View and book ${room.title}`}
         >
+
+            <div className="auction-card-topline">
+                <span className={`buyer-room-status ${room.status?.toLowerCase() || "upcoming"}`}>
+                    {room.status || "Upcoming"}
+                </span>
+                <span className="auction-room-number">Room #{room.roomId}</span>
+            </div>
 
             <h3>
                 {room.title}
             </h3>
 
-            <p>
-                Room #{room.roomId}
-            </p>
+            <div className="auction-card-details">
+                <div>
+                    <span>Seats</span>
+                    <strong>{room.seatLimit}</strong>
+                </div>
+                <div>
+                    <span>Advance</span>
+                    <strong>₹{room.advanceAmount}</strong>
+                </div>
+            </div>
 
-            <p>
-                Seats: {room.seatLimit}
-            </p>
+            <div className="auction-start-time">
+                <span>Starts</span>
+                <strong>
+                    {room.startTime
+                        ? new Date(room.startTime).toLocaleString()
+                        : "Start time not set"}
+                </strong>
+            </div>
 
-            <p>
-                Advance: ₹{room.advanceAmount}
-            </p>
-
-            <p>
-                {room.startTime
-                    ? new Date(
-                        room.startTime
-                    ).toLocaleString()
-                    : "Start time not set"}
-            </p>
-
-            <strong>
-                View and book
-            </strong>
+            <span className="view-book-button">
+                View &amp; Book <span aria-hidden="true">→</span>
+            </span>
 
         </Link>
     );
