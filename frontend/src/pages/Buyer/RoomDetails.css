@@ -2,10 +2,7 @@
     min-height: 100vh;
     padding: 108px clamp(22px, 5vw, 72px) 68px;
     box-sizing: border-box;
-    background:
-        radial-gradient(circle at 92% 5%, rgba(230, 55, 82, 0.11), transparent 27%),
-        radial-gradient(circle at 4% 48%, rgba(86, 102, 255, 0.07), transparent 24%),
-        #101119;
+    background: #101119;
     color: #f5f6f9;
     font-family: "Segoe UI", Arial, sans-serif;
 }
@@ -50,8 +47,8 @@
 .room-detail-hero h1 {
     margin: 7px 0 10px;
     color: #ffffff;
-    font-size: clamp(34px, 4vw, 50px);
-    letter-spacing: -0.045em;
+    font-size: clamp(32px, 4vw, 44px);
+    letter-spacing: -0.035em;
     line-height: 1.08;
 }
 
@@ -96,8 +93,13 @@
 .buyer-room-details-page .room-summary {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    gap: 0;
     margin-bottom: 26px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #292d3a;
+    border-radius: 14px;
+    background: #191b25;
 }
 
 .buyer-room-details-page .room-summary > div {
@@ -105,11 +107,21 @@
     flex-direction: column;
     gap: 7px;
     min-width: 0;
-    padding: 17px 18px;
-    border: 1px solid #292d3a;
-    border-radius: 13px;
-    background: linear-gradient(145deg, #1c1e29, #181a23);
+    padding: 19px 20px;
+    border: 0;
+    border-right: 1px solid #292d3a;
+    border-bottom: 1px solid #292d3a;
+    border-radius: 0;
+    background: transparent;
     box-sizing: border-box;
+}
+
+.buyer-room-details-page .room-summary > div:nth-child(3n) {
+    border-right: 0;
+}
+
+.buyer-room-details-page .room-summary > div:nth-child(n + 4) {
+    border-bottom: 0;
 }
 
 .buyer-room-details-page .room-summary strong {
@@ -134,11 +146,9 @@
     gap: 28px;
     margin-bottom: 52px;
     padding: 25px 27px;
-    border: 1px solid #393040;
+    border: 1px solid #292d3a;
     border-radius: 16px;
-    background:
-        linear-gradient(105deg, rgba(230, 55, 82, 0.13), transparent 50%),
-        #191b25;
+    background: #191b25;
     box-sizing: border-box;
 }
 
@@ -196,9 +206,7 @@
 
 .buyer-room-details-page .live-entry-panel {
     border-color: rgba(50, 205, 116, 0.25);
-    background:
-        linear-gradient(105deg, rgba(50, 205, 116, 0.1), transparent 50%),
-        #191b25;
+    background: #191b25;
 }
 
 .buyer-room-details-page .room-products-section {
@@ -224,6 +232,7 @@
 }
 
 .buyer-room-details-page .assigned-product {
+    display: block;
     overflow: hidden;
     border: 1px solid #292d3a;
     border-radius: 16px;
@@ -395,6 +404,17 @@
     .buyer-room-details-page .room-summary,
     .buyer-room-details-page .assigned-product-list {
         grid-template-columns: 1fr;
+    }
+
+    .buyer-room-details-page .room-summary > div,
+    .buyer-room-details-page .room-summary > div:nth-child(3n),
+    .buyer-room-details-page .room-summary > div:nth-child(n + 4) {
+        border-right: 0;
+        border-bottom: 1px solid #292d3a;
+    }
+
+    .buyer-room-details-page .room-summary > div:last-child {
+        border-bottom: 0;
     }
 
     .buyer-room-details-page .book-room-button,

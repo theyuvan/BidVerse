@@ -69,17 +69,6 @@
     color: #ff8295;
 }
 
-.buyer-navbar .navbar-links a.active::after {
-    position: absolute;
-    right: 14px;
-    bottom: 4px;
-    left: 14px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--nav-accent);
-    content: "";
-}
-
 .buyer-navbar .navbar-links .logout-link {
     margin-left: 4px;
     border: 1px solid #343847;

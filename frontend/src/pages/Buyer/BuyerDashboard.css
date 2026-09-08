@@ -2,10 +2,7 @@
     min-height: 100vh;
     padding: 112px clamp(22px, 5vw, 72px) 64px;
     box-sizing: border-box;
-    background:
-        radial-gradient(circle at 88% 4%, rgba(224, 55, 79, 0.1), transparent 27%),
-        radial-gradient(circle at 5% 34%, rgba(86, 102, 255, 0.08), transparent 24%),
-        #101119;
+    background: #101119;
     color: #f7f7fa;
     font-family: "Segoe UI", Arial, sans-serif;
 }
@@ -247,23 +244,6 @@
     min-height: 300px;
     overflow: hidden;
     isolation: isolate;
-}
-
-.auction-room-card::before {
-    position: absolute;
-    top: -80px;
-    right: -65px;
-    width: 165px;
-    height: 165px;
-    border-radius: 50%;
-    background: rgba(230, 55, 82, 0.08);
-    content: "";
-    transition: transform 0.3s ease;
-    z-index: -1;
-}
-
-.auction-room-card:hover::before {
-    transform: scale(1.25);
 }
 
 .room-card:focus-visible,
