@@ -6,7 +6,7 @@ function BuyerNavbar() {
         <nav className="navbar" aria-label="Buyer navigation">
             <Link className="navbar-brand" to="/buyer">Bidverse</Link>
             <div className="navbar-links">
-                <Link to="/buyer">Available Rooms</Link>
+                <Link to="/buyer">Booking Rooms</Link>
                 <Link to="/buyer/deals">Deals</Link>
                 <Link to="/host/dashboard">Host workspace</Link>
             </div>

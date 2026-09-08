@@ -48,7 +48,8 @@ function AppShell() {
                     <Route path="/seller/deals" element={<SellerDeals />} />
                     <Route path="/seller/deals/:dealId" element={<SellerDealDetails />} />
                     {/* BUYER */}
-                    <Route path="/buyer" element={<BuyerDashboard />}/>
+                    <Route path="/buyer" element={<BuyerDashboard />} />
+                    <Route path="/buyer/:buyerId" element={<BuyerDashboard />} />
                     <Route path="/buyer/rooms/:roomId" element={<BuyerRoomDetails />} />
                     <Route path="/buyer/rooms/:roomId/live" element={<LiveAuctionRoom />} />
                     <Route path="/buyer/deals" element={<BuyerDeals />} />
