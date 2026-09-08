@@ -57,11 +57,20 @@ public class HostService {
         return productRepo.save(product);
     }
 
-    public Room startRoom(Long roomId) {
+    public Room startRoom(Long hostId, Long roomId) {
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        requireOwner(room, hostId);
         return auctionService.startRoom(roomId);
     }
 
-    public auction_item assignProductToRoom(Long productId, Long roomId) {
+    private void requireOwner(Room room, Long hostId) {
+        if (!room.getHostId().equals(hostId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This room does not belong to you");
+        }
+    }
+
+    public auction_item assignProductToRoom(Long hostId, Long productId, Long roomId) {
         Product product = productRepo.findById(productId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         if (!STATUS_APPROVED.equalsIgnoreCase(product.getStatus())) {
@@ -69,6 +78,7 @@ public class HostService {
         }
 
         Room room = roomRepo.findById(roomId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        requireOwner(room, hostId);
 
         if (!EDITABLE_ROOM_STATUSES.contains(room.getStatus().toLowerCase())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot add products to a room that has already started");
@@ -158,9 +168,10 @@ public class HostService {
         );
     }
 
-    public Room updateRoomCapacity(Long roomId, Integer seatLimit) {
+    public Room updateRoomCapacity(Long hostId, Long roomId, Integer seatLimit) {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
+        requireOwner(room, hostId);
 
         room.setSeatLimit(seatLimit);
         return roomRepo.save(room);
@@ -170,7 +181,8 @@ public class HostService {
         return roomRepo.findAll();
     }
 
-    public Room createRoom(Room room) {
+    public Room createRoom(Long hostId, Room room) {
+        room.setHostId(hostId);
         return roomRepo.save(room);
     }
 }

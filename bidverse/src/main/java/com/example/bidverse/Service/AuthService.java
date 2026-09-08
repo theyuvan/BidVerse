@@ -1,40 +1,66 @@
 package com.example.bidverse.Service;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.bidverse.Dto.AuthResponse;
 import com.example.bidverse.Dto.LoginRequest;
 import com.example.bidverse.Dto.RegisterRequest;
 import com.example.bidverse.Entity.User;
 import com.example.bidverse.Repository.UserRepository;
-import org.springframework.stereotype.Service;
+
 @Service
 public class AuthService {
+    private static final java.util.Set<String> SELF_REGISTERABLE_ROLES = java.util.Set.of("buyer", "seller");
+
     private final UserRepository userRepository;
-    public AuthService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
-    public String register(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return "Email already registered";
+
+    public AuthResponse register(RegisterRequest request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email is required");
         }
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is required");
+        }
+        if (request.getRole() == null || !SELF_REGISTERABLE_ROLES.contains(request.getRole().trim().toLowerCase())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "role must be buyer or seller");
+        }
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        }
+
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPhone(request.getPhone());
-        user.setPassword(request.getPassword());
-        user.setRole(request.getRole());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole().trim().toLowerCase());
         userRepository.save(user);
-        return "Registration successful";
+
+        return toAuthResponse(user);
     }
-    public String login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()) .orElse(null);
-        if (user == null) {
-            return "User not found";
+
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
-        if (!user.getPassword().equals(request.getPassword())) {
-            return "Invalid password";
+        if (request.getRole() != null && !request.getRole().isBlank()
+                && !user.getRole().equalsIgnoreCase(request.getRole())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid role for this account");
         }
-        if (!user.getRole().equalsIgnoreCase(request.getRole())) {
-            return "Invalid role";
-        }
-        return "Login successful";
+        return toAuthResponse(user);
+    }
+
+    private AuthResponse toAuthResponse(User user) {
+        return new AuthResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
 }

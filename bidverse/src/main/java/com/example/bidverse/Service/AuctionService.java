@@ -6,6 +6,7 @@ import com.example.bidverse.Dto.BidMessage;
 import com.example.bidverse.Entity.Deal;
 import com.example.bidverse.Entity.Product;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Entity.User;
 import com.example.bidverse.Entity.auction_item;
 import com.example.bidverse.Entity.bid;
 import com.example.bidverse.Repository.AuctionItemRepository;
@@ -14,6 +15,7 @@ import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.ProductRepository;
 import com.example.bidverse.Repository.RoomRepo;
 import com.example.bidverse.Repository.RoomSeatRepository;
+import com.example.bidverse.Repository.UserRepository;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,7 +29,9 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuctionService {
@@ -41,9 +45,11 @@ public class AuctionService {
 
     private static final String DEAL_STATUS_PENDING = "pending";
 
-    private static final long BID_INACTIVITY_SECONDS = 10;
+    private static final long BID_INACTIVITY_SECONDS = 20;
     private static final long WAITING_ROOM_SECONDS = 90;
+    private static final long INTERMISSION_SECONDS = 15;
     private static final BigDecimal AUTO_BID_INCREMENT_PERCENT = new BigDecimal("0.05");
+    private static final List<String> AUTO_STARTABLE_ROOM_STATUSES = List.of("upcoming", "open");
 
     private final AuctionItemRepository auctionItemRepo;
     private final RoomRepo roomRepo;
@@ -51,8 +57,16 @@ public class AuctionService {
     private final ProductRepository productRepo;
     private final BidRepository bidRepository;
     private final DealRepository dealRepository;
+    private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectProvider<AuctionService> self;
+
+    // Between one item resolving and the next going live, the room sits in a 15-second
+    // intermission (result banner + "up next" preview) rather than jumping straight to
+    // the next bid. Tracked in memory only -- if the server restarts mid-intermission,
+    // healStalledRooms() notices the room has no live item and activates the next one
+    // immediately, which is a harmless fallback, not data loss.
+    private final Map<Long, OffsetDateTime> pendingNextItemAt = new ConcurrentHashMap<>();
 
     public AuctionService(AuctionItemRepository auctionItemRepo,
                            RoomRepo roomRepo,
@@ -60,6 +74,7 @@ public class AuctionService {
                            ProductRepository productRepo,
                            BidRepository bidRepository,
                            DealRepository dealRepository,
+                           UserRepository userRepository,
                            SimpMessagingTemplate messagingTemplate,
                            ObjectProvider<AuctionService> self) {
         this.auctionItemRepo = auctionItemRepo;
@@ -68,6 +83,7 @@ public class AuctionService {
         this.productRepo = productRepo;
         this.bidRepository = bidRepository;
         this.dealRepository = dealRepository;
+        this.userRepository = userRepository;
         this.messagingTemplate = messagingTemplate;
         this.self = self;
     }
@@ -105,6 +121,23 @@ public class AuctionService {
     }
 
     @Scheduled(fixedRate = 1000)
+    public void autoStartDueRooms() {
+        OffsetDateTime now = OffsetDateTime.now();
+        List<Room> dueRooms = roomRepo.findByStatusInAndStartTimeLessThanEqual(AUTO_STARTABLE_ROOM_STATUSES, now);
+
+        for (Room room : dueRooms) {
+            if (auctionItemRepo.findByRoomId(room.getRoomId()).isEmpty()) {
+                continue;
+            }
+            try {
+                self.getObject().startRoom(room.getRoomId());
+            } catch (ResponseStatusException ignored) {
+                // another trigger (manual start, a concurrent tick) already moved this room on
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 1000)
     public void openWaitingRooms() {
         OffsetDateTime cutoff = OffsetDateTime.now().minusSeconds(WAITING_ROOM_SECONDS);
         List<Room> waitingRooms = roomRepo.findByStatus(ROOM_STATUS_WAITING);
@@ -125,7 +158,6 @@ public class AuctionService {
             return;
         }
 
-        roomSeatRepo.markAbsentBuyers(roomId);
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
         activateFirstItem(room);
@@ -135,6 +167,9 @@ public class AuctionService {
     public void healStalledRooms() {
         List<Room> liveRooms = roomRepo.findByStatus(ROOM_STATUS_LIVE);
         for (Room room : liveRooms) {
+            if (pendingNextItemAt.containsKey(room.getRoomId())) {
+                continue;
+            }
             List<auction_item> items = auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(room.getRoomId());
             boolean hasLiveItem = items.stream().anyMatch(i -> ITEM_STATUS_LIVE.equals(i.getStatus()));
             boolean hasWaitingItem = items.stream().anyMatch(i -> ITEM_STATUS_WAITING.equals(i.getStatus()));
@@ -142,6 +177,23 @@ public class AuctionService {
                 self.getObject().activateFirstItem(room);
             }
         }
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void resolvePendingIntermissions() {
+        OffsetDateTime now = OffsetDateTime.now();
+        for (Map.Entry<Long, OffsetDateTime> entry : pendingNextItemAt.entrySet()) {
+            if (!entry.getValue().isAfter(now)) {
+                pendingNextItemAt.remove(entry.getKey(), entry.getValue());
+                self.getObject().activateFirstItem(roomRef(entry.getKey()));
+            }
+        }
+    }
+
+    private Room roomRef(Long roomId) {
+        Room room = new Room();
+        room.setRoomId(roomId);
+        return room;
     }
 
 
@@ -154,7 +206,8 @@ public class AuctionService {
             return buildUpdate(roomId, liveItem.get(), "SNAPSHOT", null);
         }
         return new AuctionUpdate(roomId, null, null, null, null, null, null, null,
-                waitingSecondsRemaining(room), room.getStatus(), "SNAPSHOT", null);
+                waitingSecondsRemaining(room), room.getStatus(), "SNAPSHOT", null,
+                null, null, null, null, null);
     }
 
 
@@ -264,31 +317,51 @@ public class AuctionService {
             return;
         }
 
-        if (ITEM_STATUS_SOLD.equals(newStatus)) {
-            createDeal(item);
+        String winningBuyerName = ITEM_STATUS_SOLD.equals(newStatus) ? createDeal(item) : null;
+        String resultMessage = ITEM_STATUS_SOLD.equals(newStatus)
+                ? (winningBuyerName != null ? "Sold to " + winningBuyerName + "!" : "Sold!")
+                : "No bids -- item unsold";
+
+        Optional<auction_item> nextWaiting = auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(item.getRoomId())
+                .stream()
+                .filter(i -> ITEM_STATUS_WAITING.equals(i.getStatus()))
+                .findFirst();
+
+        if (nextWaiting.isPresent()) {
+            auction_item next = nextWaiting.get();
+            Product nextProduct = productRepo.findById(next.getProductId()).orElse(null);
+            pendingNextItemAt.put(item.getRoomId(), now.plusSeconds(INTERMISSION_SECONDS));
+
+            broadcastResolution(item, newStatus, resultMessage, winningBuyerName,
+                    INTERMISSION_SECONDS,
+                    next.getProductId(),
+                    nextProduct == null ? null : nextProduct.getName(),
+                    nextProduct == null ? null : nextProduct.getImageUrl());
+        } else {
+            broadcastResolution(item, newStatus, resultMessage, winningBuyerName, null, null, null, null);
+
+            int completed = roomRepo.completeIfLive(item.getRoomId());
+            if (completed > 0) {
+                broadcastCurrentState(item.getRoomId(), null, "ROOM_COMPLETED", "Auction finished");
+            }
         }
-
-        broadcastCurrentState(item.getRoomId(), item.getAuctionItemId(), "ITEM_RESOLVED",
-                ITEM_STATUS_SOLD.equals(newStatus) ? "Sold!" : "No bids -- item unsold");
-
-        advanceRoom(item.getRoomId());
     }
 
-    private void createDeal(auction_item item) {
+    private String createDeal(auction_item item) {
         if (dealRepository.existsByAuctionItemId(item.getAuctionItemId())) {
-            return;
+            return null;
         }
 
         bid winningBid = bidRepository.findTopByAuctionItemIdOrderByAmountDesc(item.getAuctionItemId()).orElse(null);
 
         if (winningBid == null) {
-            return;
+            return null;
         }
 
         Product product = productRepo.findById(item.getProductId()).orElse(null);
 
         if (product == null) {
-            return;
+            return null;
         }
 
         Deal deal = new Deal();
@@ -300,26 +373,8 @@ public class AuctionService {
         deal.setBuyerStatus(DEAL_STATUS_PENDING);
         deal.setSellerStatus(DEAL_STATUS_PENDING);
         dealRepository.save(deal);
-    }
 
-    private void advanceRoom(Long roomId) {
-        List<auction_item> items = auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(roomId);
-
-        Optional<auction_item> nextWaiting = items.stream()
-                .filter(i -> ITEM_STATUS_WAITING.equals(i.getStatus()))
-                .findFirst();
-        if (nextWaiting.isPresent()) {
-            activateItem(nextWaiting.get());
-            return;
-        }
-
-        boolean stillLive = items.stream().anyMatch(i -> ITEM_STATUS_LIVE.equals(i.getStatus()));
-        if (!stillLive) {
-            int completed = roomRepo.completeIfLive(roomId);
-            if (completed > 0) {
-                broadcastCurrentState(roomId, null, "ROOM_COMPLETED", "Auction finished");
-            }
-        }
+        return userRepository.findById(winningBid.getBuyerId()).map(User::getName).orElse(null);
     }
 
 
@@ -329,12 +384,44 @@ public class AuctionService {
         messagingTemplate.convertAndSend("/topic/room/" + roomId, update);
     }
 
+    private void broadcastResolution(auction_item resolvedItem, String newStatus, String message,
+                                      String winningBuyerName, Long intermissionSeconds,
+                                      Long nextProductId, String nextProductName, String nextImageUrl) {
+        Room room = roomRepo.findById(resolvedItem.getRoomId()).orElse(null);
+        Product product = productRepo.findById(resolvedItem.getProductId()).orElse(null);
+        Long highestBidderId = bidRepository.findTopByAuctionItemIdOrderByAmountDesc(resolvedItem.getAuctionItemId())
+                .map(bid::getBuyerId)
+                .orElse(null);
+
+        AuctionUpdate update = new AuctionUpdate(
+                resolvedItem.getRoomId(),
+                resolvedItem.getAuctionItemId(),
+                resolvedItem.getProductId(),
+                product == null ? null : product.getName(),
+                resolvedItem.getCurrentPrice(),
+                highestBidderId,
+                newStatus,
+                null,
+                null,
+                room == null ? null : room.getStatus(),
+                "ITEM_RESOLVED",
+                message,
+                winningBuyerName,
+                intermissionSeconds,
+                nextProductId,
+                nextProductName,
+                nextImageUrl
+        );
+        messagingTemplate.convertAndSend("/topic/room/" + resolvedItem.getRoomId(), update);
+    }
+
     private AuctionUpdate buildUpdate(Long roomId, auction_item item, String eventType, String message) {
         Room room = roomRepo.findById(roomId).orElse(null);
 
         if (item == null) {
             return new AuctionUpdate(roomId, null, null, null, null, null, null, null,
-                    waitingSecondsRemaining(room), room == null ? null : room.getStatus(), eventType, message);
+                    waitingSecondsRemaining(room), room == null ? null : room.getStatus(), eventType, message,
+                    null, null, null, null, null);
         }
 
         Product product = productRepo.findById(item.getProductId()).orElse(null);
@@ -361,7 +448,12 @@ public class AuctionService {
                 null,
                 room == null ? null : room.getStatus(),
                 eventType,
-                message
+                message,
+                null,
+                null,
+                null,
+                null,
+                null
         );
     }
 

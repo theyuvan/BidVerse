@@ -3,8 +3,10 @@ package com.example.bidverse.Service;
 import com.example.bidverse.Dto.LiveAuctionItem;
 import com.example.bidverse.Dto.BuyerWonDeal;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Entity.Room_Seat;
 import com.example.bidverse.Repository.AuctionItemRepository;
 import com.example.bidverse.Repository.BuyerWonDealRow;
+import com.example.bidverse.Repository.CatalogItemRow;
 import com.example.bidverse.Repository.DealRepository;
 import com.example.bidverse.Repository.LiveAuctionItemRow;
 import com.example.bidverse.Repository.RoomRepo;
@@ -45,12 +47,40 @@ class BuyerServiceTest {
     private LiveAuctionItemRow liveItemRow;
     @Mock
     private BuyerWonDealRow wonDealRow;
+    @Mock
+    private CatalogItemRow catalogItemRow;
 
     private BuyerService buyerService;
 
     @BeforeEach
     void setUp() {
         buyerService = new BuyerService(roomRepo, auctionItemRepo, roomSeatRepo, dealRepo);
+    }
+
+    @Test
+    void buyerCanBookNewRoomDespiteHavingASeatInAnAlreadyCompletedRoom() {
+        Room newRoom = room("waiting");
+        newRoom.setRoomId(2L);
+        newRoom.setStartTime(OffsetDateTime.now());
+        Room completedRoom = room("completed");
+        completedRoom.setRoomId(1L);
+
+        Room_Seat existingSeat = new Room_Seat();
+        existingSeat.setRoomId(1L);
+        existingSeat.setBuyerId(21L);
+
+        when(roomRepo.findById(2L)).thenReturn(Optional.of(newRoom));
+        when(roomSeatRepo.existsByRoomIdAndBuyerId(2L, 21L)).thenReturn(false);
+        when(auctionItemRepo.findCatalogByRoomId(2L)).thenReturn(List.of(catalogItemRow));
+        when(roomSeatRepo.findByBuyerId(21L)).thenReturn(List.of(existingSeat));
+        when(roomRepo.findAllById(List.of(1L))).thenReturn(List.of(completedRoom));
+        when(roomSeatRepo.countByRoomId(2L)).thenReturn(0L);
+        when(roomSeatRepo.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Room_Seat result = buyerService.bookRoom(2L, 21L);
+
+        assertEquals(2L, result.getRoomId());
+        assertEquals(21L, result.getBuyerId());
     }
 
     @Test
@@ -104,18 +134,16 @@ class BuyerServiceTest {
     }
 
     @Test
-    void missedBuyerCannotEnterAfterWaitingPeriod() {
+    void buyerWhoMissedTheWaitingWindowCanStillJoinWhileRoomIsLive() {
         when(roomRepo.findById(1L)).thenReturn(Optional.of(room("live")));
         when(roomSeatRepo.existsByRoomIdAndBuyerId(1L, 21L)).thenReturn(true);
-        when(roomSeatRepo.markBuyerJoined(eq(1L), eq(21L), any())).thenReturn(0);
+        when(auctionItemRepo.findLiveAuctionItemsByRoomId(1L)).thenReturn(List.of());
 
-        ResponseStatusException error = assertThrows(
-                ResponseStatusException.class,
-                () -> buyerService.joinRoom(1L, 21L)
-        );
+        // Buyers may join anytime up to room completion, so a late arrival during "live"
+        // must succeed just like joining during the original 90-second waiting window.
+        buyerService.joinRoom(1L, 21L);
 
-        assertEquals(HttpStatus.FORBIDDEN, error.getStatusCode());
-        verify(auctionItemRepo, never()).findLiveAuctionItemsByRoomId(1L);
+        verify(roomSeatRepo).markBuyerJoined(eq(1L), eq(21L), any());
     }
 
     @Test
@@ -154,7 +182,7 @@ class BuyerServiceTest {
         when(dealRepo.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
         when(dealRepo.findWonDealById(31L)).thenReturn(Optional.of(wonDealRow));
 
-        buyerService.decideDeal(31L, "confirm", null);
+        buyerService.decideDeal(21L, 31L, "confirm", null);
 
         assertEquals("confirmed", deal.getBuyerStatus());
         assertEquals("completed", deal.getStatus());
@@ -168,16 +196,45 @@ class BuyerServiceTest {
 
         ResponseStatusException error = assertThrows(
                 ResponseStatusException.class,
-                () -> buyerService.decideDeal(31L, "reject", "  ")
+                () -> buyerService.decideDeal(21L, 31L, "reject", "  ")
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
         verify(dealRepo, never()).saveAndFlush(any());
     }
 
+    @Test
+    void buyerRejectionCancelsDealWithReason() {
+        com.example.bidverse.Entity.Deal deal = pendingDeal();
+        when(dealRepo.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+        when(dealRepo.findWonDealById(31L)).thenReturn(Optional.of(wonDealRow));
+
+        buyerService.decideDeal(21L, 31L, "reject", "changed my mind");
+
+        assertEquals("cancelled", deal.getStatus());
+        assertEquals("changed my mind", deal.getCancelReason());
+    }
+
+    @Test
+    void buyerCannotDecideAnotherBuyersDeal() {
+        com.example.bidverse.Entity.Deal deal = pendingDeal();
+        when(dealRepo.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> buyerService.decideDeal(99L, 31L, "confirm", null)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatusCode());
+        verify(dealRepo, never()).saveAndFlush(any());
+    }
+
     private com.example.bidverse.Entity.Deal pendingDeal() {
         com.example.bidverse.Entity.Deal deal = new com.example.bidverse.Entity.Deal();
         deal.setDealId(31L);
+        deal.setAuctionItemId(11L);
+        deal.setBuyerId(21L);
+        deal.setSellerId(41L);
         deal.setStatus("pending");
         deal.setBuyerStatus("pending");
         deal.setSellerStatus("pending");

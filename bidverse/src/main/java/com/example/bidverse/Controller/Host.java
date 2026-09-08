@@ -20,6 +20,8 @@ import com.example.bidverse.Dto.ProductStatus;
 import com.example.bidverse.Dto.RoomProduct;
 import com.example.bidverse.Dto.UpdateRoom;
 import com.example.bidverse.Entity.Room;
+import com.example.bidverse.Security.AuthenticatedUser;
+import com.example.bidverse.Security.CurrentUser;
 import com.example.bidverse.Service.HostService;
 
 @RestController
@@ -54,14 +56,17 @@ public class Host {
     }
 
     @PostMapping("/products/{productId}/assign-room")
-    public ResponseEntity<?> assignProductToRoom(@PathVariable Long productId,@RequestBody AssignRoomRequest request) {
-        hostService.assignProductToRoom(productId, request.roomId());
+    public ResponseEntity<?> assignProductToRoom(
+            @PathVariable Long productId,
+            @RequestBody AssignRoomRequest request,
+            @CurrentUser AuthenticatedUser host) {
+        hostService.assignProductToRoom(host.userId(), productId, request.roomId());
         return new ResponseEntity<>("Product added to room successfully", HttpStatus.OK);
     }
 
     @PutMapping("/rooms/{roomId}/start")
-    public ResponseEntity<Room> startRoom(@PathVariable Long roomId) {
-        return ResponseEntity.ok(hostService.startRoom(roomId));
+    public ResponseEntity<Room> startRoom(@PathVariable Long roomId, @CurrentUser AuthenticatedUser host) {
+        return ResponseEntity.ok(hostService.startRoom(host.userId(), roomId));
     }
 
     @GetMapping("/products")
@@ -85,8 +90,11 @@ public class Host {
     }
 
     @PatchMapping("/rooms/{roomId}")
-    public ResponseEntity<?> updateRoom(@PathVariable Long roomId, @RequestBody UpdateRoom dto) {
-        hostService.updateRoomCapacity(roomId, dto.seatLimit());
+    public ResponseEntity<?> updateRoom(
+            @PathVariable Long roomId,
+            @RequestBody UpdateRoom dto,
+            @CurrentUser AuthenticatedUser host) {
+        hostService.updateRoomCapacity(host.userId(), roomId, dto.seatLimit());
         return new ResponseEntity<>("Room capacity updated successfully", HttpStatus.OK);
     }
 
@@ -96,8 +104,8 @@ public class Host {
     }
 
     @PostMapping("/rooms")
-    public ResponseEntity<?> createRoom(@RequestBody Room room) {
-        hostService.createRoom(room);
-        return new ResponseEntity<>("Room Created Successfully", HttpStatus.CREATED);
+    public ResponseEntity<Room> createRoom(@RequestBody Room room, @CurrentUser AuthenticatedUser host) {
+        Room created = hostService.createRoom(host.userId(), room);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 }

@@ -1,6 +1,5 @@
 package com.example.bidverse.Service;
 
-import com.example.bidverse.Dto.CreateProductRequest;
 import com.example.bidverse.Dto.SellerProductHistory;
 import com.example.bidverse.Dto.SellerDealView;
 import com.example.bidverse.Entity.Deal;
@@ -60,8 +59,16 @@ public class SellerService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
     }
 
+    public SellerDealView getOwnDealDetails(Long dealId, Long sellerId) {
+        SellerDealView deal = getDetails(dealId);
+        if (!deal.sellerId().equals(sellerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This deal does not belong to you");
+        }
+        return deal;
+    }
+
     @org.springframework.transaction.annotation.Transactional
-    public SellerDealView confirmDeal(Long dealId, String decision, String reason) {
+    public SellerDealView confirmDeal(Long sellerId, Long dealId, String decision, String reason) {
         String currDecision = decision == null ? "" : decision.trim().toLowerCase();
 
         if (!currDecision.equals(DECISION_CONFIRM) && !currDecision.equals(DECISION_REJECT)) {
@@ -71,6 +78,9 @@ public class SellerService {
         Deal deal = dealRepository.findByIdForDecision(dealId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
 
+        if (!deal.getSellerId().equals(sellerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This deal does not belong to you");
+        }
         if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is already completed or cancelled");
         }
@@ -78,10 +88,11 @@ public class SellerService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Seller decision has already been submitted");
         }
 
+        if (currDecision.equals(DECISION_REJECT) && (reason == null || reason.isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
+        }
+
         if (currDecision.equals(DECISION_REJECT)) {
-            if (reason == null || reason.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
-            }
             deal.setSellerStatus(PARTY_STATUS_REJECTED);
             deal.setStatus(DEAL_STATUS_CANCELLED);
             deal.setCancelReason(reason.trim());
@@ -118,22 +129,20 @@ public class SellerService {
         );
     }
 
-    public Product getProductDetails(Long productId) {
-        return productRepository.findById(productId)
+    public Product getProductDetails(Long productId, Long sellerId) {
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product Not Found"));
+        if (!product.getSellerId().equals(sellerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This product does not belong to you");
+        }
+        return product;
     }
 
     public List<Product> getProducts(Long sellerId) {
-        if (sellerId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sellerId is required");
-        }
         return productRepository.findBySellerId(sellerId);
     }
 
     public List<SellerProductHistory> getProductHistory(Long sellerId) {
-        if (sellerId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "sellerId is required");
-        }
         return productRepository.findHistoryBySellerId(sellerId).stream()
                 .map(this::toSellerProductHistory)
                 .toList();
@@ -159,7 +168,7 @@ public class SellerService {
         );
     }
 
-    public Product createProduct(Product product2) {
+    public Product createProduct(Long sellerId, Product product2) {
         if (product2.getBasePrice() == null || product2.getBasePrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "basePrice must be greater than 0");
         }
@@ -168,7 +177,7 @@ public class SellerService {
         }
 
         Product product = new Product();
-        product.setSellerId(product2.getSellerId());
+        product.setSellerId(sellerId);
         product.setCategoryId(product2.getCategoryId());
         product.setName(product2.getName());
         product.setDescription(product2.getDescription());

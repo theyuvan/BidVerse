@@ -11,9 +11,9 @@ import java.util.List;
 
 public interface RoomRepo extends JpaRepository<Room, Long> {
 
-    List<Room> findByStatusNotIn(List<String> statuses);
-
     List<Room> findByStatus(String status);
+
+    List<Room> findByStatusInAndStartTimeLessThanEqual(List<String> statuses, OffsetDateTime startTime);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Room r SET r.status = 'waiting', r.waitingStartedAt = :startedAt " +
@@ -31,12 +31,33 @@ public interface RoomRepo extends JpaRepository<Room, Long> {
     @Query("UPDATE Room r SET r.status = 'completed' WHERE r.roomId = :id AND r.status = 'live'")
     int completeIfLive(@Param("id") Long id);
 
-    @Query(value = "SELECT DISTINCT r.* FROM rooms r " +
-            "LEFT JOIN auction_items ai ON ai.room_id = r.room_id " +
-            "LEFT JOIN products p ON p.product_id = ai.product_id " +
-            "WHERE lower(r.title) LIKE lower(concat('%', :query, '%')) " +
-            "OR lower(p.name) LIKE lower(concat('%', :query, '%')) " +
-            "OR CAST(r.room_id AS text) = :query",
-            nativeQuery = true)
-    List<Room> search(@Param("query") String query);
+    /**
+     * "Available" mirrors findByStatusNotIn's excluded set (waiting/live/completed/cancelled)
+     * but also drops rooms this buyer already booked -- the buyer's Rooms tab should only ever
+     * offer rooms they haven't acted on yet.
+     */
+    @Query(value = """
+            select r.* from rooms r
+            where lower(r.status) not in ('waiting','live','completed','cancelled')
+              and not exists (
+                  select 1 from room_seats rs where rs.room_id = r.room_id and rs.buyer_id = :buyerId
+              )
+            """, nativeQuery = true)
+    List<Room> findAvailableForBuyer(@Param("buyerId") Long buyerId);
+
+    @Query(value = """
+            select distinct r.* from rooms r
+            left join auction_items ai on ai.room_id = r.room_id
+            left join products p on p.product_id = ai.product_id
+            where lower(r.status) not in ('waiting','live','completed','cancelled')
+              and not exists (
+                  select 1 from room_seats rs where rs.room_id = r.room_id and rs.buyer_id = :buyerId
+              )
+              and (
+                  lower(r.title) like lower(concat('%', :query, '%'))
+                  or lower(p.name) like lower(concat('%', :query, '%'))
+                  or cast(r.room_id as text) = :query
+              )
+            """, nativeQuery = true)
+    List<Room> searchAvailableForBuyer(@Param("buyerId") Long buyerId, @Param("query") String query);
 }

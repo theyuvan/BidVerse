@@ -48,7 +48,7 @@ class SellerServiceTest {
         when(dealRepository.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
         when(dealRepository.findDealViewById(31L)).thenReturn(Optional.of(dealViewRow));
 
-        sellerService.confirmDeal(31L, "confirm", null);
+        sellerService.confirmDeal(41L, 31L, "confirm", null);
 
         assertEquals("confirmed", deal.getSellerStatus());
         assertEquals("completed", deal.getStatus());
@@ -61,7 +61,7 @@ class SellerServiceTest {
         when(dealRepository.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
         when(dealRepository.findDealViewById(31L)).thenReturn(Optional.of(dealViewRow));
 
-        sellerService.confirmDeal(31L, "confirm", null);
+        sellerService.confirmDeal(41L, 31L, "confirm", null);
 
         assertEquals("confirmed", deal.getSellerStatus());
         assertEquals("pending", deal.getStatus());
@@ -74,16 +74,45 @@ class SellerServiceTest {
 
         ResponseStatusException error = assertThrows(
                 ResponseStatusException.class,
-                () -> sellerService.confirmDeal(31L, "reject", "")
+                () -> sellerService.confirmDeal(41L, 31L, "reject", "")
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatusCode());
         verify(dealRepository, never()).saveAndFlush(any());
     }
 
+    @Test
+    void sellerRejectionCancelsDealWithReason() {
+        Deal deal = pendingDeal();
+        when(dealRepository.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+        when(dealRepository.findDealViewById(31L)).thenReturn(Optional.of(dealViewRow));
+
+        sellerService.confirmDeal(41L, 31L, "reject", "changed my mind");
+
+        assertEquals("cancelled", deal.getStatus());
+        assertEquals("changed my mind", deal.getCancelReason());
+    }
+
+    @Test
+    void sellerCannotDecideAnotherSellersDeal() {
+        Deal deal = pendingDeal();
+        when(dealRepository.findByIdForDecision(31L)).thenReturn(Optional.of(deal));
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> sellerService.confirmDeal(99L, 31L, "confirm", null)
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, error.getStatusCode());
+        verify(dealRepository, never()).saveAndFlush(any());
+    }
+
     private Deal pendingDeal() {
         Deal deal = new Deal();
         deal.setDealId(31L);
+        deal.setAuctionItemId(11L);
+        deal.setBuyerId(21L);
+        deal.setSellerId(41L);
         deal.setStatus("pending");
         deal.setBuyerStatus("pending");
         deal.setSellerStatus("pending");

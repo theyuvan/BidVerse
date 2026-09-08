@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Collections;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,7 @@ import java.util.stream.Collectors;
 @Service
 public class BuyerService {
 
-    private static final List<String> STARTED_ROOM_STATUSES = List.of("waiting", "live", "completed", "cancelled");
-    private static final List<String> BOOKABLE_ROOM_STATUSES = List.of("upcoming", "open");
+    private static final List<String> BOOKABLE_ROOM_STATUSES = List.of("upcoming", "open", "waiting", "live");
     private static final List<String> UPCOMING_ROOM_STATUSES = List.of("upcoming", "open");
     private static final String ROOM_STATUS_LIVE = "live";
     private static final String ROOM_STATUS_WAITING = "waiting";
@@ -88,15 +86,15 @@ public class BuyerService {
         );
     }
 
-    public List<Room> getAvailableRooms() {
-        return roomRepo.findByStatusNotIn(STARTED_ROOM_STATUSES);
+    public List<Room> getAvailableRooms(Long buyerId) {
+        return roomRepo.findAvailableForBuyer(buyerId);
     }
 
-    public List<Room> searchRooms(String query) {
+    public List<Room> searchRooms(Long buyerId, String query) {
         if (query == null || query.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "query must not be empty");
         }
-        return roomRepo.search(query.trim());
+        return roomRepo.searchAvailableForBuyer(buyerId, query.trim());
     }
 
     public List<CatalogItem> getRoomCatalog(Long roomId) {
@@ -185,7 +183,10 @@ public class BuyerService {
 
         List<Room> otherRooms = roomRepo.findAllById(otherRoomIds);
         for (Room otherRoom : otherRooms) {
-            if (ROOM_STATUS_CANCELLED.equalsIgnoreCase(otherRoom.getStatus())) {
+            // A cancelled or already-finished room no longer occupies the buyer's time,
+            // so it can't cause a real scheduling conflict with a new booking.
+            if (ROOM_STATUS_CANCELLED.equalsIgnoreCase(otherRoom.getStatus())
+                    || ROOM_STATUS_COMPLETED.equalsIgnoreCase(otherRoom.getStatus())) {
                 continue;
             }
 
@@ -279,11 +280,7 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You must book a seat in this room before joining");
         }
 
-        int joined = roomSeatRepo.markBuyerJoined(roomId, buyerId, OffsetDateTime.now());
-        if (joined == 0) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "The 90-second entry period ended and your advance was forfeited");
-        }
+        roomSeatRepo.markBuyerJoined(roomId, buyerId, OffsetDateTime.now());
 
         return auctionItemRepo.findLiveAuctionItemsByRoomId(roomId).stream()
                 .map(row -> new LiveAuctionItem(
@@ -300,22 +297,22 @@ public class BuyerService {
                 .toList();
     }
 
-    public List<Deal> getAllDeals() {
-        return dealRepo.findAll();
-    }
-
-    public List<Deal> getDealId(Long dealId) {
-        return dealRepo.findById(dealId).map(Collections::singletonList).orElse(Collections.emptyList());
-    }
-
     public BuyerWonDeal getDealDetails(Long dealId) {
         return dealRepo.findWonDealById(dealId)
                 .map(this::toBuyerWonDeal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
     }
 
+    public BuyerWonDeal getOwnDealDetails(Long dealId, Long buyerId) {
+        BuyerWonDeal deal = getDealDetails(dealId);
+        if (!dealRepo.findById(dealId).map(d -> d.getBuyerId().equals(buyerId)).orElse(false)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This deal does not belong to you");
+        }
+        return deal;
+    }
+
     @Transactional
-    public BuyerWonDeal decideDeal(Long dealId, String decision, String reason) {
+    public BuyerWonDeal decideDeal(Long buyerId, Long dealId, String decision, String reason) {
         String normalizedDecision = decision == null ? "" : decision.trim().toLowerCase();
         if (!DECISION_CONFIRM.equals(normalizedDecision) && !DECISION_REJECT.equals(normalizedDecision)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "decision must be CONFIRM or REJECT");
@@ -324,6 +321,9 @@ public class BuyerService {
         Deal deal = dealRepo.findByIdForDecision(dealId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deal Not Found"));
 
+        if (!deal.getBuyerId().equals(buyerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This deal does not belong to you");
+        }
         if (!DEAL_STATUS_PENDING.equalsIgnoreCase(deal.getStatus())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Deal is already completed or cancelled");
         }
@@ -331,10 +331,11 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer decision has already been submitted");
         }
 
+        if (DECISION_REJECT.equals(normalizedDecision) && (reason == null || reason.isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
+        }
+
         if (DECISION_REJECT.equals(normalizedDecision)) {
-            if (reason == null || reason.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "reason is required when rejecting a deal");
-            }
             deal.setBuyerStatus(PARTY_STATUS_REJECTED);
             deal.setStatus(DEAL_STATUS_CANCELLED);
             deal.setCancelReason(reason.trim());
