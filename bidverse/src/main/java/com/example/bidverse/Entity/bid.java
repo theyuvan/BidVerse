@@ -13,10 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "bids", uniqueConstraints = @UniqueConstraint(
-        name = "uq_bids_auction_item_buyer",
-        columnNames = {"auction_item_id", "buyer_id"}
-))
+@Table(name = "bids")
 public class bid {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
