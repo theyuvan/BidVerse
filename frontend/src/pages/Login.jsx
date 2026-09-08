@@ -22,7 +22,7 @@ function Login() {
                     navigate("/seller");
                 }
                 else if( role === "host"){
-                    navigate("/host/dashboard"); 
+                    navigate("/host/dashboard");
                 }
             }
         }
