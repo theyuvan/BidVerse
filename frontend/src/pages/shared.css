@@ -65,6 +65,42 @@
     border-top: 1px solid var(--border-soft);
 }
 
+.room-card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: auto;
+}
+.room-card-stat {
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.room-card-stat .k {
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 600;
+}
+.room-card-stat .v {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.room-card-stat.accent .v {
+    color: var(--accent-strong);
+}
+
 .deal-card,
 .booking-card {
     display: flex;

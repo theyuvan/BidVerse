@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createProduct, getCategories } from "../../services/sellerService";
 import { apiErrorMessage } from "../../services/api";
 import "../shared.css";
 
-const initialForm = { categoryId: "", name: "", description: "", basePrice: "", imageUrl: "" };
+const initialForm = { categoryId: "", name: "", description: "", basePrice: "", imageUrl: "", otherCategory: "" };
 
 export default function AddProduct() {
     const [formData, setFormData] = useState(initialForm);
@@ -20,6 +20,12 @@ export default function AddProduct() {
             .finally(() => setCategoriesLoading(false));
     }, []);
 
+    const selectedCategory = useMemo(
+        () => categories.find((category) => String(category.categoryId) === formData.categoryId),
+        [categories, formData.categoryId]
+    );
+    const isOtherCategory = selectedCategory?.name?.toLowerCase() === "other";
+
     const handleChange = (event) => setFormData({ ...formData, [event.target.name]: event.target.value });
 
     const handleSubmit = async (event) => {
@@ -27,11 +33,25 @@ export default function AddProduct() {
         setSaving(true);
         setMessage("");
         setError("");
+
+        if (isOtherCategory && !formData.otherCategory.trim()) {
+            setError("Please specify what category this product belongs to.");
+            setSaving(false);
+            return;
+        }
+
+        // There's no free-text category field on the product itself, so when the seller
+        // picks "Other" their specified category is folded into the description where the
+        // host and buyers can still see it clearly.
+        const description = isOtherCategory
+            ? `Category: ${formData.otherCategory.trim()}\n\n${formData.description.trim()}`
+            : formData.description.trim();
+
         try {
             await createProduct({
                 categoryId: Number(formData.categoryId),
                 name: formData.name.trim(),
-                description: formData.description.trim(),
+                description,
                 basePrice: Number(formData.basePrice),
                 imageUrl: formData.imageUrl.trim() || null
             });
@@ -64,6 +84,20 @@ export default function AddProduct() {
                         ))}
                     </select>
                 </label>
+
+                {isOtherCategory && (
+                    <label className="field">
+                        <span className="field-label">Please specify the category</span>
+                        <input
+                            type="text"
+                            name="otherCategory"
+                            value={formData.otherCategory}
+                            onChange={handleChange}
+                            placeholder="e.g. Musical instruments"
+                            required
+                        />
+                    </label>
+                )}
 
                 <label className="field">
                     <span className="field-label">Product name</span>

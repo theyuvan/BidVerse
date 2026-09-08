@@ -7,7 +7,7 @@ import "../shared.css";
 
 function formatDate(value) {
     if (!value) return "Not scheduled";
-    return new Date(value).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+    return new Date(value).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 }
 
 export default function Rooms() {
@@ -100,9 +100,15 @@ export default function Rooms() {
                                 <span>Room <strong>#{room.roomId}</strong></span>
                                 <span>Seats <strong>{room.seatLimit}</strong></span>
                             </div>
-                            <div className="room-card-footer">
-                                <span className="room-card-meta"><span>Starts <strong>{formatDate(room.startTime)}</strong></span></span>
-                                <span className="room-card-meta"><span>Advance <strong>₹{room.advanceAmount}</strong></span></span>
+                            <div className="room-card-stats">
+                                <div className="room-card-stat">
+                                    <span className="k">Starts</span>
+                                    <span className="v">{formatDate(room.startTime)}</span>
+                                </div>
+                                <div className="room-card-stat accent">
+                                    <span className="k">Advance</span>
+                                    <span className="v">₹{room.advanceAmount}</span>
+                                </div>
                             </div>
                         </article>
                     ))}

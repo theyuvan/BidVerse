@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getRoomDetails, getRoomCatalog, bookRoom } from "../../services/buyerService";
+import { getRoomDetails, getRoomCatalog, getBookings, bookRoom } from "../../services/buyerService";
 import { apiErrorMessage } from "../../services/api";
 import { IconGavel } from "../../components/layout/icons";
 import "../shared.css";
@@ -11,6 +11,7 @@ export default function RoomDetails() {
 
     const [room, setRoom] = useState(null);
     const [products, setProducts] = useState([]);
+    const [alreadyBooked, setAlreadyBooked] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [booking, setBooking] = useState(false);
@@ -18,11 +19,12 @@ export default function RoomDetails() {
 
     useEffect(() => {
         let cancelled = false;
-        Promise.all([getRoomDetails(roomId), getRoomCatalog(roomId)])
-            .then(([roomResponse, productsResponse]) => {
+        Promise.all([getRoomDetails(roomId), getRoomCatalog(roomId), getBookings()])
+            .then(([roomResponse, productsResponse, bookingsResponse]) => {
                 if (cancelled) return;
                 setRoom(roomResponse.data);
                 setProducts(productsResponse.data);
+                setAlreadyBooked(bookingsResponse.data.some((booking) => String(booking.roomId) === String(roomId)));
             })
             .catch((requestError) => { if (!cancelled) setError(apiErrorMessage(requestError, "Unable to load room details.")); })
             .finally(() => { if (!cancelled) setLoading(false); });
@@ -35,6 +37,7 @@ export default function RoomDetails() {
         setBookingMessage("");
         try {
             await bookRoom(roomId);
+            setAlreadyBooked(true);
             setBookingMessage("Seat booked! You'll be able to join once the room opens.");
         } catch (requestError) {
             setError(apiErrorMessage(requestError, "Unable to book this room."));
@@ -48,8 +51,9 @@ export default function RoomDetails() {
     if (!room) return <p className="empty-state">Room not found.</p>;
 
     const status = room.status?.toLowerCase();
-    const canBook = ["upcoming", "open", "waiting", "live"].includes(status);
-    const canEnterLive = ["waiting", "live"].includes(status);
+    const canBook = !alreadyBooked && ["upcoming", "open", "waiting", "live"].includes(status);
+    const canEnterLive = alreadyBooked && ["waiting", "live"].includes(status);
+    const bookedButNotOpenYet = alreadyBooked && ["upcoming", "open"].includes(status);
 
     return (
         <div>
@@ -63,12 +67,21 @@ export default function RoomDetails() {
                 <span className={`badge ${status === "live" ? "badge-danger" : "badge-info"}`}>{room.status}</span>
             </div>
 
+            <div className="stat-row">
+                <div className="card stat-card">
+                    <span className="label">Starts</span>
+                    <strong>{room.startTime ? new Date(room.startTime).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Not scheduled"}</strong>
+                </div>
+                <div className="card stat-card">
+                    <span className="label">Advance to book</span>
+                    <strong style={{ color: "var(--accent-strong)" }}>₹{room.advanceAmount}</strong>
+                </div>
+            </div>
+
             <div className="card" style={{ padding: 20, marginBottom: 24 }}>
                 <dl className="fact-list">
                     <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
-                    <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
                     <div><dt>Status</dt><dd style={{ textTransform: "capitalize" }}>{room.status}</dd></div>
-                    <div><dt>Start time</dt><dd>{room.startTime ? new Date(room.startTime).toLocaleString() : "Not scheduled"}</dd></div>
                 </dl>
             </div>
 
@@ -83,6 +96,14 @@ export default function RoomDetails() {
                     </button>
                 </div>
             )}
+
+            {bookedButNotOpenYet && (
+                <div className="card" style={{ padding: 20, marginBottom: 24 }}>
+                    <h2 style={{ fontSize: 16, marginBottom: 4 }}>You're booked in ✓</h2>
+                    <p>Your seat is confirmed. Come back here once the room opens to join and bid.</p>
+                </div>
+            )}
+
             {bookingMessage && <p className="alert alert-success" role="status">{bookingMessage}</p>}
             {error && <p className="alert alert-error" role="alert">{error}</p>}
 
@@ -91,7 +112,7 @@ export default function RoomDetails() {
                     <h2 style={{ fontSize: 16, marginBottom: 4 }}>
                         {status === "waiting" ? "Waiting room is open" : "Bidding is live"}
                     </h2>
-                    <p style={{ marginBottom: 12 }}>Already booked a seat? Join to record your attendance and start bidding.</p>
+                    <p style={{ marginBottom: 12 }}>Join to record your attendance and start bidding.</p>
                     <button className="btn btn-primary" onClick={() => navigate(`/buyer/rooms/${roomId}/live`)}>
                         Enter auction room
                     </button>
