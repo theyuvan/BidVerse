@@ -111,6 +111,11 @@ public class BuyerService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Buyer already has a seat booked in this room");
         }
 
+        List<CatalogItem> catalogItemList = getRoomCatalog(roomId);
+        if(catalogItemList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Room has no products. Booking is not allowed.");
+        }
+
         assertNoOverlappingBooking(room, buyerId);
 
         long bookedSeats = roomSeatRepo.countByRoomId(roomId);
