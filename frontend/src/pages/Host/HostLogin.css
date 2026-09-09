@@ -1,0 +1,162 @@
+.host-login-page {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 28px;
+    background: #101119;
+    box-sizing: border-box;
+    color: #f7f7fa;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.host-login-card {
+    width: min(100%, 410px);
+    padding: 36px;
+    border: 1px solid #2c303e;
+    border-radius: 16px;
+    background: #191b25;
+    box-sizing: border-box;
+    box-shadow: 0 24px 55px rgba(0, 0, 0, 0.3);
+}
+
+.host-login-brand {
+    display: inline-block;
+    margin-bottom: 36px;
+    color: #ffffff;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    text-decoration: none;
+}
+
+.host-login-brand:hover {
+    color: #f27688;
+}
+
+.host-login-label {
+    display: block;
+    margin-bottom: 7px;
+    color: #ef667a;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.host-login-card h1 {
+    margin: 0 0 9px;
+    color: #ffffff;
+    font-size: 34px;
+    letter-spacing: -0.035em;
+}
+
+.host-login-card > p {
+    margin: 0;
+    color: #969cad;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.host-login-card form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 28px;
+}
+
+.host-login-card form label {
+    margin-bottom: 7px;
+    color: #d7dae2;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.host-login-card form input {
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 12px 13px;
+    border: 1px solid #343846;
+    border-radius: 9px;
+    outline: none;
+    background: #12141c;
+    color: #ffffff;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.host-login-card form input::placeholder {
+    color: #646a7c;
+}
+
+.host-login-card form input:focus {
+    border-color: #e63752;
+    box-shadow: 0 0 0 3px rgba(230, 55, 82, 0.1);
+}
+
+.host-login-card form button {
+    width: 100%;
+    margin-top: 4px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 9px;
+    background: #e63752;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.host-login-card form button:hover:not(:disabled) {
+    background: #f14861;
+    transform: translateY(-1px);
+}
+
+.host-login-card form button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.host-login-error {
+    margin: -3px 0 15px;
+    padding: 10px 11px;
+    border: 1px solid rgba(230, 55, 82, 0.3);
+    border-radius: 8px;
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8193;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.host-login-back {
+    display: block;
+    width: fit-content;
+    margin: 25px auto 0;
+    color: #8f95a7;
+    font-size: 12px;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.host-login-back:hover {
+    color: #ffffff;
+}
+
+@media (max-width: 520px) {
+    .host-login-page {
+        padding: 18px;
+    }
+
+    .host-login-card {
+        padding: 28px 23px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .host-login-card form input,
+    .host-login-card form button {
+        transition: none;
+    }
+}

@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-route
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import HostLogin from "./pages/Host/HostLogin";
 import Navbar from "./components/host/Navbar";
 import HostDashboard from "./pages/Host/HostDashboard";
 import MyRooms from "./pages/Host/MyRooms";
@@ -34,7 +35,7 @@ function RequireRole({ role, children }) {
     const currentRole = user?.role?.toLowerCase();
 
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to={role === "host" ? "/host/login" : "/login"} replace />;
     }
 
     if (currentRole !== role) {
@@ -46,7 +47,7 @@ function RequireRole({ role, children }) {
 
 function AppShell() {
     const location = useLocation();
-    const isAuthRoute = location.pathname === "/login" || location.pathname === "/register";
+    const isAuthRoute = ["/login", "/register", "/host/login"].includes(location.pathname);
     const isSellerRoute = location.pathname.startsWith("/seller");
     const isBuyerRoute = location.pathname.startsWith("/buyer");
 
@@ -58,6 +59,7 @@ function AppShell() {
                     <Route path="/" element={<Landing />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Signup />} />
+                    <Route path="/host/login" element={<HostLogin />} />
                     <Route path="/host/dashboard" element={<RequireRole role="host"><HostDashboard /></RequireRole>} />
                     <Route path="/host/rooms/create" element={<RequireRole role="host"><CreateRoom /></RequireRole>} />
                     <Route path="/host/rooms" element={<RequireRole role="host"><MyRooms /></RequireRole>} />
