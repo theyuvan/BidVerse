@@ -1,0 +1,67 @@
+.app-shell main.live-auction-page { padding-top:24px; }
+.app-shell .live-auction-page .auction-topbar { max-width:none; align-items:center; margin-bottom:20px; }
+.app-shell .auction-topbar h1 { font-size:clamp(26px,2.4vw,34px); }
+.app-shell .current-lot.live-bidding-layout {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+    align-items:start;
+    gap:28px;
+    max-width:none;
+    padding:24px;
+}
+.lot-visual,.lot-bid-panel { min-width:0; }
+.lot-bid-panel { position:sticky; top:104px; }
+.lot-visual .host-product-photo { height:clamp(260px,45vh,430px); border-radius:12px; }
+.lot-visual .host-product-photo img { padding:18px; object-fit:contain; }
+.lot-product-details { margin-top:16px; color:var(--muted); overflow-wrap:anywhere; }
+.lot-product-details summary { cursor:pointer; padding:10px 0; font-size:16px; color:var(--ink); font-weight:650; }
+.app-shell .lot-product-details .lot-description { margin:12px 0 0; line-height:1.7; }
+.bid-panel-heading { display:flex; gap:18px; align-items:flex-start; justify-content:space-between; }
+.bid-panel-heading > div:first-child { min-width:0; }
+.app-shell .bid-panel-heading .eyebrow { color:#f19cad; }
+.app-shell .bid-panel-heading h2 { margin:8px 0 12px; font-size:clamp(23px,2vw,29px); line-height:1.25; overflow-wrap:anywhere; }
+.app-shell .lot-bid-panel .auction-timer {
+    width:94px;
+    height:98px;
+    border-radius:14px;
+    border:1px solid #4ade8060;
+    background:#22c55e18;
+    color:#93e6b1;
+    font-variant-numeric:tabular-nums;
+}
+.app-shell .lot-bid-panel .auction-timer strong { font-size:38px; margin:3px 0; color:inherit; }
+.app-shell .lot-bid-panel .auction-timer span { font-size:12px; margin:0; }
+.app-shell .lot-bid-panel .auction-timer.urgent { background:#f43f5e22; border-color:#fb718565; color:#ffa0ad; }
+.app-shell .lot-bid-panel .bid-summary {
+    display:grid;
+    grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);
+    gap:16px;
+    padding:16px;
+    margin-top:18px;
+}
+.app-shell .lot-bid-panel .bid-summary div { min-width:0; }
+.app-shell .lot-bid-panel .bid-summary span { font-size:14px; }
+.app-shell .lot-bid-panel .bid-summary strong { font-size:22px; line-height:1.35; overflow-wrap:anywhere; }
+.app-shell .lot-bid-panel .bid-summary div:first-child strong { font-size:28px; }
+.app-shell .lot-bid-panel .bid-actions { display:grid; gap:16px; align-items:stretch; margin-top:18px; }
+.app-shell .lot-bid-panel .bid-actions button { min-height:48px; font-size:17px; }
+.app-shell .lot-bid-panel .manual-bid label { font-size:15px; }
+.app-shell .lot-bid-panel .manual-bid > div { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; }
+.app-shell .lot-bid-panel .manual-bid input { width:100%; min-width:0; font-size:17px; }
+.app-shell .lot-bid-panel :is(.auction-notice,.auction-error) { margin-top:14px; font-size:15px; overflow-wrap:anywhere; }
+.bid-availability { color:var(--muted); font-size:14px; }
+.app-shell .live-auction-page .auction-products { max-width:none; }
+.app-shell .auction-product-list article { gap:12px; }
+.app-shell .auction-product-list article div { min-width:0; }
+.app-shell .auction-product-list h3 { overflow-wrap:anywhere; }
+.app-shell .auction-product-list article > .auction-status { flex-shrink:0; }
+@media(max-width:760px) {
+    .app-shell .current-lot.live-bidding-layout { grid-template-columns:minmax(0,1fr); padding:18px; gap:24px; }
+    .lot-bid-panel { position:static; order:0; }
+    .lot-visual { order:1; }
+    .lot-visual .host-product-photo { height:260px; }
+    .app-shell .live-auction-page .auction-topbar { flex-direction:row; align-items:flex-start; gap:12px; }
+    .app-shell .auction-topbar .connection { font-size:12px; padding:7px 10px; }
+    .app-shell .lot-bid-panel .auction-timer { width:80px; height:90px; }
+    .app-shell .auction-product-list article { flex-wrap:wrap; }
+}

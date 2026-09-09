@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { connectToAuction, sendBid, sendNext } from "../../services/auctionSocket";
 import { getBuyerId } from "../../services/buyerSession";
 import { getRoomDetails, joinRoom } from "../../services/buyerService";
+import ProductPhoto from "../../components/ProductPhoto";
 import "./LiveAuctionRoom.css";
 
 function requestErrorMessage(error, fallback) {
@@ -258,8 +259,8 @@ function LiveAuctionRoom() {
                 <Link className="back-link" to="/buyer">Back to buyer rooms</Link>
                 <div className="waiting-card">
                     <span className="waiting-dot" />
-                    <h1>Waiting for the host</h1>
-                    <p>Room #{roomId} will open here automatically when the host starts it.</p>
+                    <h1>Waiting for the scheduled start</h1>
+                    <p>Room #{roomId} will open here automatically at its scheduled time.</p>
                     <small>You are joining as buyer #{buyerId}.</small>
                 </div>
             </main>
@@ -327,34 +328,32 @@ function LiveAuctionRoom() {
                     {error && <p className="auction-error" role="alert">{error}</p>}
                 </section>
             ) : (
-                <section className="current-lot">
-                    <div className="lot-heading">
+                <section className="current-lot live-bidding-layout" aria-label="Current product and bidding">
+                    <div className="lot-visual">
+                        <ProductPhoto src={currentProduct?.imageUrl} name={auction?.productName || currentProduct?.productName || "Auction product"} />
+                        <details className="lot-product-details">
+                            <summary>Product details</summary>
+                            <p className="lot-description">{currentProduct?.description || "No additional description is available for this product."}</p>
+                        </details>
+                    </div>
+                    <div className="lot-bid-panel">
+                    <div className="bid-panel-heading">
                         <div>
                             <span className="eyebrow">Current product</span>
                             <h2>{auction?.productName || currentProduct?.productName || "Waiting for product"}</h2>
+                            <span className={`auction-status ${auction?.itemStatus || "waiting"}`}>{auction?.itemStatus === "live" ? "Live bidding" : auction?.itemStatus || "Waiting"}</span>
                         </div>
-                        <div className={secondsRemaining <= 3 ? "auction-timer urgent" : "auction-timer"}>
+                        <div className={secondsRemaining <= 3 ? "auction-timer urgent" : "auction-timer"} role="timer" aria-label="Time left to bid">
+                            <span>Time left</span>
                             <strong>{secondsRemaining}</strong>
                             <span>seconds</span>
                         </div>
                     </div>
 
-                    {currentProduct?.imageUrl && (
-                        <img
-                            className="current-product-image"
-                            src={currentProduct.imageUrl}
-                            alt={currentProduct.productName}
-                        />
-                    )}
-
-                    <p className="lot-description">
-                        {currentProduct?.description || "The host will present the product during bidding."}
-                    </p>
-
                     <div className="bid-summary">
                         <div>
                             <span>Current bid</span>
-                            <strong>₹{auction?.currentPrice ?? currentProduct?.currentPrice ?? "--"}</strong>
+                            <strong>₹{Number(auction?.currentPrice ?? currentProduct?.currentPrice ?? 0).toLocaleString("en-IN")}</strong>
                         </div>
                         <div>
                             <span>Highest bidder</span>
@@ -404,6 +403,8 @@ function LiveAuctionRoom() {
 
                     {notice && <p className="auction-notice" role="status">{notice}</p>}
                     {error && <p className="auction-error" role="alert">{error}</p>}
+                    {!biddingIsOpen && <p className="bid-availability" role="status">{!connected ? "Reconnecting — bidding will resume when connected." : "Bidding is paused. Waiting for the auction server…"}</p>}
+                    </div>
                 </section>
             )}
 
@@ -422,7 +423,7 @@ function LiveAuctionRoom() {
                                 <span>Lot {product.auctionItemId}</span>
                                 <h3>{product.productName}</h3>
                             </div>
-                            <strong>{product.auctionStatus}</strong>
+                            <strong className={`auction-status ${product.auctionStatus?.toLowerCase() || "waiting"}`}>{product.auctionStatus || "Waiting"}</strong>
                         </article>
                     ))}
                 </div>

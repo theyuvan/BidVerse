@@ -26,6 +26,8 @@ import { getAuthUser } from "./services/authSession";
 import "./pages/Seller/Seller.css";
 import "./Theme.css";
 import "./HostWorkspace.css";
+import "./StatusBadges.css";
+import "./AuctionWorkspace.css";
 
 const roleHome = {
     buyer: "/buyer",

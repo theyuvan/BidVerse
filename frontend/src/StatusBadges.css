@@ -1,0 +1,37 @@
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status) {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:fit-content;
+    padding:7px 12px;
+    border:1px solid #64748b66;
+    border-radius:999px;
+    background:#64748b22;
+    color:#d1d9e6;
+    font-size:13px;
+    line-height:1.5;
+    font-weight:750;
+    text-transform:capitalize;
+}
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.waiting,.pending,.unsold) {
+    color:#ffcb75;
+    border-color:#edaa455e;
+    background:#f59e0b22;
+}
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.live,.active,.running,.approved,.sold,.confirmed) {
+    color:#93e6b1;
+    border-color:#4ade8060;
+    background:#22c55e20;
+}
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.completed,.closed) {
+    color:#c1d4ef;
+    border-color:#8da9cd60;
+    background:#7c9bc026;
+}
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.rejected,.cancelled,.canceled) {
+    color:#ffa0ad;
+    border-color:#fb718565;
+    background:#f43f5e22;
+}
+.app-shell .waiting-countdown { color:#ffcb75; background:#f59e0b22; border:1px solid #edaa455e; }
+.app-shell .waiting-dot { background:#f5af43; box-shadow:0 0 0 8px #f59e0b20; }
