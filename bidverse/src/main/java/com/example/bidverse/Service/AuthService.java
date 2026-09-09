@@ -1,8 +1,14 @@
 package com.example.bidverse.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.bidverse.Dto.AuthResponse;
@@ -13,7 +19,10 @@ import com.example.bidverse.Repository.UserRepository;
 
 @Service
 public class AuthService {
-    private static final java.util.Set<String> SELF_REGISTERABLE_ROLES = java.util.Set.of("buyer", "seller");
+    private static final Set<String> SELF_REGISTERABLE_ROLES = Set.of("buyer", "seller");
+    private static final Pattern BCRYPT_HASH = Pattern.compile(
+            "^\\$2[aby]\\$\\d{2}\\$[./A-Za-z0-9]{53}$"
+    );
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -48,16 +57,45 @@ public class AuthService {
         return toAuthResponse(user);
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (user == null || !passwordMatches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
         if (request.getRole() != null && !request.getRole().isBlank()
                 && !user.getRole().equalsIgnoreCase(request.getRole())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid role for this account");
         }
+
+        // Accounts created before BCrypt was introduced may still contain a plain-text
+        // password. After one valid login, replace it immediately with a secure hash so
+        // subsequent HTTP Basic and WebSocket authentication use the normal encoder.
+        if (!isBcryptHash(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            userRepository.save(user);
+        }
+
         return toAuthResponse(user);
+    }
+
+    private boolean passwordMatches(String rawPassword, String storedPassword) {
+        if (rawPassword == null || storedPassword == null) {
+            return false;
+        }
+
+        if (isBcryptHash(storedPassword)) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+
+        return MessageDigest.isEqual(
+                rawPassword.getBytes(StandardCharsets.UTF_8),
+                storedPassword.getBytes(StandardCharsets.UTF_8)
+        );
+    }
+
+    private boolean isBcryptHash(String password) {
+        return password != null && BCRYPT_HASH.matcher(password).matches();
     }
 
     private AuthResponse toAuthResponse(User user) {
