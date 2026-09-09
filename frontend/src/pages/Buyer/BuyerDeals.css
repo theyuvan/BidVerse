@@ -1,11 +1,5 @@
-
-/* =========================================================
-   BUYER DEALS
-   Matches BuyerDashboard.css design
-========================================================= */
-
 .buyer-deals-page,
-.deal-details-page {
+.buyer-deal-details-page {
     min-height: 100vh;
     padding: 112px clamp(22px, 5vw, 72px) 64px;
     box-sizing: border-box;
@@ -14,708 +8,783 @@
     font-family: "Segoe UI", Arial, sans-serif;
 }
 
-
-/* =========================================================
-   PAGE HEADER
-========================================================= */
-
-.buyer-deals-page .seller-page-header,
-.deal-details-page .seller-page-header {
-    margin-bottom: 34px;
+.buyer-deals-header,
+.buyer-deal-details-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
     padding-bottom: 26px;
-    border-bottom: 1px solid #272a37;
+    border-bottom: 1px solid #292d3a;
 }
 
-.buyer-deals-page .seller-page-header h1,
-.deal-details-page .seller-page-header h1 {
-    max-width: 760px;
-    margin: 7px 0 10px;
+.buyer-deals-header h1,
+.buyer-deal-details-header h1 {
+    margin: 7px 0 9px;
     color: #ffffff;
-    font-size: clamp(32px, 4vw, 48px);
-    font-weight: 750;
-    letter-spacing: -0.045em;
+    font-size: clamp(34px, 4vw, 45px);
+    letter-spacing: -0.04em;
     line-height: 1.08;
 }
 
-.buyer-deals-page .seller-page-header p,
-.deal-details-page .seller-page-header p {
-    max-width: 700px;
+.buyer-deals-header p,
+.buyer-deal-details-header p {
+    max-width: 680px;
     margin: 0;
-    color: #a8adc0;
-    font-size: 16px;
-    line-height: 1.6;
+    color: #9ca2b4;
+    font-size: 15px;
+    line-height: 1.55;
 }
 
-.eyebrow {
+.buyer-deals-eyebrow,
+.buyer-panel-label {
     display: block;
-    color: #f05a70;
-    font-size: 11px;
+    color: #ef667a;
+    font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
 }
 
-
-/* =========================================================
-   DEAL LIST
-========================================================= */
-
-.deal-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+.buyer-deals-user {
+    flex-shrink: 0;
+    padding: 8px 13px;
+    border: 1px solid #343846;
+    border-radius: 999px;
+    color: #bdc1ce;
+    font-size: 12px;
+    font-weight: 650;
 }
 
-
-/* =========================================================
-   DEAL CARD
-========================================================= */
-
-.deal-list-card {
-    position: relative;
+.buyer-deals-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
-    min-width: 0;
-    padding: 24px;
-    border: 1px solid #292d3a;
-    border-radius: 16px;
-    background: #191b25;
-    color: inherit;
-    text-decoration: none;
-    box-sizing: border-box;
-    transition:
-        transform 0.22s ease,
-        border-color 0.22s ease,
-        box-shadow 0.22s ease;
+    gap: 18px;
+    margin-bottom: 28px;
 }
 
-.deal-list-card:hover {
-    border-color: #4a5063;
-    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.25);
-    transform: translateY(-4px);
+.buyer-deal-filters {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid #2d303d;
+    border-radius: 11px;
+    background: #181a23;
 }
 
-.deal-list-card:focus-visible {
-    outline: 3px solid rgba(240, 90, 112, 0.48);
-    outline-offset: 3px;
-}
-
-
-/* =========================================================
-   DEAL CARD CONTENT
-========================================================= */
-
-.deal-list-card > div:first-child {
-    min-width: 0;
-}
-
-.product-id {
-    display: block;
-    margin-bottom: 7px;
-    color: #777d90;
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: 0.03em;
-}
-
-.deal-list-card h2 {
-    margin: 8px 0 7px;
-    color: #ffffff;
-    font-size: 20px;
+.buyer-deal-filters button {
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #9ca1b2;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
     font-weight: 700;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
-.deal-list-card p {
-    margin: 0;
-    color: #888ea1;
+.buyer-deal-filters button:hover {
+    background: #232631;
+    color: #ffffff;
+}
+
+.buyer-deal-filters button.active {
+    background: #e63752;
+    color: #ffffff;
+}
+
+.buyer-deal-search input {
+    width: min(310px, 40vw);
+    padding: 11px 14px;
+    border: 1px solid #303441;
+    border-radius: 10px;
+    outline: none;
+    background: #181a23;
+    color: #ffffff;
+    font: inherit;
     font-size: 13px;
-    line-height: 1.45;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
+.buyer-deal-search input::placeholder {
+    color: #6f7588;
+}
 
-/* =========================================================
-   PRICE + STATUS
-========================================================= */
+.buyer-deal-search input:focus {
+    border-color: #e63752;
+    box-shadow: 0 0 0 3px rgba(230, 55, 82, 0.1);
+}
 
-.deal-list-summary {
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    padding: 0;
+    margin: -1px;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.buyer-deal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.buyer-deal-card {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #292d3a;
+    border-radius: 15px;
+    background: #191b25;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.buyer-deal-card:hover {
+    border-color: #44495a;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+    transform: translateY(-3px);
+}
+
+.buyer-deal-card-image {
+    display: grid;
+    place-items: center;
+    min-height: 225px;
+    background: #f5f5f6;
+    color: #8b90a0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.buyer-deal-card-image img {
+    display: block;
+    width: 100%;
+    height: 225px;
+    padding: 10px;
+    box-sizing: border-box;
+    object-fit: contain;
+}
+
+.buyer-deal-card-body {
     display: flex;
-    flex-shrink: 0;
     flex-direction: column;
-    align-items: flex-end;
+    min-width: 0;
+    padding: 19px;
+}
+
+.buyer-deal-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 10px;
 }
 
-.deal-list-summary strong {
-    color: #ffffff;
-    font-size: 21px;
-    font-weight: 750;
-    white-space: nowrap;
+.buyer-deal-card-top > span:first-child {
+    color: #757b8e;
+    font-size: 10px;
+    font-weight: 650;
 }
 
+.buyer-deal-card h2 {
+    margin: 18px 0 7px;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
 
-/* =========================================================
-   STATUS BADGES
-========================================================= */
+.buyer-deal-seller {
+    margin: 0;
+    color: #9298aa;
+    font-size: 12px;
+}
 
-.deal-status {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 82px;
-    padding: 6px 11px;
-    border: 1px solid;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.07em;
+.buyer-deal-card-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: auto;
+    padding-top: 22px;
+}
+
+.buyer-deal-card-footer > div span {
+    display: block;
+    margin-bottom: 4px;
+    color: #747a8d;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
+.buyer-deal-card-footer strong {
+    color: #ffffff;
+    font-size: 18px;
+}
 
-/* Pending */
+.buyer-deal-card-footer a {
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: #e63752;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 750;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
 
-.deal-status-pending {
+.buyer-deal-card-footer a:hover {
+    background: #f14861;
+}
+
+.buyer-deal-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    padding: 5px 9px;
+    border: 1px solid #404453;
+    border-radius: 999px;
+    background: #242631;
+    color: #b6bac8;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.buyer-deal-status-pending {
     border-color: rgba(245, 174, 44, 0.28);
     background: rgba(245, 174, 44, 0.1);
     color: #f5c45c;
 }
 
-
-/* Confirmed */
-
-.deal-status-confirmed {
+.buyer-deal-status-confirmed,
+.buyer-deal-status-completed {
     border-color: rgba(42, 194, 105, 0.28);
     background: rgba(42, 194, 105, 0.1);
     color: #63dd94;
 }
 
-
-/* Completed */
-
-.deal-status-completed {
-    border-color: rgba(42, 194, 105, 0.28);
-    background: rgba(42, 194, 105, 0.1);
-    color: #63dd94;
-}
-
-
-/* Rejected */
-
-.deal-status-rejected {
+.buyer-deal-status-rejected,
+.buyer-deal-status-cancelled {
     border-color: rgba(230, 55, 82, 0.3);
     background: rgba(230, 55, 82, 0.1);
     color: #ff8193;
 }
 
-
-/* Cancelled */
-
-.deal-status-cancelled {
-    border-color: #3a3e4d;
-    background: #242631;
-    color: #aeb2c0;
-}
-
-
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-
-.empty-state {
-    padding: 34px;
-    border: 1px dashed #343847;
+.buyer-deals-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    border: 1px dashed #363a48;
     border-radius: 14px;
-    background: rgba(25, 27, 37, 0.7);
-    color: #858a9d;
-    font-size: 13px;
+    background: #181a23;
     text-align: center;
 }
 
-
-/* =========================================================
-   ERROR
-========================================================= */
-
-.form-error {
-    margin: 0 0 24px;
-    padding: 13px 15px;
-    border: 1px solid rgba(230, 55, 82, 0.32);
-    border-radius: 10px;
+.buyer-deals-message > span {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    margin-bottom: 12px;
+    border-radius: 50%;
     background: rgba(230, 55, 82, 0.1);
-    color: #ff8496;
+    color: #f0677b;
+}
+
+.buyer-deals-message h2 {
+    margin: 0 0 7px;
+    color: #ffffff;
+    font-size: 20px;
+}
+
+.buyer-deals-message p {
+    margin: 0 0 17px;
+    color: #8f95a8;
     font-size: 13px;
 }
 
-
-/* =========================================================
-   SUCCESS MESSAGE
-========================================================= */
-
-.form-success {
-    margin-top: 20px;
-    padding: 13px 15px;
-    border: 1px solid rgba(42, 194, 105, 0.28);
-    border-radius: 10px;
-    background: rgba(42, 194, 105, 0.1);
-    color: #63dd94;
-    font-size: 13px;
+.buyer-deals-message a,
+.buyer-deals-message button {
+    padding: 10px 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #e63752;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
 }
 
+.buyer-deals-error {
+    border-color: rgba(230, 55, 82, 0.35);
+}
 
-/* =========================================================
-   BACK LINK
-========================================================= */
+.buyer-deal-skeletons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
 
-.back-link {
+.buyer-deal-skeletons div,
+.buyer-deal-details-loading {
+    min-height: 225px;
+    border-radius: 15px;
+    background: linear-gradient(90deg, #191b25 25%, #222530 50%, #191b25 75%);
+    background-size: 200% 100%;
+    animation: buyer-deal-loading 1.3s infinite;
+}
+
+.buyer-deal-details-loading {
+    min-height: 430px;
+}
+
+@keyframes buyer-deal-loading {
+    to { background-position: -200% 0; }
+}
+
+.buyer-deal-back {
     display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 24px;
-    color: #f16b7e;
+    margin-bottom: 28px;
+    color: #b0b5c4;
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    transition:
-        color 0.2s ease,
-        transform 0.2s ease;
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 
-.back-link:hover {
+.buyer-deal-back:hover {
     color: #ffffff;
     transform: translateX(-3px);
 }
 
-.back-link:focus-visible {
-    outline: 3px solid rgba(240, 90, 112, 0.48);
-    outline-offset: 3px;
+.buyer-deal-details-header {
+    align-items: center;
 }
 
-
-/* =========================================================
-   DEAL DETAILS GRID
-========================================================= */
-
-.deal-details-grid {
+.buyer-deal-details-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
-    gap: 20px;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1.4fr) minmax(290px, 0.6fr);
+    gap: 18px;
 }
 
-
-/* =========================================================
-   PRODUCT PANEL
-========================================================= */
-
-.deal-product-panel,
-.deal-progress-panel {
-    min-width: 0;
-    padding: 24px;
+.buyer-deal-product-panel,
+.buyer-seller-panel,
+.buyer-deal-progress,
+.buyer-decision-panel,
+.buyer-cancel-reason {
     border: 1px solid #292d3a;
-    border-radius: 16px;
+    border-radius: 15px;
     background: #191b25;
     box-sizing: border-box;
 }
 
-
-.deal-product-panel {
+.buyer-deal-product-panel {
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 230px minmax(0, 1fr);
     gap: 24px;
+    padding: 22px;
 }
 
-
-/* =========================================================
-   PRODUCT IMAGE
-========================================================= */
-
-.deal-product-image {
-    width: 220px;
-    height: 220px;
-    border-radius: 14px;
-    background: #ffffff;
-    object-fit: contain;
-    box-sizing: border-box;
-}
-
-.product-art {
+.buyer-deal-product-image {
     display: grid;
     place-items: center;
-    width: 220px;
-    height: 220px;
-    border-radius: 14px;
-    background: linear-gradient(
-        145deg,
-        #292c3a,
-        #20222e
-    );
-    color: #72788d;
-    font-size: 30px;
+    width: 230px;
+    height: 230px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f5f5f6;
+    color: #858a9a;
+    font-size: 22px;
     font-weight: 800;
 }
 
+.buyer-deal-product-image img {
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    object-fit: contain;
+}
 
-/* =========================================================
-   PRODUCT INFORMATION
-========================================================= */
+.buyer-deal-product-copy > span {
+    color: #757b8e;
+    font-size: 10px;
+    font-weight: 650;
+}
 
-.deal-product-panel h2 {
-    margin: 9px 0 10px;
+.buyer-deal-product-copy h2 {
+    margin: 12px 0 9px;
     color: #ffffff;
-    font-size: 24px;
-    line-height: 1.3;
-    overflow-wrap: anywhere;
+    font-size: 25px;
 }
 
-.deal-product-panel > div > p {
+.buyer-deal-product-copy > p {
     margin: 0;
-    color: #888ea1;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-
-/* =========================================================
-   DEAL FACTS
-========================================================= */
-
-.deal-facts {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-    margin: 4px 0 0;
-}
-
-.deal-facts > div {
-    padding: 13px;
-    border-radius: 10px;
-    background: #13151d;
-}
-
-.deal-facts dt {
-    margin-bottom: 6px;
-    color: #73798d;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-}
-
-.deal-facts dd {
-    margin: 0;
-    color: #e8eaf0;
-    font-size: 13px;
-    font-weight: 700;
-    overflow-wrap: anywhere;
-}
-
-
-/* =========================================================
-   SELLER CONTACT PANEL
-========================================================= */
-
-.deal-progress-panel h2 {
-    margin: 0 0 18px;
-    color: #ffffff;
-    font-size: 20px;
-    letter-spacing: -0.025em;
-}
-
-
-.deal-progress-panel > p {
-    margin: 18px 0 0;
-    color: #888ea1;
+    color: #9298aa;
     font-size: 13px;
     line-height: 1.55;
 }
 
+.buyer-winning-price {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid #292d3a;
+}
 
-/* =========================================================
-   CONTACT CARD
-========================================================= */
+.buyer-winning-price span {
+    display: block;
+    margin-bottom: 5px;
+    color: #777d90;
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
 
-.deal-contact-card {
+.buyer-winning-price strong {
+    color: #ffffff;
+    font-size: 25px;
+}
+
+.buyer-seller-panel {
+    padding: 23px;
+}
+
+.buyer-seller-panel h2 {
+    margin: 9px 0 17px;
+    color: #ffffff;
+    font-size: 22px;
+}
+
+.buyer-contact-list {
     display: flex;
     flex-direction: column;
-    gap: 11px;
-    padding: 18px;
-    border: 1px solid #292d3a;
-    border-radius: 12px;
+    gap: 9px;
+    padding: 15px;
+    border-radius: 10px;
     background: #13151d;
 }
 
-.deal-contact-card strong {
-    color: #ffffff;
-    font-size: 15px;
-}
-
-.deal-contact-card a,
-.deal-contact-card span {
-    color: #aeb3c3;
-    font-size: 13px;
-    text-decoration: none;
+.buyer-contact-list a,
+.buyer-contact-list span {
+    color: #bec2cf;
+    font-size: 12px;
     overflow-wrap: anywhere;
+    text-decoration: none;
 }
 
-.deal-contact-card a:hover {
-    color: #f16b7e;
+.buyer-contact-list a:hover {
+    color: #f0677b;
 }
 
-
-/* =========================================================
-   CANCEL / REJECTION REASON
-========================================================= */
-
-.deal-cancel-reason {
-    margin-top: 18px !important;
-    padding: 13px 15px;
-    border: 1px solid rgba(230, 55, 82, 0.25);
-    border-radius: 10px;
-    background: rgba(230, 55, 82, 0.08);
-    color: #ff8496 !important;
+.buyer-seller-panel > p {
+    margin: 17px 0 0;
+    color: #858b9e;
+    font-size: 12px;
+    line-height: 1.55;
 }
 
-.deal-cancel-reason strong {
-    color: #ff9aaa;
+.buyer-deal-progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 18px;
+    overflow: hidden;
 }
 
-
-/* =========================================================
-   DECISION PANEL
-========================================================= */
-
-.deal-decision-panel {
-    margin-top: 20px;
-    padding: 24px;
-    border: 1px solid #292d3a;
-    border-radius: 16px;
+.buyer-deal-progress > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 17px;
     background: #191b25;
 }
 
-.deal-decision-panel label {
-    display: block;
-    margin-bottom: 9px;
-    color: #e8eaf0;
-    font-size: 13px;
-    font-weight: 700;
+.buyer-deal-progress > div + div {
+    border-left: 1px solid #292d3a;
 }
 
-.deal-decision-panel label span {
-    color: #73798d;
+.buyer-deal-progress > div > span:first-child {
+    color: #8b91a3;
     font-size: 11px;
-    font-weight: 500;
+    font-weight: 650;
 }
 
-
-/* =========================================================
-   TEXTAREA
-========================================================= */
-
-.deal-decision-panel textarea {
-    width: 100%;
-    min-height: 105px;
-    padding: 13px 14px;
-    border: 1px solid #303443;
-    border-radius: 10px;
-    outline: none;
-    background: #13151d;
-    color: #f7f7fa;
-    box-sizing: border-box;
-    resize: vertical;
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 1.5;
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+.buyer-decision-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 18px;
+    padding: 23px;
 }
 
-.deal-decision-panel textarea::placeholder {
-    color: #686d80;
+.buyer-decision-copy h2 {
+    margin: 7px 0 5px;
+    color: #ffffff;
+    font-size: 21px;
 }
 
-.deal-decision-panel textarea:focus {
-    border-color: #e63752;
-    box-shadow: 0 0 0 3px rgba(230, 55, 82, 0.1);
+.buyer-decision-copy p {
+    margin: 0;
+    color: #888ea0;
+    font-size: 12px;
 }
 
-
-/* =========================================================
-   ACTION BUTTONS
-========================================================= */
-
-.deal-actions {
+.buyer-decision-actions {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 15px;
 }
 
-.deal-actions button {
+.buyer-decision-actions button {
     min-width: 125px;
-    padding: 11px 17px;
+    padding: 11px 15px;
     border: 0;
     border-radius: 9px;
     color: #ffffff;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 13px;
+    font: inherit;
+    font-size: 12px;
     font-weight: 800;
-    transition:
-        background 0.2s ease,
-        box-shadow 0.2s ease,
-        transform 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.deal-actions button:hover:not(:disabled) {
+.buyer-decision-actions button:hover:not(:disabled) {
     transform: translateY(-1px);
 }
 
-
-/* Reject */
-
-.button-danger {
-    background: #c92f47;
+.buyer-decision-actions button:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 
-.button-danger:hover:not(:disabled) {
+.buyer-button-secondary {
+    border: 1px solid #3a3e4d !important;
+    background: #252833;
+}
+
+.buyer-button-secondary:hover:not(:disabled) {
+    background: #303441;
+}
+
+.buyer-button-danger {
+    background: #b92d43;
+}
+
+.buyer-button-danger:hover:not(:disabled),
+.buyer-button-confirm {
     background: #e63752;
-    box-shadow: 0 8px 20px rgba(230, 55, 82, 0.22);
 }
 
-
-/* Confirm */
-
-.button-success {
-    background: #218b50;
+.buyer-button-confirm:hover:not(:disabled) {
+    background: #f14861;
 }
 
-.button-success:hover:not(:disabled) {
-    background: #2aba69;
-    box-shadow: 0 8px 20px rgba(42, 194, 105, 0.2);
+.buyer-reject-form {
+    width: min(100%, 520px);
 }
 
-
-.deal-actions button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+.buyer-reject-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #d9dce4;
+    font-size: 12px;
+    font-weight: 700;
 }
 
+.buyer-reject-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #343846;
+    border-radius: 9px;
+    outline: none;
+    background: #13151d;
+    color: #ffffff;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+}
 
-/* =========================================================
-   RESPONSIVE - TABLET
-========================================================= */
+.buyer-reject-form textarea:focus {
+    border-color: #e63752;
+    box-shadow: 0 0 0 3px rgba(230, 55, 82, 0.1);
+}
+
+.buyer-reject-form .buyer-decision-actions {
+    margin-top: 10px;
+}
+
+.buyer-deal-notice,
+.buyer-deal-inline-error,
+.buyer-waiting-message,
+.buyer-cancel-reason {
+    margin: 0 0 18px;
+    padding: 13px 15px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.buyer-deal-notice {
+    border: 1px solid rgba(42, 194, 105, 0.28);
+    background: rgba(42, 194, 105, 0.1);
+    color: #63dd94;
+}
+
+.buyer-deal-inline-error,
+.buyer-cancel-reason {
+    border: 1px solid rgba(230, 55, 82, 0.3);
+    background: rgba(230, 55, 82, 0.1);
+    color: #ff8193;
+}
+
+.buyer-cancel-reason {
+    margin-top: 18px;
+}
+
+.buyer-cancel-reason strong,
+.buyer-cancel-reason p {
+    margin: 0;
+}
+
+.buyer-cancel-reason p {
+    margin-top: 5px;
+}
+
+.buyer-waiting-message {
+    margin-top: 18px;
+    border: 1px solid rgba(245, 174, 44, 0.25);
+    background: rgba(245, 174, 44, 0.08);
+    color: #e8bd62;
+}
 
 @media (max-width: 1050px) {
-
-    .deal-list {
+    .buyer-deal-grid,
+    .buyer-deal-skeletons,
+    .buyer-deal-details-grid {
         grid-template-columns: 1fr;
     }
-
-    .deal-details-grid {
-        grid-template-columns: 1fr;
-    }
-
 }
 
-
-/* =========================================================
-   RESPONSIVE - MOBILE
-========================================================= */
-
 @media (max-width: 760px) {
-
     .buyer-deals-page,
-    .deal-details-page {
+    .buyer-deal-details-page {
         padding: 98px 18px 42px;
     }
 
-
-    .buyer-deals-page .seller-page-header h1,
-    .deal-details-page .seller-page-header h1 {
-        font-size: 34px;
-    }
-
-
-    .deal-list-card {
-        align-items: flex-start;
+    .buyer-deals-header,
+    .buyer-deal-details-header,
+    .buyer-deals-toolbar,
+    .buyer-decision-panel {
+        align-items: stretch;
         flex-direction: column;
-        gap: 18px;
     }
 
+    .buyer-deals-user {
+        width: fit-content;
+    }
 
-    .deal-list-summary {
+    .buyer-deal-filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .buyer-deal-search input {
         width: 100%;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
     }
 
+    .buyer-deal-card {
+        grid-template-columns: 115px minmax(0, 1fr);
+    }
 
-    .deal-product-panel {
+    .buyer-deal-card-image,
+    .buyer-deal-card-image img {
+        height: 100%;
+        min-height: 230px;
+    }
+
+    .buyer-deal-card-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .buyer-deal-card-footer a {
+        text-align: center;
+    }
+
+    .buyer-deal-product-panel {
         grid-template-columns: 1fr;
     }
 
-
-    .deal-product-image,
-    .product-art {
+    .buyer-deal-product-image {
         width: 100%;
         height: 230px;
     }
 
-
-    .deal-facts {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-
-    .deal-actions {
-        flex-direction: column-reverse;
-    }
-
-
-    .deal-actions button {
-        width: 100%;
-    }
-
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-width: 480px) {
-
-    .deal-facts {
+    .buyer-deal-progress {
         grid-template-columns: 1fr;
     }
 
-    .deal-list-card,
-    .deal-product-panel,
-    .deal-progress-panel,
-    .deal-decision-panel {
-        padding: 18px;
+    .buyer-deal-progress > div + div {
+        border-top: 1px solid #292d3a;
+        border-left: 0;
     }
 
+    .buyer-reject-form {
+        width: 100%;
+    }
 }
 
+@media (max-width: 480px) {
+    .buyer-deal-card {
+        grid-template-columns: 1fr;
+    }
 
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
+    .buyer-deal-card-image,
+    .buyer-deal-card-image img {
+        width: 100%;
+        height: 190px;
+        min-height: 0;
+    }
+
+    .buyer-decision-actions {
+        flex-direction: column-reverse;
+    }
+
+    .buyer-decision-actions button {
+        width: 100%;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
-
-    .deal-list-card,
-    .back-link,
-    .deal-actions button {
+    .buyer-deal-card,
+    .buyer-deal-card-footer a,
+    .buyer-deal-back,
+    .buyer-decision-actions button {
         transition: none;
     }
 
+    .buyer-deal-skeletons div,
+    .buyer-deal-details-loading {
+        animation: none;
+    }
 }
