@@ -38,7 +38,7 @@ function MyProducts() {
         <main className="seller-page seller-products-page">
             <header className="page-header seller-page-header">
                 <div>
-                    <span className="eyebrow">Seller catalogue</span>
+                    <span className="eyebrow"></span>
                     <h1>My Products</h1>
                 </div>
             </header>

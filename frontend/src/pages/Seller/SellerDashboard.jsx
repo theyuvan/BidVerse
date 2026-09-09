@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getSellerCategories } from "../../services/sellerService";
 import { getSellerProductHistory } from "../../services/sellerService";
 import { getSellerProfile } from "../../services/sellerSession";
 import "./Seller.css";
+import Showcase from "../../components/Showcase";
 
 function SellerDashboard() {
-    const [categories, setCategories] = useState([]);
-    const [categoryError, setCategoryError] = useState("");
+    const [error, setError] = useState("");
     const [products, setProducts] = useState([]);
     const profile = getSellerProfile();
     const sellerId = profile?.id;
@@ -16,19 +15,11 @@ function SellerDashboard() {
     useEffect(() => {
         let cancelled = false;
 
-        getSellerCategories()
-            .then((response) => {
-                if (!cancelled) setCategories(response.data);
-            })
-            .catch(() => {
-                if (!cancelled) setCategoryError("Unable to load categories.");
-            });
-
         if (sellerId) {
             getSellerProductHistory(sellerId).then((response) => {
                 if (!cancelled) setProducts(response.data);
             }).catch(() => {
-                if (!cancelled) setCategoryError("Unable to load seller activity.");
+                if (!cancelled) setError("Unable to load seller activity.");
             });
         }
 
@@ -40,8 +31,10 @@ function SellerDashboard() {
     return (
         <main className="seller-page">
             <header className="page-header seller-page-header seller-welcome">
-                <div><span className="eyebrow">Seller dashboard</span><h1>Welcome back, {sellerName}!</h1><p>Here's what's happening with your auctions today.</p></div>
+                <div><h1>Welcome back, {sellerName}!</h1><p>Here's what's happening with your auctions today.</p></div>
             </header>
+            <Showcase role="seller" />
+            {error && <p className="form-error" role="alert">{error}</p>}
             <section className="seller-stat-grid" aria-label="Seller summary">
                 <div className="seller-stat"><span className="seller-stat-label">Total listings</span><strong>{products.length}</strong><small>Products in your workspace</small></div>
                 <div className="seller-stat"><span className="seller-stat-label">Active auctions</span><strong>{products.filter((product) => ["active", "live", "running"].includes(product.auctionStatus?.toLowerCase())).length}</strong><small>Currently accepting bids</small></div>
@@ -67,32 +60,10 @@ function SellerDashboard() {
             </section>
 
             <section className="seller-section" aria-labelledby="recent-auctions-heading">
-                <div className="section-heading"><div><span className="eyebrow">Your activity</span><h2 id="recent-auctions-heading">Recent auctions</h2></div><span>{products.length} listings</span></div>
+                <div className="section-heading"><div><span className="eyebrow">Your activity</span><h2 id="recent-auctions-heading">Recent auctions</h2></div></div>
                 {products.length === 0 ? <p className="empty-state">Your auction activity will appear here after you list a product.</p> : <div className="recent-list">{products.slice(0, 5).map((product) => <div className="recent-item" key={product.productId}><div><strong>{product.name}</strong><span>{product.categoryName || "Uncategorized"} · Base price Rs. {product.basePrice}</span></div><span className={`product-status ${(product.auctionStatus || product.productStatus || "pending").toLowerCase()}`}>{product.auctionStatus || product.productStatus || "Pending"}</span></div>)}</div>}
             </section>
 
-            <section className="category-panel" aria-labelledby="category-heading">
-                <div className="section-heading">
-                    <div>
-                        <span className="eyebrow">Product setup</span>
-                        <h2 id="category-heading">Available categories</h2>
-                    </div>
-                    <span>{categories.length} categories</span>
-                </div>
-                {categoryError && <p className="form-error" role="alert">{categoryError}</p>}
-                {!categoryError && categories.length === 0 && <p className="empty-state">No categories are available yet.</p>}
-                {!categoryError && categories.length > 0 && (
-                    <div className="category-grid">
-                        {categories.map((category) => (
-                            <div className="category-card" key={category.categoryId}>
-                                <span>Category ID</span>
-                                <strong>{category.categoryId}</strong>
-                                <h3>{category.name}</h3>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </section>
         </main>
     );
 }

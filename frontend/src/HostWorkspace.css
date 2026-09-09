@@ -1,0 +1,101 @@
+.app-shell :is(.host-builder-submit,.host-edit-actions,.host-workspace-action,.host-product-decisions) button:not(.button-outline) { background:var(--accent); border:1px solid var(--accent); color:#fff; font-weight:750; font-size:16px; min-height:48px; padding:12px 20px; border-radius:10px; }
+.app-shell .host-page .overline { font-size:12px; }
+.app-shell .host-room-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; align-items:stretch; width:100%; }
+.app-shell .host-room-tile { position:relative; display:grid; grid-template-rows:38px 36px 60px 54px minmax(58px,1fr) 60px; gap:12px; height:440px; padding:24px; min-width:0; border:1px solid #63404d; border-radius:20px; background:var(--surface,#1c232d); box-shadow:0 4px 20px #ba305518; transition:border-color .2s,box-shadow .2s,transform .2s; }
+.app-shell .host-room-tile:hover,.app-shell .host-room-tile:focus-within { border-color:#82c7be; box-shadow:0 0 0 2px #82c7be35,0 12px 28px #0004; transform:translateY(-3px); }
+.host-room-top,.host-product-top { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:14px; color:var(--muted,#a6b1c3); }
+.app-shell .host-status { display:inline-flex; padding:7px 12px; border:1px solid #e5567950; border-radius:100px; background:#ba305520; color:#ff95ac; font-size:13px; font-weight:700; text-transform:capitalize; width:fit-content; }
+.app-shell .host-status:is(.approved,.live,.completed) { color:#a0ded0; border-color:#82c7be55; background:#82c7be14; }
+.host-room-symbol { display:flex; gap:12px; align-items:center; font-size:28px; color:#ed6b89; font-weight:850; }
+.host-room-symbol span { font-size:11px; letter-spacing:.16em; color:var(--muted,#a6b1c3); }
+.app-shell .host-room-title { color:var(--text,#fff); text-decoration:none; }
+.host-room-title::after { content:""; position:absolute; inset:0; border-radius:20px; }
+.app-shell .host-room-title h3 { margin:0; font-size:23px; line-height:1.3; height:60px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; }
+.app-shell .host-room-facts { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:0; }
+.app-shell .host-room-facts div { display:flex; flex-direction:column; gap:6px; padding:0; border:0; }
+.app-shell .host-room-facts dt,.host-room-date span { font-size:14px; color:var(--muted,#a6b1c3); }
+.app-shell .host-room-facts dd { margin:0; font-size:18px; line-height:1.35; font-weight:750; }
+.host-room-date { display:flex; flex-direction:column; gap:5px; border-top:1px solid #ffffff14; padding-top:12px; line-height:1.4; }
+.host-room-date strong { font-size:15px; }
+.host-room-actions { position:relative; z-index:1; display:flex; gap:10px; margin-top:0; }
+.app-shell .host-room-actions :is(a,button) { flex:1; min-width:0; min-height:46px; padding:8px; font-size:16px; line-height:1.3; text-align:center; display:flex; justify-content:center; align-items:center; text-decoration:none; white-space:normal; border-radius:10px; }
+.app-shell .host-product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)); gap:24px; }
+.app-shell .host-product-tile { display:flex; flex-direction:column; min-width:0; overflow:hidden; border:1px solid #63404d; border-radius:18px; background:var(--surface,#1c232d); box-shadow:0 4px 18px #ba305514; transition:border-color .2s,box-shadow .2s; }
+.app-shell .host-product-tile:hover { border-color:#82c7be; box-shadow:0 0 0 2px #82c7be25; }
+.host-product-photo { height:210px; background:#e9e7e3; display:grid; place-items:center; overflow:hidden; }
+.host-product-photo img { width:100%; height:100%; object-fit:contain; }
+.host-photo-placeholder { display:flex; flex-direction:column; align-items:center; gap:8px; color:#6d555e; font-size:42px; font-weight:850; }
+.host-photo-placeholder span { font-size:14px; font-weight:500; }
+.host-product-body { padding:24px; display:flex; flex:1; flex-direction:column; gap:16px; }
+.app-shell .host-product-body h2 { font-size:22px; line-height:1.35; margin:0; overflow-wrap:anywhere; }
+.app-shell .host-product-body p { margin:0; line-height:1.6; color:var(--muted,#a6b1c3); overflow-wrap:anywhere; }
+.host-product-body dl { margin:0; display:grid; gap:10px; }
+.host-product-body dl div { display:flex; justify-content:space-between; gap:14px; }
+.host-product-body dt { color:var(--muted,#a6b1c3); font-size:14px; }
+.host-product-body dd { margin:0; font-weight:700; text-align:right; overflow-wrap:anywhere; }
+.host-product-decisions { display:flex; gap:12px; margin-top:auto; padding-top:8px; }
+.app-shell .host-product-decisions button { flex:1; font-size:16px; min-height:46px; padding:10px; }
+.app-shell .host-review-note { border-top:1px solid #ffffff14; padding-top:16px; margin-top:auto; font-size:14px; }
+.host-collection-toolbar { display:flex; flex-wrap:wrap; justify-content:space-between; gap:18px; margin:24px 0; align-items:center; }
+.app-shell .host-collection-toolbar input { width:min(100%,350px); margin:0; font-size:16px; }
+.host-collection-toolbar .product-filters { margin:0; display:flex; flex-wrap:wrap; gap:10px; }
+.app-shell .host-builder-panel { padding:clamp(20px,3vw,36px); margin:24px 0; border:1px solid #63404d; border-radius:20px; background:var(--surface,#1c232d); box-shadow:0 4px 20px #ba305514; }
+.host-step-heading { display:flex; gap:18px; align-items:flex-start; margin-bottom:28px; }
+.host-step-heading > span { display:grid; place-items:center; flex-shrink:0; width:44px; height:44px; border-radius:12px; background:#ba305526; color:#ff95ac; font-weight:750; }
+.app-shell :is(.host-step-heading,.host-collection-heading) h2 { margin:0 0 8px; font-size:25px; }
+.app-shell :is(.host-step-heading,.host-collection-heading) p { margin:0; color:var(--muted,#a6b1c3); line-height:1.6; }
+.host-builder-fields { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.app-shell :is(.host-builder-fields,.host-picker-tools) label { display:flex; flex-direction:column; gap:10px; font-size:16px; font-weight:650; }
+.app-shell :is(.host-builder-fields,.host-picker-tools) input { width:100%; margin:0; font-size:16px; min-height:50px; }
+.host-picker-tools { display:flex; gap:20px; align-items:flex-end; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; }
+.host-picker-tools label { flex:1; min-width:min(100%,250px); }
+.host-picker-tools > div { display:flex; gap:10px; flex-wrap:wrap; }
+.app-shell .host-picker-tools button { font-size:16px; min-height:48px; padding:10px 16px; }
+.host-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr)); gap:18px; }
+.app-shell .host-picker-card { position:relative; display:block; overflow:hidden; border:2px solid #394451; background:#151b24; border-radius:14px; cursor:pointer; transition:border-color .2s,box-shadow .2s; }
+.app-shell .host-picker-card.is-selected { border-color:#d45574; box-shadow:0 0 0 2px #d455741c; }
+.app-shell .host-picker-card:hover,.app-shell .host-picker-card:focus-within { border-color:#82c7be; box-shadow:0 0 0 2px #82c7be35; }
+.app-shell .host-picker-card input[type=checkbox] { position:absolute; z-index:1; top:12px; right:12px; width:24px; height:24px; min-height:0; padding:0; margin:0; accent-color:#bc3054; cursor:pointer; }
+.host-picker-card .host-product-photo { height:150px; }
+.host-picker-copy { display:flex; flex-direction:column; gap:8px; padding:18px; }
+.host-picker-copy strong { font-size:18px; line-height:1.4; overflow-wrap:anywhere; }
+.host-picker-copy :is(span,small) { font-size:14px; color:var(--muted,#a6b1c3); }
+.host-picker-copy b { font-size:17px; margin-top:4px; }
+.host-builder-submit,.host-collection-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.host-builder-submit p { color:var(--muted,#a6b1c3); }
+.host-builder-submit button { flex-shrink:0; }
+.host-edit-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:24px; }
+.host-workspace-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,320px); gap:32px; align-items:center; margin-top:24px; padding:32px 0; border-bottom:1px solid #ffffff18; }
+.app-shell .host-workspace-hero h1 { font-size:clamp(28px,3.5vw,46px); margin:12px 0; overflow-wrap:anywhere; }
+.host-workspace-hero p { color:var(--muted,#a6b1c3); margin-bottom:20px; }
+.host-workspace-action { display:flex; flex-direction:column; gap:12px; }
+.host-workspace-action small { color:var(--muted,#a6b1c3); font-size:14px; line-height:1.5; }
+.host-workspace-facts { display:grid; grid-template-columns:1fr 1fr 1.5fr; gap:24px; padding:24px 0; margin:0; }
+.host-workspace-facts dt { color:var(--muted,#a6b1c3); font-size:15px; margin-bottom:10px; }
+.host-workspace-facts dd { font-size:19px; margin:0; font-weight:650; }
+.host-collection-heading { margin-bottom:28px; }
+.host-collection-heading button { flex-shrink:0; }
+.app-shell .seller-form label > span { font-size:16px; line-height:1.5; letter-spacing:0; }
+.app-shell .seller-form :is(input,textarea,select) { font-size:17px; line-height:1.5; }
+.app-shell .seller-form :is(input,textarea)::placeholder { font-size:16px; }
+.app-shell .seller-form :is(small,.seller-image-divider) { font-size:14px; line-height:1.6; }
+.app-shell .seller-form input::file-selector-button { font-size:16px; padding:10px 14px; }
+html { scrollbar-gutter:auto; }
+* { scrollbar-width:none; }
+*::-webkit-scrollbar { display:none; width:0; height:0; }
+@media(max-width:1050px) {
+  .app-shell .host-room-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:700px) {
+  .app-shell .host-room-grid { grid-template-columns:minmax(0,1fr); }
+  .host-builder-fields,.host-workspace-hero,.host-workspace-facts { grid-template-columns:1fr; }
+  .host-builder-submit,.host-collection-heading { flex-direction:column; align-items:stretch; }
+  .host-builder-submit { gap:12px; }
+  .host-picker-tools > div { width:100%; }
+  .host-picker-tools button { flex:1; }
+  .host-workspace-hero { gap:20px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .app-shell .host-room-tile { transition:none; transform:none; }
+  .app-shell :is(.host-product-tile,.host-picker-card) { transition:none; }
+}

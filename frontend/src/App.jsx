@@ -4,13 +4,15 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import HostLogin from "./pages/Host/HostLogin";
-import Navbar from "./components/host/Navbar";
+import { useLayoutEffect } from "react";
+import AppNavigation from "./components/AppNavigation";
+import Footer from "./components/Footer";
+import { AuthVisual } from "./components/Showcase";
 import HostDashboard from "./pages/Host/HostDashboard";
 import MyRooms from "./pages/Host/MyRooms";
 import Products from "./pages/Host/Products";
 import CreateRoom from "./pages/Host/CreateRoom";
 import RoomDetails from "./pages/Host/RoomDetails";
-import SellerNavbar from "./components/seller/Navbar";
 import SellerDashboard from "./pages/Seller/SellerDashboard";
 import ListProduct from "./pages/Seller/ListProduct";
 import MyProducts from "./pages/Seller/MyProducts";
@@ -20,9 +22,10 @@ import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
 import BuyerDeals, { BuyerDealDetails } from "./pages/Buyer/BuyerDeals";
-import BuyerNavbar from "./components/buyer/Navbar";
 import { getAuthUser } from "./services/authSession";
 import "./pages/Seller/Seller.css";
+import "./Theme.css";
+import "./HostWorkspace.css";
 
 const roleHome = {
     buyer: "/buyer",
@@ -48,13 +51,16 @@ function RequireRole({ role, children }) {
 function AppShell() {
     const location = useLocation();
     const isAuthRoute = ["/login", "/register", "/host/login"].includes(location.pathname);
-    const isSellerRoute = location.pathname.startsWith("/seller");
-    const isBuyerRoute = location.pathname.startsWith("/buyer");
+    useLayoutEffect(() => {
+        if (!location.hash) window.scrollTo({ top: 0, behavior: "instant" });
+    }, [location.pathname, location.hash]);
 
     return (
-        <div className="app-shell">
-            {isAuthRoute ? null : isSellerRoute ? <SellerNavbar /> : isBuyerRoute ? <BuyerNavbar /> : <Navbar />}
-            <div className="page-content">
+        <div className={`app-shell ${isAuthRoute ? "auth-shell" : ""}`}>
+            <a className="skip-link" href="#page-content">Skip to content</a>
+            {isAuthRoute ? null : <AppNavigation key={location.pathname} />}
+            <div id="page-content" className={isAuthRoute ? "page-content auth-layout" : "page-content"}>
+                {isAuthRoute && <AuthVisual />}
                 <Routes>
                     <Route path="/" element={<Landing />} />
                     <Route path="/login" element={<Login />} />
@@ -70,7 +76,6 @@ function AppShell() {
                     <Route path="/seller/products" element={<RequireRole role="seller"><MyProducts /></RequireRole>} />
                     <Route path="/seller/deals" element={<RequireRole role="seller"><SellerDeals /></RequireRole>} />
                     <Route path="/seller/deals/:dealId" element={<RequireRole role="seller"><SellerDealDetails /></RequireRole>} />
-                    {/* BUYER */}
                     <Route path="/buyer" element={<RequireRole role="buyer"><BuyerDashboard /></RequireRole>} />
                     <Route path="/buyer/rooms" element={<RequireRole role="buyer"><BuyerDashboard roomsOnly /></RequireRole>} />
                     <Route path="/buyer/rooms/:roomId" element={<RequireRole role="buyer"><BuyerRoomDetails /></RequireRole>} />
@@ -79,6 +84,7 @@ function AppShell() {
                     <Route path="/buyer/deals/:dealId" element={ <RequireRole role="buyer"> <BuyerDealDetails /> </RequireRole>}/>
                 </Routes>
             </div>
+            <Footer />
         </div>
     );
 }

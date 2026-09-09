@@ -24,6 +24,8 @@ export const createRoom = (room) => {
     return api.post("/host/rooms", room);
 };
 
+export const saveRoomProducts = (roomId, productIds) => api.put(`/host/rooms/${roomId}/products`, { productIds });
+
 export const getPendingProducts = () => {
     return api.get("/host/products/pending");
 };

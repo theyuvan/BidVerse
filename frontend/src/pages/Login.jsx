@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { saveAuthSession } from "../services/authSession";
 import "./Login.css";
@@ -17,7 +17,7 @@ function Login() {
         setLoading(true);
 
         try{
-            const response = await loginUser({email,password,role});
+            const response = await loginUser({email: email.trim(),password,role});
             const user = response.data;
             saveAuthSession(user, password);
 
@@ -46,20 +46,19 @@ function Login() {
         <main className="login-page">
             <h1>BidVerse</h1>
             <h2>Welcome Back</h2>
-            <p>Login to your account</p>
+            <p>Good to see you again. Your next great find awaits.</p>
 
             <form onSubmit={handleSubmit}>
-                <label>Email</label>
-                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                <label htmlFor="login-email">Email address</label>
+                <input id="login-email" autoComplete="email" placeholder="you@example.com" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
 
-                <label>Password</label>
-                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                <label htmlFor="login-password">Password</label>
+                <input id="login-password" autoComplete="current-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
 
-                <label>Role</label>
-                <select value={role} onChange={(event) => setRole(event.target.value)}>
+                <label htmlFor="login-role">Sign in as</label>
+                <select id="login-role" value={role} onChange={(event) => setRole(event.target.value)}>
                     <option value="buyer">Buyer</option>
                     <option value="seller">Seller</option>
-                    <option value="host">Host</option>
                 </select>
 
                 {error && <p className="form-error" role="alert">{error}</p>}
@@ -68,6 +67,7 @@ function Login() {
                     {loading ? "Logging in..." : "Login"}
                 </button>
             </form>
+            <div className="auth-links">New to Bidverse? <Link to="/register">Create an account →</Link></div>
         </main>
     );
 }

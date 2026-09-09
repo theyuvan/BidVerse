@@ -1,125 +1,45 @@
 import { useEffect, useState } from "react";
 import { getProducts, verifyProduct } from "../../services/hostService";
+import ProductPhoto from "../../components/ProductPhoto";
 import "./Products.css";
-function Products(){
+
+export default function Products() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [updatingId, setUpdatingId] = useState(null);
-    const[filter,setFilter] = useState("all");
-
+    const [filter, setFilter] = useState("all");
+    const [query, setQuery] = useState("");
     useEffect(() => {
-        getProducts()
-            .then((response) => setProducts(response.data))
-            .catch(() => setError("Unable to load pending products."))
-            .finally(() => setLoading(false));
+        getProducts().then(response => setProducts(response.data)).catch(() => setError("Unable to load products.")).finally(() => setLoading(false));
     }, []);
-
-    const handleDecision = async (productId, status) => {
-        setUpdatingId(productId);
-        setError("");
-
+    const decide = async (id, status) => {
+        setUpdatingId(id); setError("");
         try {
-            await verifyProduct(productId, status);
-
-            setProducts((currentProducts) =>
-                currentProducts.filter(
-                    (product) => product.productId !== productId
-                )
-            );
-        } catch (requestError) {
-            console.log("VERIFY ERROR:", requestError);
-            console.log("RESPONSE:", requestError.response?.data);
-
-            const responseData = requestError.response?.data;
-
-            setError(
-                typeof responseData === "string"
-                    ? responseData
-                    : responseData?.message || "Unable to update product status."
-            );
-        } finally {
-            setUpdatingId(null);
-        }
+            await verifyProduct(id, status);
+            setProducts(current => current.map(product => product.productId === id ? { ...product, status } : product));
+        } catch (error) { setError(error.response?.data?.detail || error.response?.data?.message || "Unable to update product status."); }
+        finally { setUpdatingId(null); }
     };
-
-    const filteredProducts = filter === "all" ? products : products.filter((product) => product.status?.toLowerCase() === filter );
-    return(
-        <main className="host-page products-page">
-            <header className="page-header">
-                <h1>Products</h1>
-            </header>
-
-            <section className="products-section">
-                {/* <div className="section-heading">
-                    <span>{products.length} products</span>
-                </div> */}
-                <div className ="product-filters">
-                    <button className={filter === "all" ? "active" : ""}  onClick={() =>setFilter ("all")} >All </button>
-                    <button className={filter === "approved" ? "active" : ""}  onClick={() =>setFilter ("approved")} >Approved </button>
-                    <button className={filter === "pending" ? "active" : ""}  onClick={() =>setFilter ("pending")} >Pending </button>
-                    <button className={filter === "rejected" ? "active" : ""}  onClick={() =>setFilter ("rejected")} >Rejected</button>
-                    
+    const visible = products.filter(product => (filter === "all" || product.status?.toLowerCase() === filter)
+        && [product.productName, product.sellerName, product.categoryName].some(value => String(value || "").toLowerCase().includes(query.toLowerCase())));
+    return <main className="host-page products-page">
+        <header className="page-header"><div><span className="overline">CURATE THE NEXT AUCTION</span><h1>Product collection</h1><p>Review the details. Approve the pieces that are ready for bidding.</p></div></header>
+        <div className="host-collection-toolbar"><div className="product-filters" aria-label="Product status filters">
+            {["all", "pending", "approved", "rejected"].map(status => <button key={status} type="button" className={filter === status ? "active" : ""} aria-pressed={filter === status} onClick={() => setFilter(status)}>{status[0].toUpperCase() + status.slice(1)}</button>)}
+        </div><input aria-label="Search products" type="search" placeholder="Search products or sellers" value={query} onChange={event => setQuery(event.target.value)} /></div>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        {loading ? <p className="empty-state">Loading products…</p> : !visible.length ? <p className="empty-state">No products match this view.</p>
+            : <div className="host-product-grid">{visible.map(product => <article className="host-product-tile" key={product.productId}>
+                <ProductPhoto src={product.imageUrl} name={product.productName} />
+                <div className="host-product-body"><div className="host-product-top"><span>{product.categoryName || "Collection"}</span><span className={`host-status ${product.status}`}>{product.status}</span></div>
+                    <h2>{product.productName}</h2><p className="host-product-description">{product.description || "No description provided."}</p>
+                    <dl><div><dt>Listed by</dt><dd>{product.sellerName || "Seller unavailable"}</dd></div><div><dt>Base price</dt><dd>₹{Number(product.basePrice).toLocaleString("en-IN")}</dd></div></dl>
+                    {product.status?.toLowerCase() === "pending" ? <div className="host-product-decisions">
+                        <button type="button" disabled={updatingId !== null} onClick={() => decide(product.productId, "approved")}>{updatingId === product.productId ? "Saving…" : "Approve"}</button>
+                        <button type="button" className="button-outline" disabled={updatingId !== null} onClick={() => decide(product.productId, "rejected")}>Reject</button>
+                    </div> : <p className="host-review-note">{product.status === "approved" ? "Approved · ready for selection if unassigned" : "Reviewed · not available for auction"}</p>}
                 </div>
-                {loading && <p className="empty-state">Loading products...</p>}
-                {!loading && error && <p className="form-error" role="alert">{error}</p>}
-                {!loading && !error && products.length === 0 && (
-                    <p className="empty-state">No products available.</p>
-                )}
-                {!loading && products.length > 0 && (
-                    <div className="product-table-wrapper">
-                        <table className="product-table">
-                           <thead>
-                            <tr>
-                                <th>Product Name</th>
-                                <th>Description</th>
-                                <th>Seller Name</th>
-                                <th>Base Price</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                        {filteredProducts.map((product) => (
-                            <tr key={product.productId}>
-                                <td className="product-name">{product.productName}</td>
-                                <td>{product.description || "No description"}</td>
-                                <td>{product.sellerName || "Unknown"}</td>
-                                <td>₹{product.basePrice}</td>
-                                <td><span className={`product-status ${product.status}`}>{product.status}</span></td>
-                                <td>
-                                    {product.status?.toLowerCase() === "pending" ? (
-                                        <div className="product-actions">
-                                            <button
-                                                type="button"
-                                                className="approve-button"
-                                                disabled={updatingId === product.productId}
-                                                onClick={() => handleDecision(product.productId, "approved")}
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="reject-button"
-                                                disabled={updatingId === product.productId}
-                                                onClick={() => handleDecision(product.productId, "rejected")}
-                                            >
-                                                Reject
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <span className="action-complete">Reviewed</span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </section>
-        </main>
-    );
+            </article>)}</div>}
+    </main>;
 }
-
-export default Products;

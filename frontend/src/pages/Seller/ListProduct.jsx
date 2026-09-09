@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createSellerProduct, getSellerCategories } from "../../services/sellerService";
 import { getSellerProfile } from "../../services/sellerSession";
-import { isSupabaseUploadConfigured, uploadProductImage } from "../../services/supabaseStorage";
+import { uploadProductImage } from "../../services/supabaseStorage";
 
 const initialForm = {
     categoryId: "",
@@ -24,7 +24,6 @@ function ListProduct() {
     const [imagePreview, setImagePreview] = useState("");
     const [imageName, setImageName] = useState("");
     const seller = getSellerProfile();
-    const uploadConfigured = isSupabaseUploadConfigured();
 
     useEffect(() => {
         getSellerCategories()
@@ -45,8 +44,8 @@ function ListProduct() {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith("image/")) {
-            setError("Please choose an image file.");
+        if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.type)) {
+            setError("Please choose a PNG, JPG, WEBP, or GIF image.");
             event.target.value = "";
             return;
         }
@@ -77,8 +76,15 @@ function ListProduct() {
         try {
             if (!seller?.id) throw new Error("Please sign in again to identify your seller account.");
             const publicImageUrl = imageFile
-                ? await uploadProductImage(imageFile, seller.id)
+                ? await uploadProductImage(imageFile)
                 : formData.imageUrl.trim();
+
+
+            if (imageFile) {
+                setFormData((current) => ({ ...current, imageUrl: publicImageUrl }));
+                setImageFile(null);
+                setImagePreview(publicImageUrl);
+            }
 
             if (publicImageUrl) {
                 let parsedImageUrl;
@@ -108,7 +114,7 @@ function ListProduct() {
             const responseData = requestError.response?.data;
             setError(typeof responseData === "string"
                 ? responseData
-                : responseData?.message || requestError.message || "Unable to list product.");
+                : responseData?.detail || responseData?.message || requestError.message || "Unable to list product.");
         } finally {
             setSaving(false);
         }
@@ -118,7 +124,6 @@ function ListProduct() {
         <main className="seller-page">
             <header className="page-header seller-page-header">
                 <div>
-                    <span className="eyebrow">Create auction</span>
                     <h1>List a new product</h1>
                     <p>Every new listing starts as pending and goes to the host verification queue.</p>
                 </div>
@@ -143,26 +148,19 @@ function ListProduct() {
                     <span>Product image</span>
                     <input
                         type="file"
-                        accept="image/*"
+                        accept="image/png,image/jpeg,image/webp,image/gif"
                         onChange={handleImageChange}
-                        disabled={!uploadConfigured}
+                        disabled={saving}
+                        key={imageFile ? "selected-image" : "empty-image"}
                     />
                     <small>
                         Optional. PNG, JPG, WEBP, or GIF up to 2 MB.
-                        {uploadConfigured
-                            ? " The file will be uploaded to Supabase."
-                            : " Configure Supabase to upload a new file."}
+                        {" Uploaded securely through your seller account."}
                     </small>
                     {imageName && <strong>{imageName}</strong>}
-                    <span className="seller-image-divider">or use an image already in your public Products bucket</span>
-                    <input
-                        type="url"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                        onChange={handleChange}
-                        placeholder="https://...supabase.co/storage/v1/object/public/Products/photo.jpg"
-                        disabled={Boolean(imageFile)}
-                    />
+                    {imageFile && <button type="button" className="secondary-button" disabled={saving} onClick={() => {
+                        setImageFile(null); setImageName(""); setImagePreview(formData.imageUrl.trim()); setError("");
+                    }}>Remove selected image</button>}
                     {imagePreview && (
                         <img
                             className="seller-image-preview"

@@ -1,122 +1,35 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getRooms, startRoom } from "../../services/hostService";
+import { Link } from "react-router-dom";
+import { getRooms } from "../../services/hostService";
+import HostRoomCard from "../../components/HostRoomCard";
 import "./MyRooms.css";
 
-function startButtonText(room, startingRoomId) {
-    if (startingRoomId === room.roomId) return "Opening...";
-
-    const status = room.status?.toLowerCase();
-    if (status === "waiting") return "Waiting room open";
-    if (status === "live") return "Room ongoing";
-    return "Start room";
-}
-
-function MyRooms() {
+export default function MyRooms() {
     const [rooms, setRooms] = useState([]);
-    const [filter,setFilter]=useState("all");
-    const [startingRoomId, setStartingRoomId] = useState(null);
+    const [filter, setFilter] = useState("all");
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const navigate = useNavigate();
-
     useEffect(() => {
-        getRooms()
-            .then((response) => setRooms(response.data))
-            .catch(() => setError("Unable to load rooms."));
+        let stopped = false, refreshing = false;
+        const refresh = async () => {
+            if (refreshing) return;
+            refreshing = true;
+            try {
+                const response = await getRooms();
+                if (!stopped) { setRooms(response.data); setError(""); }
+            } catch { if (!stopped) setError("Unable to refresh rooms."); }
+            finally { refreshing = false; if (!stopped) setLoading(false); }
+        };
+        refresh();
+        const timer = setInterval(refresh, 5000);
+        return () => { stopped = true; clearInterval(timer); };
     }, []);
-
-    const filteredRooms = filter === "all" ? rooms : rooms.filter((room) => room.status?.toLowerCase() === filter);
-
-    const handleStartRoom = async (event, roomId) => {
-        event.stopPropagation();
-        setStartingRoomId(roomId);
-        setError("");
-
-        try {
-            const response = await startRoom(roomId);
-            setRooms((currentRooms) => currentRooms.map((room) =>
-                room.roomId === roomId ? response.data : room
-            ));
-        } catch (requestError) {
-            const responseData = requestError.response?.data;
-            setError(typeof responseData === "string"
-                ? responseData
-                : responseData?.message || "Unable to start this room.");
-        } finally {
-            setStartingRoomId(null);
-        }
-    };
-
-    return (
-        <main className="host-page rooms-page">
-            <header className="page-header">
-                <h1>My Rooms</h1>
-                <p>Start an upcoming room and manage its approved auction products.</p>
-            </header>
-            {error && <p className="form-error" role="alert">{error}</p>}
-            <section className="rooms-section">
-                <div className="room-filters">
-                    <button className ={filter ==="all"? "active" : ""} onClick={() => setFilter("all")}>All</button>
-                    <button className ={filter ==="waiting"? "active" : ""} onClick={() => setFilter("waiting")}>Waiting</button>
-                    <button className ={filter ==="live"? "active" : ""} onClick={() => setFilter("live")}>Live</button>
-                    <button className ={filter ==="upcoming"? "active" : ""} onClick={() => setFilter("upcoming")}>Upcoming</button>
-                    <button className ={filter ==="completed"? "active" : ""} onClick={() => setFilter("completed")}>Completed</button>
-
-                </div>
-                <div className="section-heading">
-                    <span>{filteredRooms.length} rooms</span>
-                </div>
-                {filteredRooms.length === 0 ? (
-                    <p className="empty-state">No rooms available.</p>
-                ) : (
-                    <div className="room-grid">
-                        {filteredRooms.map((room) => (
-                            <article
-                                className="room-card room-card-clickable"
-                                key={room.roomId}
-                                onClick={() => navigate(`/host/rooms/${room.roomId}`)}
-                                onKeyDown={(event) => {
-                                    if (event.key === "Enter" || event.key === " ") {
-                                        navigate(`/host/rooms/${room.roomId}`);
-                                    }
-                                }}
-                                role="button"
-                                tabIndex={0}
-                            >
-                                <h3>{room.title}</h3>
-                                <span className={`room-status ${room.status?.trim().toLowerCase()}`}>{room.status}</span>
-                                <dl>
-                                    <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
-                                    <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
-                                    <div><dt>Starts</dt><dd>{new Date(room.startTime).toLocaleString()}</dd></div>
-                                </dl>
-                                <div className="room-card-actions">
-                                    <button
-                                        type="button"
-                                        className="start-room-button"
-                                        disabled={startingRoomId === room.roomId || !["upcoming", "open"].includes(room.status?.toLowerCase())}
-                                        onClick={(event) => handleStartRoom(event, room.roomId)}
-                                    >
-                                        {startButtonText(room, startingRoomId)}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="manage-room-button"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            navigate(`/host/rooms/${room.roomId}`);
-                                        }}
-                                    >
-                                        Manage products
-                                    </button>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                )}
-            </section>
-        </main>
-    );
+    const visible = rooms.filter(room => filter === "all" || room.status?.toLowerCase() === filter);
+    return <main className="host-page rooms-page">
+        <header className="page-header"><div><span className="overline">YOUR AUCTION WORKSPACE</span><h1>Auction rooms</h1><p>Rooms open automatically at their scheduled time. Bidding follows a 90-second waiting period.</p></div><Link className="button-primary" to="/host/rooms/create">Create room +</Link></header>
+        <div className="room-filters" aria-label="Room status filters">{["all", "upcoming", "waiting", "live", "completed"].map(status => <button key={status} type="button" className={filter === status ? "active" : ""} aria-pressed={filter === status} onClick={() => setFilter(status)}>{status[0].toUpperCase() + status.slice(1)}</button>)}</div>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        {loading ? <p className="empty-state">Loading rooms…</p> : !visible.length ? <p className="empty-state">No rooms in this view.</p>
+            : <div className="host-room-grid">{visible.map(room => <HostRoomCard key={room.roomId} room={room} />)}</div>}
+    </main>;
 }
-
-export default MyRooms;

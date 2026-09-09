@@ -11,7 +11,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
     const authorization = getAuthorizationHeader();
 
-    if (authorization) {
+
+    if (authorization && !config.url?.startsWith("/auth/")) {
         config.headers.Authorization = authorization;
     }
 
@@ -24,10 +25,11 @@ api.interceptors.response.use(
         const requestUrl = error.config?.url || "";
 
         if (error.response?.status === 401 && !requestUrl.startsWith("/auth/")) {
+            const loginPath = window.location.pathname.startsWith("/host/") ? "/host/login" : "/login";
             clearAuthSession();
 
-            if (window.location.pathname !== "/login") {
-                window.location.assign("/login");
+            if (window.location.pathname !== loginPath) {
+                window.location.assign(loginPath);
             }
         }
 

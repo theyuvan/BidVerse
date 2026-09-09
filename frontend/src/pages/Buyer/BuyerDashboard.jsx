@@ -7,6 +7,7 @@ import {
     getBuyerDeals
 } from "../../services/buyerService";
 import "./BuyerDashboard.css";
+import Showcase from "../../components/Showcase";
 
 const formatMoney = (amount) => new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -206,7 +207,6 @@ function BuyerDashboard({ roomsOnly = false }) {
             <main className="buyer-page booking-rooms-page">
                 <header className="buyer-header booking-page-header">
                     <div>
-                        <span className="page-eyebrow">Auction rooms</span>
                         <h1>Find Your Next Auction</h1>
                         <p>Reserve a seat, join live bidding, and review past rooms.</p>
                     </div>
@@ -247,12 +247,12 @@ function BuyerDashboard({ roomsOnly = false }) {
         <main className="buyer-page buyer-dashboard-page">
             <header className="buyer-header dashboard-hero">
                 <div className="buyer-welcome">
-                    <span className="page-eyebrow">Buyer dashboard</span>
                     <h1>Welcome back, {user?.name || "Buyer"}</h1>
                     <p>Find auctions, place bids and track your wins.</p>
                 </div>
             </header>
 
+            <Showcase role="buyer" />
             <section className="buyer-stats" aria-label="Buyer activity summary">
                 <article className="buyer-stat-box bookings-stat">
                     <div><span className="buyer-stat-title">Bookings</span><span className="stat-index">01</span></div>

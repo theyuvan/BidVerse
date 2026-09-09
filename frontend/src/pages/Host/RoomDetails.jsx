@@ -1,226 +1,87 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import {
-    assignProductToRoom,
-    getAvailableProducts,
-    getProducts,
-    getRoomDetails,
-    getRoomProducts,
-    startRoom
-} from "../../services/hostService";
+import { Link, useLocation, useParams } from "react-router-dom";
+import { getAvailableProducts, getRoomDetails, getRoomProducts, saveRoomProducts } from "../../services/hostService";
+import { getAuthUser } from "../../services/authSession";
+import ProductPicker from "../../components/ProductPicker";
+import ProductPhoto from "../../components/ProductPhoto";
 import "./RoomDetails.css";
 
-function getErrorMessage(error, fallback) {
-    const data = error.response?.data;
-    return typeof data === "string" ? data : data?.detail || data?.message || fallback;
+const errorMessage = error => error.response?.data?.detail || error.response?.data?.message || "Unable to update this room. Please refresh and try again.";
+async function fetchData(id) {
+    const [room, assigned, available] = await Promise.all([getRoomDetails(id), getRoomProducts(id), getAvailableProducts()]);
+    return { room: room.data, assigned: assigned.data, available: available.data };
 }
-
-async function fetchRoomData(roomId) {
-    const [roomResponse, roomProductsResponse, availableResponse, productsResponse] = await Promise.all([
-        getRoomDetails(roomId),
-        getRoomProducts(roomId),
-        getAvailableProducts(),
-        getProducts()
-    ]);
-
-    return {
-        room: roomResponse.data,
-        assignedProducts: roomProductsResponse.data,
-        availableProducts: availableResponse.data,
-        approvedProducts: productsResponse.data.filter(
-            (product) => product.status?.toLowerCase() === "approved"
-        )
-    };
-}
-
-function RoomDetails() {
+export default function RoomDetails() {
     const { roomId } = useParams();
+    const location = useLocation();
     const [room, setRoom] = useState(null);
-    const [assignedProducts, setAssignedProducts] = useState([]);
-    const [availableProducts, setAvailableProducts] = useState([]);
-    const [approvedProducts, setApprovedProducts] = useState([]);
-    const [selectedProductId, setSelectedProductId] = useState("");
+    const [assigned, setAssigned] = useState([]);
+    const [available, setAvailable] = useState([]);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [adding, setAdding] = useState(false);
-    const [starting, setStarting] = useState(false);
+    const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
-    const [message, setMessage] = useState("");
-
-    const reloadRoom = async () => {
-        const data = await fetchRoomData(roomId);
-        setRoom(data.room);
-        setAssignedProducts(data.assignedProducts);
-        setAvailableProducts(data.availableProducts);
-        setApprovedProducts(data.approvedProducts);
+    const [message, setMessage] = useState(location.state?.message || "");
+    const applyData = data => {
+        setRoom(data.room); setAssigned(data.assigned); setAvailable(data.available);
+        setSelectedIds(data.assigned.map(product => product.productId));
     };
-
     useEffect(() => {
-        let cancelled = false;
-
-        fetchRoomData(roomId)
-            .then((data) => {
-                if (!cancelled) {
-                    setRoom(data.room);
-                    setAssignedProducts(data.assignedProducts);
-                    setAvailableProducts(data.availableProducts);
-                    setApprovedProducts(data.approvedProducts);
-                    setError("");
-                }
-            })
-            .catch((requestError) => {
-                if (!cancelled) {
-                    setError(getErrorMessage(requestError, "Unable to load room details."));
-                }
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-
-        return () => {
-            cancelled = true;
-        };
+        let stopped = false;
+        fetchData(roomId).then(data => { if (!stopped) applyData(data); })
+            .catch(error => { if (!stopped) setError(errorMessage(error)); })
+            .finally(() => { if (!stopped) setLoading(false); });
+        return () => { stopped = true; };
     }, [roomId]);
-
-    const handleAddProduct = async (event) => {
-        event.preventDefault();
-        if (!selectedProductId) return;
-
-        setAdding(true);
-        setError("");
-        setMessage("");
-
+    useEffect(() => {
+        let stopped = false, refreshing = false;
+        const timer = setInterval(async () => {
+            if (refreshing) return;
+            refreshing = true;
+            try {
+                const response = await getRoomDetails(roomId);
+                if (!stopped) {
+                    setRoom(response.data);
+                    if (!["upcoming", "open"].includes(response.data.status?.toLowerCase())) setEditing(false);
+                }
+            } catch { return; }
+            finally { refreshing = false; }
+        }, 5000);
+        return () => { stopped = true; clearInterval(timer); };
+    }, [roomId]);
+    const isOwner = String(getAuthUser()?.userId) === String(room?.hostId);
+    const editable = isOwner && ["upcoming", "open"].includes(room?.status?.toLowerCase());
+    const choices = [...assigned, ...available.filter(product => !assigned.some(item => item.productId === product.productId))];
+    const save = async () => {
+        setBusy(true); setError(""); setMessage("");
         try {
-            await assignProductToRoom(Number(selectedProductId), Number(roomId));
-            setSelectedProductId("");
-            await reloadRoom();
-            setMessage("Product added to this room.");
-        } catch (requestError) {
-            setError(getErrorMessage(requestError, "Unable to add product to this room."));
-        } finally {
-            setAdding(false);
-        }
+            const response = await saveRoomProducts(roomId, selectedIds);
+            setAssigned(response.data);
+            setEditing(false); setMessage("Room collection updated.");
+            setAvailable((await getAvailableProducts()).data);
+        } catch (error) { setError(errorMessage(error)); }
+        finally { setBusy(false); }
     };
-
-    const handleStartRoom = async () => {
-        setStarting(true);
-        setError("");
-        setMessage("");
-
-        try {
-            await startRoom(roomId);
-            await reloadRoom();
-            setMessage("Waiting room opened. Bidding will start in 90 seconds.");
-        } catch (requestError) {
-            setError(getErrorMessage(requestError, "Unable to start this room."));
-        } finally {
-            setStarting(false);
-        }
-    };
-
-    if (loading) {
-        return <main className="host-page"><p className="empty-state">Loading room details...</p></main>;
-    }
-
-    if (!room) {
-        return <main className="host-page"><p className="form-error">{error || "Room not found."}</p></main>;
-    }
-
-    const roomHasStarted = ["waiting", "live", "completed"].includes(room.status?.toLowerCase());
-    const roomCanStart = ["upcoming", "open"].includes(room.status?.toLowerCase());
-
-    return (
-        <main className="host-page room-details-page">
-            <Link className="back-link" to="/host/rooms">Back to My Rooms</Link>
-
-            <header className="page-header">
-                <h1>{room.title}</h1>
-                <p>Room {room.roomId} · Manage auction products</p>
-            </header>
-
-            <section className="room-summary">
-                <div className="room-summary-heading">
-                    <span className="room-status">{room.status}</span>
-                    {roomCanStart && (
-                        <button type="button" onClick={handleStartRoom} disabled={starting}>
-                            {starting ? "Starting..." : "Start auction now"}
-                        </button>
-                    )}
-                </div>
-                <dl>
-                    <div><dt>Host ID</dt><dd>{room.hostId}</dd></div>
-                    <div><dt>Seats</dt><dd>{room.seatLimit}</dd></div>
-                    <div><dt>Advance</dt><dd>₹{room.advanceAmount}</dd></div>
-                    <div><dt>Starts</dt><dd>{new Date(room.startTime).toLocaleString()}</dd></div>
-                </dl>
-            </section>
-
-            <section className="room-products-section">
-                <div className="section-heading">
-                    <h2>Products in this room</h2>
-                    <span>{assignedProducts.length} products</span>
-                </div>
-
-                {assignedProducts.length === 0 ? (
-                    <p className="empty-state">No products have been added yet.</p>
-                ) : (
-                    <div className="assigned-product-list">
-                        {assignedProducts.map((product) => (
-                            <article className="assigned-product" key={product.productId}>
-                                {product.imageUrl && <img src={product.imageUrl} alt={product.name} />}
-                                <div>
-                                    <h3>{product.name || "Product unavailable"}</h3>
-                                    <p>{product.description || "No description available."}</p>
-                                </div>
-                                <strong>₹{product.basePrice}</strong>
-                            </article>
-                        ))}
-                    </div>
-                )}
-            </section>
-
-            <section className="assign-product-section">
-                <div className="section-heading">
-                    <h2>Add an approved product</h2>
-                    <span>{availableProducts.length} available</span>
-                </div>
-
-                {roomHasStarted && (
-                    <p className="form-error" role="alert">Products cannot be added after this room has started.</p>
-                )}
-
-                <form className="assign-product-form" onSubmit={handleAddProduct}>
-                    <label htmlFor="approved-product">
-                        Approved product
-                        <select
-                            id="approved-product"
-                            value={selectedProductId}
-                            onChange={(event) => setSelectedProductId(event.target.value)}
-                            disabled={adding || roomHasStarted || availableProducts.length === 0}
-                        >
-                            <option value="">Choose a product</option>
-                            {availableProducts.map((product) => (
-                                <option key={product.productId} value={product.productId}>
-                                    {product.productName} - {product.categoryName || "Uncategorized"} - ₹{product.basePrice}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <button type="submit" disabled={adding || roomHasStarted || !selectedProductId}>
-                        {adding ? "Adding..." : "Add Product"}
-                    </button>
-                </form>
-
-                {message && <p className="form-success" role="status">{message}</p>}
-                {error && <p className="form-error" role="alert">{error}</p>}
-                {!roomHasStarted && availableProducts.length === 0 && approvedProducts.length > 0 && (
-                    <p className="empty-state">All approved products are already assigned to rooms.</p>
-                )}
-                {!roomHasStarted && approvedProducts.length === 0 && (
-                    <p className="empty-state">No approved products found in the database.</p>
-                )}
-            </section>
-        </main>
-    );
+    if (loading) return <main className="host-page"><p className="empty-state">Loading your auction workspace…</p></main>;
+    if (!room) return <main className="host-page"><Link to="/host/rooms">Back to rooms</Link><p role="alert" className="form-error">{error}</p></main>;
+    return <main className="host-page host-room-workspace">
+        <Link className="back-link" to="/host/rooms">← Back to rooms</Link>
+        <section className="host-workspace-hero">
+            <div><span className="overline">AUCTION ROOM #{room.roomId}</span><h1>{room.title}</h1><p>One collection. One shared bidding experience.</p><span className={`host-status ${room.status}`}>{room.status}</span></div>
+            <div className="host-workspace-action"><strong>Scheduled automatic start</strong><small>The waiting room opens at the scheduled time. Bidding starts 90 seconds later while the backend is running.</small>{editable ? <small>{editing ? "Save your product selection before the scheduled time." : !assigned.length ? "Add approved products: an empty room cannot start automatically." : "The product collection locks when the waiting room opens."}</small> : <small>{isOwner ? "Product selection is locked for this auction." : "Only this room’s host can change its collection."}</small>}</div>
+        </section>
+        <dl className="host-workspace-facts"><div><dt>Buyer seats</dt><dd>{room.seatLimit}</dd></div><div><dt>Reservation advance</dt><dd>₹{Number(room.advanceAmount).toLocaleString("en-IN")}</dd></div><div><dt>Scheduled start</dt><dd>{new Date(room.startTime).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</dd></div></dl>
+        {message && <p className="form-success" role="status">{message}</p>}{error && <p className="form-error" role="alert">{error}</p>}
+        <section className="host-builder-panel">
+            <div className="host-collection-heading"><div><span className="overline">THE AUCTION COLLECTION</span><h2>{editing ? "Choose your products" : "Products in this room"}</h2><p>{editing ? "Select to include. Uncheck to remove. Changes apply only when you save." : "Review each piece before welcoming your buyers."}</p></div>
+                {editable && !editing && <button className="button-outline" type="button" onClick={() => { setSelectedIds(assigned.map(item => item.productId)); setEditing(true); }}>Edit collection</button>}</div>
+            {editing ? <><ProductPicker products={choices} selectedIds={selectedIds} onChange={setSelectedIds} disabled={busy} />
+                <div className="host-edit-actions"><button type="button" disabled={busy} onClick={save}>{busy ? "Saving…" : "Save collection"}</button><button className="button-outline" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</button></div></>
+                : !assigned.length ? <p className="empty-state">Your collection is empty. Use Edit collection to add approved products.</p>
+                    : <div className="host-product-grid">{assigned.map((product, index) => <article className="host-product-tile" key={product.productId}>
+                        <ProductPhoto src={product.imageUrl} name={product.name} /><div className="host-product-body"><span className="overline">LOT {String(index + 1).padStart(2, "0")}</span><h2>{product.name}</h2><p>{product.description || "Product details available from the seller."}</p><dl><div><dt>Starting price</dt><dd>₹{Number(product.basePrice).toLocaleString("en-IN")}</dd></div><div><dt>Auction status</dt><dd>{product.auctionStatus}</dd></div></dl></div>
+                    </article>)}</div>}
+        </section>
+    </main>;
 }
-
-export default RoomDetails;

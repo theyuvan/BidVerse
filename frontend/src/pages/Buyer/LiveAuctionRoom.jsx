@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { connectToAuction, sendBid } from "../../services/auctionSocket";
+import { connectToAuction, sendBid, sendNext } from "../../services/auctionSocket";
 import { getBuyerId } from "../../services/buyerSession";
 import { getRoomDetails, joinRoom } from "../../services/buyerService";
 import "./LiveAuctionRoom.css";
@@ -26,15 +26,27 @@ function LiveAuctionRoom() {
     const [loading, setLoading] = useState(true);
     const [notice, setNotice] = useState("");
     const [error, setError] = useState("");
+    const [resultSeconds, setResultSeconds] = useState(0);
 
     useEffect(() => {
         let stopped = false;
         let retryTimer;
+        let joinRetries = 0;
+        let latestUpdate = null;
 
         const handleUpdate = (update) => {
             if (stopped) return;
 
+
+            if (latestUpdate?.roomStatus === "completed" && update.roomStatus !== "completed") return;
+            if (update.auctionItemId && latestUpdate?.auctionItemId > update.auctionItemId) return;
+            if (update.auctionItemId === latestUpdate?.auctionItemId
+                && latestUpdate?.eventType === "ITEM_RESOLVED" && update.itemStatus === "live") return;
+            latestUpdate = update;
+
             setAuction(update);
+            setResultSeconds(update.intermissionEndsAt
+                ? Math.max(0, Math.ceil((Date.parse(update.intermissionEndsAt) - Date.now()) / 1000)) : 0);
             setSecondsRemaining(update.secondsRemaining ?? 0);
             setWaitingSecondsRemaining(update.waitingSecondsRemaining ?? 0);
 
@@ -126,7 +138,7 @@ function LiveAuctionRoom() {
                     return;
                 }
 
-                if (requestError.response?.status === 400) {
+                if (requestError.response?.status === 400 && joinRetries++ < 3) {
                     setWaitingForHost(true);
                     setLoading(false);
                     scheduleRoomCheck();
@@ -168,12 +180,28 @@ function LiveAuctionRoom() {
         return () => window.clearInterval(timer);
     }, [auction?.roomStatus]);
 
+    useEffect(() => {
+        if (!auction?.intermissionEndsAt) return undefined;
+        const timer = window.setInterval(() => {
+            setResultSeconds(Math.max(0, Math.ceil((Date.parse(auction.intermissionEndsAt) - Date.now()) / 1000)));
+        }, 250);
+        return () => window.clearInterval(timer);
+    }, [auction?.intermissionEndsAt]);
+
     const currentProduct = products.find(
         (product) => product.auctionItemId === auction?.auctionItemId
     );
     const biddingIsOpen = connected
         && auction?.itemStatus === "live"
         && secondsRemaining > 0;
+    const resultVisible = !!auction?.intermissionEndsAt && ["sold", "unsold"].includes(auction?.itemStatus);
+    const hasAcknowledged = auction?.readyBuyerIds?.some((id) => String(id) === String(buyerId));
+    const isWinner = String(auction?.highestBidderId) === String(buyerId);
+    const continueAuction = () => {
+        setError("");
+        try { sendNext(socketRef.current, roomId, auction.auctionItemId); }
+        catch (socketError) { setError(socketError.message); }
+    };
 
     const placeBid = (mode) => {
         setError("");
@@ -263,6 +291,40 @@ function LiveAuctionRoom() {
                 <section className="auction-finished">
                     <h2>Auction completed</h2>
                     <p>All products in this room have finished bidding.</p>
+                    <Link className="primary-link" to="/buyer/deals">View my deals →</Link>
+                </section>
+            ) : resultVisible ? (
+                <section className={`auction-result ${auction.itemStatus}`} aria-labelledby="result-heading">
+                    <div className="result-top">
+                        <span className="result-status">{auction.itemStatus === "sold" ? "Lot sold" : "Lot unsold"}</span>
+                        <div className="result-countdown"><strong>{resultSeconds}</strong><span>seconds to continue</span></div>
+                    </div>
+                    <div className="result-body">
+                        {currentProduct?.imageUrl && <img src={currentProduct.imageUrl} alt={currentProduct.productName} />}
+                        <div>
+                            <p className="eyebrow">{auction.productName || currentProduct?.productName}</p>
+                            <h2 id="result-heading">{auction.itemStatus === "sold"
+                                ? isWinner ? "This one is yours." : "We have a winner."
+                                : "No bids this time."}</h2>
+                            <p role="status">{auction.itemStatus === "sold"
+                                ? `Won by ${isWinner ? "you" : auction.winningBuyerName || `Buyer #${auction.highestBidderId}`}.`
+                                : "This product is marked unsold. No deal has been created."}</p>
+                            {auction.itemStatus === "sold" && <strong className="result-price">₹{Number(auction.currentPrice).toLocaleString("en-IN")}</strong>}
+                            {isWinner && auction.itemStatus === "sold" && <p>Find seller details and confirm your purchase in My deals after the auction.</p>}
+                            <p>{auction.nextProductName ? `Up next: ${auction.nextProductName}` : "Final lot — the auction will close after this result."}</p>
+                        </div>
+                    </div>
+                    <div className="result-footer">
+                        <div>
+                            <strong>{auction.readyBuyerIds?.length ?? 0} / {auction.participantCount ?? 0} buyers ready</strong>
+                            <p>{resultSeconds === 0 ? "Waiting for the server to continue…" : "Continue early when every participating buyer is ready, or wait for the timer."}</p>
+                        </div>
+                        <button type="button" onClick={continueAuction} disabled={!connected || hasAcknowledged || resultSeconds === 0}>
+                            {hasAcknowledged ? "Ready · waiting for others" : auction.nextProductId ? "Next product →" : "Finish auction →"}
+                        </button>
+                    </div>
+                    <progress className="result-progress" aria-label="Buyers ready to continue" max={Math.max(auction.participantCount || 0, 1)} value={auction.readyBuyerIds?.length ?? 0} />
+                    {error && <p className="auction-error" role="alert">{error}</p>}
                 </section>
             ) : (
                 <section className="current-lot">

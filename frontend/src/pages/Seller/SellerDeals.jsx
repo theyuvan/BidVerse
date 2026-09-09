@@ -33,7 +33,6 @@ function SellerDeals() {
         <main className="seller-page seller-deals-page">
             <header className="page-header seller-page-header">
                 <div>
-                    <span className="eyebrow">Seller deals</span>
                     <h1>My Deals</h1>
                     <p>Contact winning buyers, then confirm or reject each deal.</p>
                 </div>

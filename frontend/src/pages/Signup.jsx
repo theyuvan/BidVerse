@@ -1,5 +1,5 @@
 import {useState} from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SignupUser } from "../services/authService";
 import "./Signup.css";
 
@@ -38,16 +38,16 @@ function Signup(){
             <h2>Create Account</h2>
             <p>Join BidVerse and start bidding</p>
             <form onSubmit={handleSubmit}>
-                <label>Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-                <label>Email</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                <label>Phone</label>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-                <label>Password</label>
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                <label>Role</label>
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
+                <label htmlFor="signup-name">Full name</label>
+                <input id="signup-name" autoComplete="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                <label htmlFor="signup-email">Email address</label>
+                <input id="signup-email" autoComplete="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <label htmlFor="signup-phone">Phone number</label>
+                <input id="signup-phone" autoComplete="tel" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                <label htmlFor="signup-password">Password</label>
+                <input id="signup-password" autoComplete="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <label htmlFor="signup-role">I want to</label>
+                <select id="signup-role" value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value="buyer">Buyer</option>
                     <option value="seller">Seller</option>
                 </select>
@@ -56,6 +56,7 @@ function Signup(){
                     {loading ? "Creating account..." : "Sign Up"}
                 </button>
             </form>
+            <div className="auth-links">Already have an account? <Link to="/login">Sign in →</Link></div>
         </main>
     );
 }

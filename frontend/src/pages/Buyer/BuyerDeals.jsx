@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getAuthUser } from "../../services/authSession";
 import {
     decideBuyerDeal,
     getBuyerDeal,
@@ -34,7 +33,6 @@ function StatusBadge({ status }) {
 }
 
 function BuyerDeals() {
-    const user = getAuthUser();
     const [deals, setDeals] = useState([]);
     const [activeFilter, setActiveFilter] = useState("all");
     const [search, setSearch] = useState("");
@@ -93,13 +91,11 @@ function BuyerDeals() {
         <main className="buyer-deals-page">
             <header className="buyer-deals-header">
                 <div>
-                    <span className="buyer-deals-eyebrow">Buyer deals</span>
                     <h1>My Deals</h1>
                     <p>
                         Review products you won, contact the seller, and complete your decisions.
                     </p>
                 </div>
-                <span className="buyer-deals-user">{user?.name || "Buyer"}</span>
             </header>
 
             {!loading && !error && deals.length > 0 && (
@@ -446,12 +442,6 @@ function BuyerDealDetails() {
                         </div>
                     )}
                 </section>
-            )}
-
-            {!canDecide && normalize(deal.dealStatus) === "pending" && (
-                <p className="buyer-waiting-message">
-                    Your decision is recorded. This deal will complete when the seller confirms.
-                </p>
             )}
         </main>
     );

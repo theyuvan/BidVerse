@@ -1,107 +1,55 @@
-import { useState } from "react";
-import { createRoom } from "../../services/hostService";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createRoom, getAvailableProducts } from "../../services/hostService";
+import ProductPicker from "../../components/ProductPicker";
 import "./CreateRoom.css";
 
-function CreateRoom() {
-    const [formData, setFormData] = useState({
-        title: "",
-        seatLimit: "",
-        advanceAmount: "",
-        startTime: "",
-    });
-
-    const [message, setMessage] = useState("");
+export default function CreateRoom() {
+    const navigate = useNavigate();
+    const [form, setForm] = useState({ title: "", seatLimit: "", advanceAmount: "", startTime: "" });
+    const [products, setProducts] = useState([]);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
-
-    const handleChange = (event) => {
-        setFormData({
-            ...formData,
-            [event.target.name]: event.target.value,
-        });
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        setMessage("");
-        setError("");
-
+    const [loadError, setLoadError] = useState("");
+    useEffect(() => {
+        let stopped = false;
+        getAvailableProducts().then(response => {
+            if (stopped) return;
+            setProducts(response.data);
+            setSelectedIds(response.data.map(product => product.productId));
+        }).catch(() => { if (!stopped) setLoadError("Unable to load approved products. Refresh this page to try again."); })
+            .finally(() => { if (!stopped) setLoading(false); });
+        return () => { stopped = true; };
+    }, []);
+    const change = event => setForm({ ...form, [event.target.name]: event.target.value });
+    const submit = async event => {
+        event.preventDefault(); setSaving(true); setError("");
         try {
-            await createRoom({
-                hostId: 1,
-                title: formData.title,
-                seatLimit: Number(formData.seatLimit),
-                advanceAmount: Number(formData.advanceAmount),
-                status: "upcoming",
-                startTime: `${formData.startTime}:00+05:30`,
-            });
-
-            setMessage("Room created successfully.");
-
-            setFormData({
-                title: "",
-                seatLimit: "",
-                advanceAmount: "",
-                startTime: "",
-            });
-        } catch (requestError) {
-            const responseData = requestError.response?.data;
-
-            setError(
-                typeof responseData === "string"
-                    ? responseData
-                    : responseData?.message || "Unable to create room."
-            );
-        }
+            const response = await createRoom({ title: form.title.trim(), seatLimit: Number(form.seatLimit),
+                advanceAmount: Number(form.advanceAmount), startTime: new Date(form.startTime).toISOString(), productIds: selectedIds });
+            navigate(`/host/rooms/${response.data.roomId}`, { state: { message: "Room created with your selected products." } });
+        } catch (error) { setError(error.response?.data?.detail || error.response?.data?.message || "Unable to create room. No changes were saved."); }
+        finally { setSaving(false); }
     };
-
-    return (
-        <main className="host-page create-room-page">
-            <header className="page-header">
-                <h1>Create Auction Room</h1>
-            </header>
-
-            <form className="create-room-form" onSubmit={handleSubmit}>
-                <div className="room-fields">
-
-                    <div className="room-field-card">
-                        <label>
-                            <span>Room Title</span>
-                            <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Enter room title" required />
-                        </label>
-                    </div>
-
-                    <div className="room-field-card">
-                        <label>
-                            <span>Seat Limit</span>
-                            <input type="number" name="seatLimit" value={formData.seatLimit} onChange={handleChange} placeholder="Enter maximum seats" required />
-                        </label>
-                    </div>
-
-                    <div className="room-field-card">
-                        <label>
-                            <span>Advance Amount</span>
-                            <input type="number" name="advanceAmount" value={formData.advanceAmount} onChange={handleChange} placeholder="Enter advance amount" required />
-                        </label>
-                    </div>
-
-                    <div className="room-field-card">
-                        <label>
-                            <span>Start Time</span>
-                            <input type="datetime-local" name="startTime" value={formData.startTime} onChange={handleChange} required />
-                        </label>
-                    </div>
-
+    return <main className="host-page host-room-builder">
+        <header className="page-header"><div><span className="overline">SET THE STAGE</span><h1>Create an auction room</h1><p>Your approved, unassigned products are selected automatically. Make the collection your own.</p></div></header>
+        <form onSubmit={submit}>
+            <section className="host-builder-panel"><div className="host-step-heading"><span>01</span><div><h2>Room essentials</h2><p>A clear title and schedule help buyers plan ahead.</p></div></div>
+                <div className="host-builder-fields">
+                    <label>Room title<input name="title" value={form.title} onChange={change} required maxLength={200} disabled={saving} placeholder="e.g. The weekend collectors’ edit" /></label>
+                    <label>Start time<input type="datetime-local" name="startTime" value={form.startTime} onChange={change} required disabled={saving} /><small>The room opens automatically, then bidding starts after 90 seconds.</small></label>
+                    <label>Seat limit<input type="number" name="seatLimit" min="1" step="1" value={form.seatLimit} onChange={change} required disabled={saving} placeholder="Maximum buyers" /></label>
+                    <label>Advance amount (₹)<input type="number" name="advanceAmount" min="0" step="0.01" value={form.advanceAmount} onChange={change} required disabled={saving} placeholder="Reservation advance" /></label>
                 </div>
-
-                <div className="create-room-auction">
-                    <button type="submit">Create Room</button>
-                </div>
-
-                {message && <p className="form-success" role="status">{message}</p>}
-                {error && <p className="form-error" role="alert">{error}</p>}
-            </form>
-        </main>
-    );
+            </section>
+            <section className="host-builder-panel"><div className="host-step-heading"><span>02</span><div><h2>Curate your products</h2><p>Uncheck anything you do not want. You can change the collection until the waiting room opens.</p></div></div>
+                {loading ? <p className="empty-state">Finding approved products…</p> : loadError ? <p className="form-error" role="alert">{loadError}</p>
+                    : <ProductPicker products={products} selectedIds={selectedIds} onChange={setSelectedIds} disabled={saving} />}
+            </section>
+            {error && <p className="form-error" role="alert">{error}</p>}
+            <div className="host-builder-submit"><p>{selectedIds.length ? "Your selected products will be added when the room is created." : "An empty room cannot start until products are added."}</p><button type="submit" disabled={loading || saving || !!loadError}>{saving ? "Creating room…" : "Create auction room →"}</button></div>
+        </form>
+    </main>;
 }
-
-export default CreateRoom;

@@ -66,3 +66,11 @@ export function sendBid(client, roomId, bid) {
         body: JSON.stringify(bid)
     });
 }
+
+export function sendNext(client, roomId, auctionItemId) {
+    if (!client?.connected) throw new Error("Reconnect to the auction before continuing.");
+    client.publish({
+        destination: `/app/room/${roomId}/next`,
+        body: JSON.stringify({ auctionItemId })
+    });
+}

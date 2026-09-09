@@ -226,7 +226,6 @@ function RoomDetails() {
             </section>
 
 
-            {/* BOOK ROOM */}
 
             {canBook && (
 
@@ -264,7 +263,6 @@ function RoomDetails() {
             )}
 
 
-            {/* PRODUCTS */}
 
             <section className="room-products-section">
 
