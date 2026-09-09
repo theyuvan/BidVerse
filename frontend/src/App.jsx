@@ -18,8 +18,7 @@ import SellerDealDetails from "./pages/Seller/SellerDealDetails";
 import BuyerDashboard from "./pages/Buyer/BuyerDashboard";
 import BuyerRoomDetails from "./pages/Buyer/RoomDetails";
 import LiveAuctionRoom from "./pages/Buyer/LiveAuctionRoom";
-import BuyerDeals from "./pages/Buyer/BuyerDeals";
-import BuyerDealDetails from "./pages/Buyer/BuyerDealDetails";
+import BuyerDeals, { BuyerDealDetails } from "./pages/Buyer/BuyerDeals";
 import BuyerNavbar from "./components/buyer/Navbar";
 import { getAuthUser } from "./services/authSession";
 import "./pages/Seller/Seller.css";
@@ -74,8 +73,8 @@ function AppShell() {
                     <Route path="/buyer/rooms" element={<RequireRole role="buyer"><BuyerDashboard roomsOnly /></RequireRole>} />
                     <Route path="/buyer/rooms/:roomId" element={<RequireRole role="buyer"><BuyerRoomDetails /></RequireRole>} />
                     <Route path="/buyer/rooms/:roomId/live" element={<RequireRole role="buyer"><LiveAuctionRoom /></RequireRole>} />
-                    <Route path="/buyer/deals" element={<RequireRole role="buyer"><BuyerDeals /></RequireRole>} />
-                    <Route path="/buyer/deals/:dealId" element={<RequireRole role="buyer"><BuyerDealDetails /></RequireRole>} />
+                    <Route  path="/buyer/deals"  element={ <RequireRole role="buyer"> <BuyerDeals /> </RequireRole>}/> 
+                    <Route path="/buyer/deals/:dealId" element={ <RequireRole role="buyer"> <BuyerDealDetails /> </RequireRole>}/>
                 </Routes>
             </div>
         </div>
