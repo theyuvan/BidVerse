@@ -182,6 +182,7 @@ public class SellerService {
         product.setName(product2.getName());
         product.setDescription(product2.getDescription());
         product.setBasePrice(product2.getBasePrice());
+        product.setImageUrl(product2.getImageUrl());
         product.setStatus(PRODUCT_STATUS_PENDING);
 
         return productRepository.save(product);

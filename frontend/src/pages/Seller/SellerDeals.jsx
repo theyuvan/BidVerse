@@ -1,32 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getSellerDeals } from "../../services/sellerService";
-
-const INITIAL_SELLER_ID = "2";
+import { getSellerProfile } from "../../services/sellerSession";
 
 function SellerDeals() {
-    const [sellerId, setSellerId] = useState(INITIAL_SELLER_ID);
     const [deals, setDeals] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    const loadDeals = async (id = sellerId) => {
-        setLoading(true);
-        setError("");
-        try {
-            const response = await getSellerDeals(Number(id));
-            setDeals(response.data);
-        } catch (requestError) {
-            const data = requestError.response?.data;
-            setError(data?.detail || data?.message || "Unable to load seller deals.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const seller = getSellerProfile();
+    const sellerId = seller?.id;
+    const [loading, setLoading] = useState(Boolean(sellerId));
+    const [error, setError] = useState(() => sellerId ? "" : "Please sign in again to identify your seller account.");
 
     useEffect(() => {
         let cancelled = false;
-        getSellerDeals(Number(INITIAL_SELLER_ID))
+        if (!sellerId) return () => { cancelled = true; };
+        getSellerDeals(sellerId)
             .then((response) => {
                 if (!cancelled) setDeals(response.data);
             })
@@ -40,21 +27,17 @@ function SellerDeals() {
             });
 
         return () => { cancelled = true; };
-    }, []);
+    }, [sellerId]);
 
     return (
-        <main className="seller-page">
+        <main className="seller-page seller-deals-page">
             <header className="page-header seller-page-header">
-                <span className="eyebrow">Seller workspace</span>
-                <h1>My deals</h1>
-                <p>Contact winning buyers, then confirm or reject each deal.</p>
+                <div>
+                    <span className="eyebrow">Seller deals</span>
+                    <h1>My Deals</h1>
+                    <p>Contact winning buyers, then confirm or reject each deal.</p>
+                </div>
             </header>
-
-            <form className="seller-filter" onSubmit={(event) => { event.preventDefault(); loadDeals(); }}>
-                <label htmlFor="deals-seller-id">Seller ID</label>
-                <input id="deals-seller-id" type="number" min="1" value={sellerId} onChange={(event) => setSellerId(event.target.value)} />
-                <button type="submit" disabled={loading}>{loading ? "Loading..." : "Load deals"}</button>
-            </form>
 
             {error && <p className="form-error" role="alert">{error}</p>}
             {!loading && !error && deals.length === 0 && <p className="empty-state">There are no auction deals for this seller.</p>}
@@ -62,14 +45,21 @@ function SellerDeals() {
                 <section className="deal-list" aria-label="Seller deals">
                     {deals.map((deal) => (
                         <Link className="deal-list-card" to={`/seller/deals/${deal.dealId}`} key={deal.dealId}>
-                            <div>
-                                <span className="product-id">Deal #{deal.dealId} · Room #{deal.roomId}</span>
-                                <h2>{deal.productName || `Auction item #${deal.auctionItemId}`}</h2>
-                                <p>Buyer: {deal.buyerName || `#${deal.buyerId}`}</p>
+                            <div className="deal-list-image">
+                                {deal.imageUrl
+                                    ? <img src={deal.imageUrl} alt={deal.productName || "Auction product"} />
+                                    : <span>No image</span>}
                             </div>
-                            <div className="deal-list-summary">
-                                <strong>₹{deal.finalPrice}</strong>
-                                <span className={`deal-status deal-status-${deal.status?.toLowerCase()}`}>{deal.status}</span>
+                            <div className="deal-list-content">
+                                <div>
+                                    <span className="product-id">Deal #{deal.dealId} · Room #{deal.roomId}</span>
+                                    <h2>{deal.productName || `Auction item #${deal.auctionItemId}`}</h2>
+                                    <p>Buyer: {deal.buyerName || `#${deal.buyerId}`}</p>
+                                </div>
+                                <div className="deal-list-summary">
+                                    <strong>₹{deal.finalPrice}</strong>
+                                    <span className={`deal-status deal-status-${deal.status?.toLowerCase()}`}>{deal.status}</span>
+                                </div>
                             </div>
                         </Link>
                     ))}

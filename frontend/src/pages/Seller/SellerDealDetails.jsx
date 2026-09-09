@@ -66,9 +66,12 @@ function SellerDealDetails() {
         <main className="seller-page deal-details-page">
             <Link className="back-link" to="/seller/deals">Back to Deals</Link>
             <header className="page-header seller-page-header">
-                <span className="eyebrow">Deal #{deal.dealId}</span>
-                <h1>{deal.productName || "Deal details"}</h1>
-                <p>Confirm only after you are satisfied with the buyer conversation and delivery arrangements.</p>
+                <div>
+                    <span className="eyebrow">Deal #{deal.dealId}</span>
+                    <h1>{deal.productName || "Deal details"}</h1>
+                    <p>Confirm only after you are satisfied with the buyer conversation and delivery arrangements.</p>
+                </div>
+                <span className={`deal-status deal-status-${deal.status?.toLowerCase()}`}>{deal.status}</span>
             </header>
 
             <div className="deal-details-grid">
