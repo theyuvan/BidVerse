@@ -21,10 +21,14 @@ const cases = [
 const failures = [];
 async function createContext(role, viewport) {
     const context = await browser.newContext({ viewport, reducedMotion: "reduce" });
+    await context.routeWebSocket("**/ws", ws => ws.onMessage(message => {
+        if (String(message).startsWith("CONNECT")) ws.send("CONNECTED\nversion:1.2\nheart-beat:0,0\n\n\0");
+    }));
     await context.addInitScript((role) => {
         if (role) {
             sessionStorage.setItem("bidverse.auth.user", JSON.stringify({ userId: role === "host" ? 1 : 21, name: "Taylor Brooks", role, email: "preview@example.com" }));
-            sessionStorage.setItem("bidverse.auth.authorization", "Basic cHJldmlldzp0ZXN0");
+            sessionStorage.setItem("bidverse.auth.authorization", "Bearer test-preview-token");
+            sessionStorage.setItem("bidverse.auth.expiresAt", new Date(Date.now() + 3600000).toISOString());
         }
     }, role);
     await context.route("**:8080/**", async route => {
@@ -77,10 +81,43 @@ try {
                 await focusTarget.evaluate(el => el.blur());
             }
             assert.equal(await page.locator("footer").count(), 1);
+            if (viewport.width === 1440) {
+                const cards = page.locator("main :is(.room-card,.host-room-tile,.host-product-tile,.seller-action-card,.buyer-deal-card,.deal-list-card,.seller-product-card,.won-deal-card,.buyer-stat-box,.seller-stat,.overview-card,.product-summary-card,.category-card,.buyer-product-card,.assigned-product,.host-picker-card,.collection-card)");
+                for (const card of await cards.all()) {
+                    await card.hover();
+                    const lightBackground = await card.evaluate(element => {
+                        const rgb = getComputedStyle(element).backgroundColor.match(/[\d.]+/g).map(Number);
+                        return rgb.slice(0, 3).every(channel => channel >= 235);
+                    });
+                    assert.ok(lightBackground, `${path}: card hover must stay light`);
+                }
+                const won = page.locator(".won-deal-card").first();
+                if (await won.count()) {
+                    await won.hover();
+                    await won.screenshot({ path: ".ui-check/won-product-light-hover.png" });
+                }
+                await page.mouse.move(0, 0);
+            }
             if (["/host/rooms", "/host/products", "/buyer/rooms"].includes(path)) {
-                const colors = await page.locator("button[data-status]").evaluateAll(buttons => buttons.map(button => getComputedStyle(button).getPropertyValue("--filter-rgb").trim()));
-                assert.ok(colors.length >= 3);
-                assert.equal(new Set(colors).size, colors.length, "Status filters have distinct colors");
+                const filters = page.locator("button[data-status]");
+                assert.ok(await filters.count() >= 3);
+                const styles = await filters.evaluateAll(buttons => buttons.map(button => ({
+                    selected: button.getAttribute("aria-pressed") === "true" || button.classList.contains("active"),
+                    color: getComputedStyle(button).color, background: getComputedStyle(button).backgroundColor
+                })));
+                assert.ok(styles.every(style => style.selected
+                    ? style.background === "rgb(20, 96, 219)" && style.color === "rgb(255, 255, 255)"
+                    : style.color === "rgb(20, 87, 191)"), "Filters use blue only, with white text on the selected filter");
+                if (path === "/host/products") {
+                    for (const filter of await filters.all()) {
+                        await filter.hover();
+                        await filter.click();
+                        await page.waitForTimeout(220);
+                        assert.equal(await filter.evaluate(button => getComputedStyle(button).backgroundColor), "rgb(20, 96, 219)", "Every host product filter stays blue when selected and hovered");
+                    }
+                    await page.getByRole("button", { name: "All", exact: true }).click();
+                    await page.mouse.move(0, 0);
+                }
             }
             const frames = await page.locator(".host-product-photo, .buyer-deal-product-image, .seller-product-image").evaluateAll(elements => elements.map(el => ({ background: getComputedStyle(el).backgroundColor, padding: getComputedStyle(el).padding })));
             assert.ok(frames.every(frame => frame.background === "rgba(0, 0, 0, 0)" && frame.padding === "0px"), "Product frames are transparent without white padding");
@@ -136,7 +173,7 @@ try {
         for (const [label, productName] of [["Approved", products[1].name], ["Rejected", "Rejected preview product"], ["Pending", products[0].name]]) {
             await sellerPage.getByRole("button", { name: label, exact: true }).click();
             assert.equal(await sellerPage.getByRole("button", { name: label, exact: true }).getAttribute("aria-pressed"), "true");
-            assert.equal(await sellerPage.getByRole("button", { name: label, exact: true }).evaluate(button => getComputedStyle(button).backgroundColor), filterStyles[0].background, "Every selected seller filter uses the same crimson accent");
+            assert.equal(await sellerPage.getByRole("button", { name: label, exact: true }).evaluate(button => getComputedStyle(button).backgroundColor), "rgb(20, 96, 219)", "Every selected seller filter uses the same blue accent");
             assert.deepEqual(await sellerPage.locator(".seller-product-card h2").allTextContents(), [productName]);
         }
         await sellerPage.getByRole("button", { name: "All", exact: true }).click();
@@ -256,13 +293,54 @@ try {
     sendUpdate({ roomId: 5, roomStatus: "completed", eventType: "ROOM_COMPLETED" });
     await page.getByRole("heading", { name: "Auction completed" }).waitFor();
     await context.close();
+    const refreshContext = await createContext("buyer", { width: 1440, height: 1000 });
+    const refreshPage = await refreshContext.newPage();
+    let roomNotification;
+    let catalogue = [room];
+    await refreshPage.routeWebSocket("**/ws", socket => socket.onMessage(message => {
+        const frame = String(message);
+        if (frame.startsWith("CONNECT")) socket.send("CONNECTED\nversion:1.2\nheart-beat:0,0\n\n\0");
+        if (frame.startsWith("SUBSCRIBE") && frame.includes("destination:/topic/rooms")) {
+            const id = frame.match(/\nid:([^\n]+)/)[1];
+            roomNotification = () => socket.send(`MESSAGE\nsubscription:${id}\nmessage-id:catalogue-1\ndestination:/topic/rooms\n\n${JSON.stringify({ eventType: "ROOMS_CHANGED" })}\0`);
+        }
+    }));
+    await refreshContext.route("**:8080/buyer/rooms/available", route => route.fulfill({ contentType: "application/json", body: JSON.stringify(catalogue) }));
+    await refreshContext.route("**:8080/buyer/deals/mine", async route => {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        await route.fulfill({ contentType: "application/json", body: "[]" });
+    });
+    await refreshPage.goto(`${base}/buyer`);
+    await refreshPage.getByRole("heading", { name: room.title, exact: true }).waitFor({ timeout: 2000 });
+    assert.ok(await refreshPage.getByText("Loading won products...", { exact: true }).isVisible(), "Room cards do not wait for slow deals");
+    for (let attempt = 0; !roomNotification && attempt < 20; attempt++) await refreshPage.waitForTimeout(100);
+    assert.equal(typeof roomNotification, "function", "Buyer subscribes to room notifications");
+    catalogue = [...catalogue, { ...room, roomId: 99, title: "Just created by the host" }];
+    roomNotification();
+    await refreshPage.getByRole("heading", { name: "Just created by the host", exact: true }).waitFor({ timeout: 2500 });
+    assert.equal(await refreshPage.evaluate(() => getComputedStyle(document.documentElement).colorScheme), "light");
+    await refreshPage.screenshot({ path: ".ui-check/buyer-live-refresh.png", fullPage: true });
+    await refreshContext.close();
+
+    const detailsContext = await createContext("buyer", { width: 1440, height: 1000 });
+    await detailsContext.route("**:8080/buyer/rooms/5", async route => {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        await route.fulfill({ contentType: "application/json", body: JSON.stringify(products) });
+    });
+    const detailsPage = await detailsContext.newPage();
+    await detailsPage.goto(`${base}/buyer/rooms/5`);
+    await detailsPage.getByRole("heading", { name: room.title, exact: true }).waitFor({ timeout: 2000 });
+    assert.ok(await detailsPage.getByText("Loading products...", { exact: true }).isVisible(), "Room details appear before slow products");
+    await detailsPage.getByRole("heading", { name: products[0].productName, exact: true }).waitFor();
+    await detailsContext.close();
+
     const loginContext = await createContext(null, { width: 1440, height: 1000 });
     const loginPage = await loginContext.newPage();
     let loginBody;
     await loginContext.route("**:8080/auth/login", route => {
         loginBody = route.request().postDataJSON();
         assert.equal(route.request().headers().authorization, undefined, "Login must not send stale Basic credentials");
-        return route.fulfill({ contentType: "application/json", body: JSON.stringify({ userId: 1, name: "Preview host", role: "host", email: "host@example.com" }) });
+        return route.fulfill({ contentType: "application/json", body: JSON.stringify({ userId: 1, name: "Preview host", role: "host", email: "host@example.com", accessToken: "t".repeat(43), expiresAt: new Date(Date.now() + 3600000).toISOString() }) });
     });
     await loginPage.goto(`${base}/host/login`);
     await loginPage.evaluate(() => sessionStorage.setItem("bidverse.auth.authorization", "Basic c3RhbGU6Y3JlZGVudGlhbHM="));
@@ -282,7 +360,7 @@ try {
     await uploadContext.route(publicImage, route => route.fulfill({ contentType: "image/jpeg", body: photo }));
     await uploadContext.route("**:8080/seller/product-images", route => {
         uploadCount++;
-        assert.ok(route.request().headers().authorization?.startsWith("Basic "));
+        assert.ok(route.request().headers().authorization?.startsWith("Bearer "));
         assert.ok(route.request().headers()["content-type"]?.startsWith("multipart/form-data; boundary="));
         return route.fulfill({ contentType: "application/json", body: JSON.stringify({ imageUrl: publicImage }) });
     });

@@ -16,6 +16,8 @@ function RoomDetails() {
     const [room, setRoom] = useState(null);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [catalogLoading, setCatalogLoading] = useState(true);
+    const [catalogError, setCatalogError] = useState("");
     const [error, setError] = useState("");
     const [booking, setBooking] = useState(false);
     const [booked, setBooked] = useState(false);
@@ -23,30 +25,16 @@ function RoomDetails() {
 
     useEffect(() => {
 
-        const fetchRoomData = async () => {
-
-            try {
-
-                const [roomResponse, productsResponse] = await Promise.all([
-                    getRoomDetails(roomId),
-                    getRoomCatalog(roomId),
-                ]);
-
-                setRoom(roomResponse.data);
-                setProducts(productsResponse.data);
-
-            } catch {
-
-                setError("Unable to load room details.");
-
-            } finally {
-
-                setLoading(false);
-
-            }
-        };
-
-        fetchRoomData();
+        const controller = new AbortController();
+        getRoomDetails(roomId, controller.signal)
+            .then(response => { if (!controller.signal.aborted) setRoom(response.data); })
+            .catch(() => { if (!controller.signal.aborted) setError("Unable to load room details."); })
+            .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+        getRoomCatalog(roomId, controller.signal)
+            .then(response => { if (!controller.signal.aborted) setProducts(response.data); })
+            .catch(() => { if (!controller.signal.aborted) setCatalogError("Unable to load products. Please try again later."); })
+            .finally(() => { if (!controller.signal.aborted) setCatalogLoading(false); });
+        return () => controller.abort();
 
     }, [roomId]);
 
@@ -274,7 +262,7 @@ function RoomDetails() {
                 </div>
 
 
-                {products.length === 0 ? (
+                {catalogLoading ? <p className="empty-state" role="status">Loading products...</p> : catalogError ? <p className="form-error" role="alert">{catalogError}</p> : products.length === 0 ? (
 
                     <p className="empty-state">
                         No products are available in this room.

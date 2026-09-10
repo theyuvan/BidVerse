@@ -19,7 +19,7 @@ function Login() {
         try{
             const response = await loginUser({email: email.trim(),password,role});
             const user = response.data;
-            saveAuthSession(user, password);
+            saveAuthSession(user);
 
             if(user.role === "buyer"){
                 navigate("/buyer");

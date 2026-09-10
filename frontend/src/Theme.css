@@ -244,9 +244,9 @@ img { max-width: 100%; }
 .app-shell :is(.room-card,.dashboard-room-card,.seller-action-card,.buyer-deal-card,
     .seller-product-card,.deal-list-card,.won-deal-card,.buyer-stat-box,.seller-stat,
     .overview-card,.product-summary-card,.category-card,.buyer-product-card):is(:hover,:focus-within) {
-    background: #29353f;
+    background: var(--card-hover-background, var(--surface));
     border-color: var(--card-accent, var(--teal));
-    box-shadow: 0 0 0 2px var(--card-accent, var(--teal)), 0 14px 30px #00000045;
+    box-shadow: var(--card-hover-shadow, 0 0 0 2px var(--card-accent, var(--teal)));
 }
 .app-shell :is(.room-card,.dashboard-room-card,.seller-action-card,.buyer-deal-card):is(:hover,:focus-within) :is(h2,h3) { color: #fff; }
 .app-shell .collection-card:is(:hover,:focus-visible) > div { box-shadow: 0 0 0 3px var(--teal), 0 12px 28px #00000045; }

@@ -1,0 +1,150 @@
+:root {
+    color-scheme:light;
+    --canvas:#f4f7fc;
+    --surface:#fff;
+    --surface-raised:#edf3ff;
+    --line:#dfe7f1;
+    --ink:#172b45;
+    --muted:#596b82;
+    --accent:#1460db;
+    --teal:#397ad6;
+    --primary-hover:#104eb5;
+    --card-hover-background:#f7faff;
+    --card-hover-shadow:0 0 0 1px #82a9e2,0 6px 20px #1b5ec012;
+    --seller-bg:var(--canvas);
+    --seller-card:var(--surface);
+    --seller-deep:#f4f7fc;
+    --seller-border:var(--line);
+    --seller-text:var(--ink);
+    --seller-muted:var(--muted);
+    --seller-accent:var(--accent);
+    --seller-green:#157347;
+    --seller-yellow:#986200;
+}
+body { background:var(--canvas); color:var(--ink); }
+.app-shell .skip-link { color:#fff; }
+.app-shell .skip-link:not(:focus) { visibility:hidden; }
+.app-shell :is(.auth-visual .overline,.host-login-label,.seller-next-steps-grid article > span) { color:#3564a6; }
+.app-shell main :is(.won-deal-details dd,.deal-contact-card strong,.deal-contact-card a) { color:var(--ink); }
+.app-shell main :is(.won-deal-details dt,.won-deal-content > p) { color:var(--muted); }
+.app-shell main :is(.buyer-contact-list,.buyer-deal-progress > div,.deal-progress-panel,.deal-decision-panel) { background:#fff; border-color:var(--line); }
+.app-shell main .buyer-contact-list { background:#f5f8fd; }
+.app-shell main :is(.buyer-button-confirm,.button-success) { color:#fff; background:var(--accent); }
+.app-shell main :is(.buyer-button-confirm,.button-success):hover:not(:disabled) { background:#104eb5; }
+.app-shell main .buyer-button-secondary { color:#425774; background:#f5f8fd; border-color:#cbd8e8 !important; }
+.app-shell main .buyer-button-secondary:hover:not(:disabled) { background:#e8f0fc; }
+.app-shell main :is(.buyer-deal-details-header,.buyer-deal-progress > div + div) { border-color:var(--line); }
+.app-shell main :is(.buyer-deal-notice,.buyer-waiting-message) { color:#146243; background:#e9f7ef; }
+.app-shell main :is(.buyer-deal-inline-error,.host-login-error,.deal-cancel-reason) { color:#a32e43; background:#fff0f2; }
+:focus-visible { outline-color:#1460db; }
+::selection { background:#c7ddff; color:#163c73; }
+.app-shell .app-navigation { background:#fffffffa; border-color:var(--line); box-shadow:0 2px 12px #234b7810; }
+.app-shell .brand { color:#173759; }
+.app-shell .app-nav-links a,.app-shell .nav-signout { color:#425774; }
+.app-shell .app-nav-links a:is(.active,:hover) { color:#1457bf; background:#eaf2ff; }
+.app-shell .account-avatar { color:#235ab0; background:#e7f0ff; border-color:#c6d9f7; }
+.app-shell .account-copy strong { color:var(--ink); }
+.app-shell .menu-toggle { color:var(--ink); background:#f3f7fd; }
+.app-shell .page-content main :is(h1,h2,h3,h4) { color:var(--ink); }
+.app-shell main :is(input,select,textarea) { background:#fff; border-color:#cbd8e8; color:var(--ink); }
+.app-shell main :is(input,select,textarea)::placeholder { color:#71839a; }
+.app-shell main :is(input,select,textarea):focus { border-color:var(--accent); outline:2px solid #1460db25; }
+.app-shell main :is(label,.room-field-card span,.seller-form label > span) { color:#435a77; }
+.app-shell :is(.section-link,.back-link,.buyer-deal-back,.discovery-heading > a,.auth-links a,.assigned-product > strong) { color:var(--accent); }
+.app-shell main :is(.overline,.eyebrow,.section-kicker,.room-detail-eyebrow,.buyer-deals-eyebrow,.buyer-panel-label,.product-id) { color:#3564a6; }
+.app-shell :is(.button-primary,.view-book-button,.enter-room-link,.primary-link,.book-room-button,.buyer-deal-card-footer a) { background:var(--accent); color:#fff; box-shadow:none; }
+.app-shell :is(.button-primary,.view-book-button,.enter-room-link,.primary-link,.book-room-button,.buyer-deal-card-footer a):hover { background:#104eb5; }
+.app-shell .auction-room-card:is(:hover,:focus-within) .view-book-button { background:#104eb5; }
+.app-shell .button-outline { border-color:#b9cde7; color:#245cab; background:#fff; }
+.app-shell .button-outline:hover { background:#edf4ff; border-color:#6c9add; }
+.app-shell :is(.room-card,.host-room-tile,.host-product-tile,.seller-product-card,.seller-action-card,.buyer-deal-card,.deal-list-card,
+    .won-deal-card,.buyer-stat-box,.seller-stat,.overview-card,.product-summary-card,.buyer-product-card,.room-summary,.host-builder-panel,
+    .seller-form,.create-room-form,.waiting-card,.auction-finished,.auction-products,.current-lot,.category-card,.dashboard-products,
+    .buyer-deal-product-panel,.buyer-seller-contact,.buyer-seller-panel,.buyer-deal-progress,.buyer-decision-panel,.deal-product-panel,
+    .deal-contact-card,.buyer-cancel-reason,.seller-next-steps-grid article,.steps-grid article,.host-workspace-panel) {
+    background:#fff;
+    border-color:var(--line);
+    box-shadow:0 3px 14px #254c7c09;
+}
+.app-shell .seller-products-page .seller-product-card { background:#fff; border-color:var(--line); box-shadow:0 3px 14px #254c7c09; }
+.app-shell main :is(.room-card,.dashboard-room-card,.host-room-tile,.host-product-tile,.seller-action-card,.buyer-deal-card,
+    .deal-list-card,.seller-product-card,.won-deal-card,.buyer-stat-box,.seller-stat,.overview-card,.product-summary-card,
+    .category-card,.buyer-product-card,.assigned-product,.host-picker-card,.collection-card):is(:hover,:focus-within),
+.app-shell .seller-products-page .seller-product-card:is(:hover,:focus-within) {
+    background:var(--card-hover-background); border-color:#82a9e2; box-shadow:var(--card-hover-shadow); transform:none;
+}
+.app-shell :is(.room-card,.dashboard-room-card,.seller-action-card,.buyer-deal-card):is(:hover,:focus-within) :is(h2,h3) { color:#174b93; }
+.app-shell :is(.buyer-stat-box,.seller-stat,.overview-card,.product-summary-card) { border-top:3px solid #93bbf6; }
+.app-shell :is(.buyer-stat-title,.seller-stat-label,.overview-card h3,.product-summary-card span) { color:#314d73; }
+.app-shell :is(.buyer-stat-box,.seller-stat) small { color:var(--muted); }
+.app-shell .buyer-stat-number { color:#154a96; }
+.app-shell .editorial-banner { min-height:220px; background:linear-gradient(110deg,#e6f0ff,#edf5ff); border-color:#dce9fb; border-radius:14px; }
+.app-shell .editorial-copy { padding:28px 32px; }
+.app-shell .editorial-copy h2 { font-family:inherit; font-weight:750; font-size:clamp(23px,2.3vw,32px); margin:8px 0 12px; }
+.app-shell .editorial-copy p { color:#526e94; font-size:15px; margin-bottom:16px; }
+.app-shell .editorial-art { background:transparent; }
+.app-shell .editorial-art img { width:210px; height:190px; transform:none; }
+.app-shell .editorial-art .art-orbit { width:230px; height:230px; border-color:#c6dafa; }
+.app-shell .art-caption { display:none; }
+.app-shell .editorial-banner .overline { color:#2c5fa6; }
+.app-shell :is(.auction-card-details > div,.auction-start-time,.bid-summary,.room-field-card,.auction-products article,.host-picker-card,
+    .seller-product-meta div,.buyer-details,.deal-facts div,.buyer-deal-filters,.buyer-deals-message,.buyer-contact-list > div) {
+    background:#f5f8fd; border-color:var(--line);
+}
+.app-shell .host-picker-card.is-selected { border-color:var(--accent); box-shadow:0 0 0 2px #1460db18; }
+.app-shell .host-picker-card input { accent-color:var(--accent); }
+.app-shell main :is(.seller-product-meta dd,.deal-facts dd,.buyer-winning-price strong,.buyer-contact-list strong,.buyer-contact-list a,
+    .buyer-deal-card-footer strong,.seller-product-price strong,.auction-card-details strong,.auction-start-time strong,.result-countdown strong,
+    .host-room-facts dd,.booking-card-info p,.room-summary strong,.buyer-deal-product-copy h2) { color:var(--ink); }
+.app-shell main :is(.buyer-deal-seller,.buyer-deal-product-copy > p,.buyer-seller-panel > p,.buyer-decision-copy p,.buyer-deals-message p,
+    .buyer-contact-list span,.buyer-deal-progress > div > span:first-child,.buyer-winning-price span,.buyer-deal-card-top > span:first-child,
+    .buyer-deal-card-footer span,.buyer-deal-details-header p,.buyer-deals-header p,.seller-product-description,.host-product-description) { color:var(--muted); }
+.app-shell main :is(.buyer-deal-product-panel,.buyer-deal-progress,.buyer-decision-panel,.buyer-winning-price,.buyer-deal-card-footer,
+    .host-room-date,.host-review-note,.result-footer) { border-color:var(--line); }
+.app-shell .host-room-symbol { color:var(--accent); }
+.app-shell main :is(.room-filters,.product-filters,.booking-tabs,.buyer-deal-filters) :is(button,button[data-status]),
+.app-shell .seller-products-page .product-filters button[data-status] {
+    --filter-rgb:20,96,219;
+    background:#fff; color:#1457bf; border:1px solid #c8dcf7; box-shadow:none;
+}
+.app-shell main :is(.room-filters,.product-filters,.booking-tabs,.buyer-deal-filters) :is(button,button[data-status]):is(.active,[aria-pressed="true"]),
+.app-shell .seller-products-page .product-filters button[data-status]:is(.active,[aria-pressed="true"]) {
+    background:var(--accent); color:#fff; border-color:var(--accent); box-shadow:none;
+}
+.app-shell main :is(.room-filters,.product-filters,.booking-tabs,.buyer-deal-filters) :is(button,button[data-status]):hover { border-color:#6291d6; box-shadow:none; }
+.app-shell main :is(.room-filters,.product-filters,.booking-tabs,.buyer-deal-filters) :is(button,button[data-status]):not(.active):not([aria-pressed="true"]):hover { background:#eaf2ff; color:#1457bf; }
+.app-shell main :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status,.buyer-deal-status,.deal-status) { color:#4d6280; background:#edf2f8; border-color:#d8e2ef; }
+.app-shell main :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.waiting,.pending,.unsold),
+.app-shell :is(.buyer-deal-status-pending,.deal-status-pending,.buyer-party-pending) { color:#946000; background:#fff4d7; border-color:#f1d79c; }
+.app-shell main :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.live,.approved,.sold,.confirmed),
+.app-shell :is(.buyer-party-confirmed,.deal-status-confirmed,.deal-status-completed) { color:#126445; background:#e3f5ec; border-color:#b9e4cf; }
+.app-shell main :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.rejected,.cancelled),
+.app-shell :is(.buyer-deal-status-cancelled,.buyer-party-rejected,.deal-status-rejected,.deal-status-cancelled) { color:#a72c41; background:#ffedf0; border-color:#f4c8d0; }
+.app-shell main :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.upcoming,.completed),
+.app-shell .buyer-deal-status-completed { color:#2a5799; background:#eaf2ff; border-color:#c8dcf7; }
+.app-shell :is(.auction-notice,.form-success,.booking-toast-success) { color:#146243; background:#e9f7ef; border-color:#b9dfcb; }
+.app-shell :is(.auction-error,.form-error,.booking-toast-error,.buyer-deals-error,.buyer-cancel-reason) { color:#a32e43; background:#fff0f2; border-color:#eec6cf; }
+.app-shell .empty-state,.app-shell .buyer-empty { color:var(--muted); background:#fff; border-color:var(--line); }
+.app-shell .auction-result { background:#edf8f2; border-color:#b8dcc9; }
+.app-shell .auction-result.unsold { background:#fff8e8; border-color:#ecd69f; }
+.app-shell .result-status { color:#126445; }
+.app-shell .unsold .result-status { color:#946000; }
+.app-shell .lot-bid-panel .auction-timer { color:#146243; border-color:#b9dfcb; background:#e9f7ef; }
+.app-shell .lot-bid-panel .auction-timer.urgent { color:#aa263b; border-color:#efc0ca; background:#fff0f2; }
+.app-shell .waiting-countdown { color:#926100; border-color:#ecd69f; background:#fff8e8; }
+.app-shell .auth-visual { background:#e8f1ff; }
+.app-shell .auth-visual-copy h2 { font-family:inherit; font-weight:750; color:#183e70; }
+.app-shell :is(.auth-visual-copy p,.auth-caption,.auth-layout form label) { color:#536c8b; }
+.app-shell .auth-image { background:#dceaff; }
+.app-shell .auth-links a { color:var(--accent); }
+.app-shell .auth-layout :is(.login-page,.signup-page) > h1 { color:var(--accent); }
+.app-shell .landing-hero { background:#eaf2ff; color:var(--ink); border-color:var(--line); }
+.app-shell .landing-hero h1 em,.app-shell .landing-hero .overline { color:var(--accent); }
+.app-shell :is(.collection-card,.steps-grid article) { background:#fff; border-color:var(--line); color:var(--ink); }
+.app-shell .site-footer { background:#fff; border-color:var(--line); }
+.app-shell .footer-main :is(p,a:not(.brand)),.app-shell .footer-bottom { color:#61758e; }
+.app-shell .footer-label { color:#274c7e; }
+.app-shell .footer-bottom { border-color:var(--line); }
+.app-shell .footer-main a:hover { color:var(--accent); }
+@media(max-width:1000px) { .app-shell .app-nav-links.is-open { background:#fff; border-color:var(--line); } }
+@media(max-width:760px) { .app-shell .editorial-copy { padding:24px; } }

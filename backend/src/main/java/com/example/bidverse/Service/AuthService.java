@@ -16,6 +16,8 @@ import com.example.bidverse.Dto.LoginRequest;
 import com.example.bidverse.Dto.RegisterRequest;
 import com.example.bidverse.Entity.User;
 import com.example.bidverse.Repository.UserRepository;
+import com.example.bidverse.Security.SessionTokens;
+import com.example.bidverse.Security.AuthenticatedUser;
 
 @Service
 public class AuthService {
@@ -26,10 +28,12 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SessionTokens tokens;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, SessionTokens tokens) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.tokens = tokens;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -38,6 +42,9 @@ public class AuthService {
         }
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password is required");
+        }
+        if (request.getPassword().length() < 8 || request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use a password of at least 8 characters and at most 72 UTF-8 bytes");
         }
         if (request.getRole() == null || !SELF_REGISTERABLE_ROLES.contains(request.getRole().trim().toLowerCase())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "role must be buyer or seller");
@@ -54,7 +61,7 @@ public class AuthService {
         user.setRole(request.getRole().trim().toLowerCase());
         userRepository.save(user);
 
-        return toAuthResponse(user);
+        return new AuthResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
     }
 
     @Transactional
@@ -80,7 +87,7 @@ public class AuthService {
     }
 
     private boolean passwordMatches(String rawPassword, String storedPassword) {
-        if (rawPassword == null || storedPassword == null) {
+        if (rawPassword == null || rawPassword.isBlank() || storedPassword == null) {
             return false;
         }
 
@@ -99,6 +106,9 @@ public class AuthService {
     }
 
     private AuthResponse toAuthResponse(User user) {
-        return new AuthResponse(user.getId(), user.getName(), user.getEmail(), user.getRole());
+        var session = tokens.issue(new AuthenticatedUser(user.getId(), user.getRole(), user.getEmail()));
+        return new AuthResponse(user.getId(), user.getName(), user.getEmail(), user.getRole(), session.token(), session.expiresAt());
     }
+
+    public void logout(String authorization) { tokens.revoke(authorization); }
 }

@@ -8,6 +8,8 @@ import {
 } from "../../services/buyerService";
 import "./BuyerDashboard.css";
 import Showcase from "../../components/Showcase";
+import useLiveResource from "../../hooks/useLiveResource";
+import { watchRoomCatalogue } from "../../services/auctionSocket";
 
 const formatMoney = (amount) => new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -24,44 +26,17 @@ const formatDate = (date) => date
 
 function BuyerDashboard({ roomsOnly = false }) {
     const user = getAuthUser();
-    const [rooms, setRooms] = useState([]);
-    const [bookings, setBookings] = useState([]);
-    const [wonDeals, setWonDeals] = useState([]);
+    const roomState = useLiveResource("rooms", getAvailableRooms);
+    const bookingState = useLiveResource("bookings", getBuyerBookings);
+    const dealState = useLiveResource("deals", getBuyerDeals);
+    const rooms = roomState.data;
+    const bookings = bookingState.data;
+    const wonDeals = dealState.data;
     const [activeTab, setActiveTab] = useState("upcoming");
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const error = roomState.error || bookingState.error || dealState.error;
+    const loading = roomsOnly && activeTab !== "upcoming" ? bookingState.loading : roomState.loading;
 
-    useEffect(() => {
-        let cancelled = false;
-
-        Promise.all([
-            getAvailableRooms(),
-            getBuyerBookings(),
-            getBuyerDeals()
-        ])
-            .then(([roomsResponse, bookingsResponse, dealsResponse]) => {
-                if (cancelled) return;
-                setRooms(roomsResponse.data);
-                setBookings(bookingsResponse.data);
-                setWonDeals(dealsResponse.data);
-            })
-            .catch((requestError) => {
-                if (cancelled) return;
-                const responseData = requestError.response?.data;
-                setError(
-                    responseData?.detail ||
-                    responseData?.message ||
-                    "Unable to load your auction information."
-                );
-            })
-            .finally(() => {
-                if (!cancelled) setLoading(false);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
+    useEffect(() => watchRoomCatalogue(), []);
 
     const upcomingRooms = rooms.filter((room) =>
         ["upcoming", "open"].includes(room.status?.toLowerCase())
@@ -258,17 +233,17 @@ function BuyerDashboard({ roomsOnly = false }) {
             <section className="buyer-stats" aria-label="Buyer activity summary">
                 <article className="buyer-stat-box bookings-stat">
                     <div><span className="buyer-stat-title">Bookings</span><span className="stat-index">01</span></div>
-                    <strong className="buyer-stat-number">{bookings.length}</strong>
+                    <strong className="buyer-stat-number">{bookingState.loading ? "…" : bookings.length}</strong>
                     <small>Total rooms reserved</small>
                 </article>
                 <article className="buyer-stat-box live-stat">
                     <div><span className="buyer-stat-title">Live</span><span className="stat-index">02</span></div>
-                    <strong className="buyer-stat-number">{liveRooms.length}</strong>
+                    <strong className="buyer-stat-number">{bookingState.loading ? "…" : liveRooms.length}</strong>
                     <small>Auctions happening now</small>
                 </article>
                 <article className="buyer-stat-box won-stat">
                     <div><span className="buyer-stat-title">Deals Won</span><span className="stat-index">03</span></div>
-                    <strong className="buyer-stat-number">{wonDeals.length}</strong>
+                    <strong className="buyer-stat-number">{dealState.loading ? "…" : wonDeals.length}</strong>
                     <small>Products you have won</small>
                 </article>
             </section>
@@ -301,7 +276,7 @@ function BuyerDashboard({ roomsOnly = false }) {
                     )}
                 </div>
 
-                {loading ? (
+                {dealState.loading ? (
                     <p className="buyer-empty">Loading won products...</p>
                 ) : wonDeals.length === 0 ? (
                     <p className="buyer-empty">Your winning products will appear here.</p>

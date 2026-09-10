@@ -40,12 +40,14 @@ public class HostService {
     private final RoomRepo roomRepo;
     private final AuctionItemRepository auctionItemRepo;
     private final AuctionService auctionService;
+    private final RoomCatalogEvents catalogEvents;
 
-    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, AuctionService auctionService) {
+    public HostService(ProductRepository productRepo, RoomRepo roomRepo, AuctionItemRepository auctionItemRepo, AuctionService auctionService, RoomCatalogEvents catalogEvents) {
         this.productRepo = productRepo;
         this.roomRepo = roomRepo;
         this.auctionItemRepo = auctionItemRepo;
         this.auctionService = auctionService;
+        this.catalogEvents = catalogEvents;
     }
 
     @Transactional
@@ -211,6 +213,7 @@ public class HostService {
         room.setStatus("upcoming");
         Room created = roomRepo.saveAndFlush(room);
         for (Product product : selected) saveLot(created.getRoomId(), product);
+        catalogEvents.changed();
         return created;
     }
 

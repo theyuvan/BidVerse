@@ -45,7 +45,8 @@ function Signup(){
                 <label htmlFor="signup-phone">Phone number</label>
                 <input id="signup-phone" autoComplete="tel" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                 <label htmlFor="signup-password">Password</label>
-                <input id="signup-password" autoComplete="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <input id="signup-password" autoComplete="new-password" type="password" minLength={8} aria-describedby="password-help" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <small id="password-help">Use at least 8 characters (maximum 72 UTF-8 bytes).</small>
                 <label htmlFor="signup-role">I want to</label>
                 <select id="signup-role" value={role} onChange={(e) => setRole(e.target.value)}>
                     <option value="buyer">Buyer</option>

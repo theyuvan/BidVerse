@@ -26,8 +26,9 @@ class HostServiceTest {
     @Mock RoomRepo rooms;
     @Mock AuctionItemRepository lots;
     @Mock AuctionService auction;
+    @Mock RoomCatalogEvents catalogEvents;
     HostService service;
-    @BeforeEach void setup() { service = new HostService(products, rooms, lots, auction); }
+    @BeforeEach void setup() { service = new HostService(products, rooms, lots, auction, catalogEvents); }
     Product product(long id, String status) {
         Product product = new Product();
         product.setProductId(id); product.setStatus(status); product.setBasePrice(new BigDecimal("100"));

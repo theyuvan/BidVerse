@@ -29,7 +29,7 @@ function HostLogin() {
                 return;
             }
 
-            saveAuthSession(user, password);
+            saveAuthSession(user);
             navigate("/host/dashboard", { replace: true });
         } catch (requestError) {
             const data = requestError.response?.data;

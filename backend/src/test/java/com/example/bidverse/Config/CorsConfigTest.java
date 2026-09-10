@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CorsConfigTest {
     @ParameterizedTest
-    @ValueSource(strings = {"http://localhost:5173", "http://127.0.0.1:5173", "https://51986cbd-5173.inc1.devtunnels.ms"})
+    @ValueSource(strings = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"})
     void permitsConfiguredFrontendPreflight(String origin) throws Exception {
         try (var context = new AnnotationConfigApplicationContext(CorsConfig.class)) {
             var request = preflight(origin);
@@ -28,9 +28,9 @@ class CorsConfigTest {
     }
 
     @Test
-    void rejectsOtherTunnelOrigins() throws Exception {
+    void rejectsUntrustedOrigins() throws Exception {
         try (var context = new AnnotationConfigApplicationContext(CorsConfig.class)) {
-            var request = preflight("https://untrusted-5173.inc1.devtunnels.ms");
+            var request = preflight("https://untrusted.example.test");
             var response = new MockHttpServletResponse();
             var config = context.getBean(CorsConfig.class).corsConfigurationSource().getCorsConfiguration(request);
 
@@ -47,7 +47,7 @@ class CorsConfigTest {
         assertEquals("https://app.example.test", cors.getAllowedOrigins()[0]);
         var configuration = cors.corsConfigurationSource().getCorsConfiguration(preflight("https://app.example.test"));
         assertEquals("https://app.example.test", configuration.checkOrigin("https://app.example.test"));
-        assertEquals(null, configuration.checkOrigin("https://51986cbd-5173.inc1.devtunnels.ms"));
+        assertEquals(null, configuration.checkOrigin("https://untrusted.example.test"));
     }
 
     private MockHttpServletRequest preflight(String origin) {

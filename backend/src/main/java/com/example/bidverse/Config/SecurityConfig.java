@@ -1,6 +1,9 @@
 package com.example.bidverse.Config;
 
 import com.example.bidverse.Security.AppUserDetailsService;
+import com.example.bidverse.Security.SessionTokens;
+import com.example.bidverse.Security.BearerTokenFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -43,15 +46,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionTokens tokens) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(new BearerTokenFilter(tokens), BasicAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/health").permitAll()
                         .requestMatchers("/ws/**", "/ws-sockjs/**").permitAll()
                         .requestMatchers("/buyer/**").hasRole("BUYER")
                         .requestMatchers("/seller/**").hasRole("SELLER")

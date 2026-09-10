@@ -1,0 +1,9 @@
+.env
+.env.*
+.local-backups
+.git
+.idea
+.vscode
+target
+src/main/resources/application.properties
+*.log

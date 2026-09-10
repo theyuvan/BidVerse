@@ -1,22 +1,22 @@
 import api from "./api";
 
-export const getAvailableRooms = () => {
-    return api.get("/buyer/rooms/available");
+export const getAvailableRooms = (signal) => {
+    return api.get("/buyer/rooms/available", { signal });
 };
-export const getRoomCatalog = (roomId) => {
-    return api.get(`/buyer/rooms/${roomId}`);
+export const getRoomCatalog = (roomId, signal) => {
+    return api.get(`/buyer/rooms/${roomId}`, { signal });
 };
-export const getRoomDetails = (roomId) => {
-    return api.get(`/buyer/rooms/${roomId}/details`);
+export const getRoomDetails = (roomId, signal) => {
+    return api.get(`/buyer/rooms/${roomId}/details`, { signal });
 };
 export const bookRoom = (roomId) => {
     return api.post(`/buyer/rooms/${roomId}/book`);
 };
-export const getBuyerBookings = () => {
-    return api.get("/buyer/bookings");
+export const getBuyerBookings = (signal) => {
+    return api.get("/buyer/bookings", { signal });
 };
-export const getBuyerDeals = () => {
-    return api.get("/buyer/deals/mine");
+export const getBuyerDeals = (signal) => {
+    return api.get("/buyer/deals/mine", { signal });
 };
 export const getBuyerDeal = (dealId) => {
     return api.get(`/buyer/deals/${dealId}`);

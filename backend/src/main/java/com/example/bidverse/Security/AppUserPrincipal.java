@@ -26,6 +26,13 @@ public class AppUserPrincipal implements UserDetails {
         return userId;
     }
 
+    public AppUserPrincipal(AuthenticatedUser user) {
+        this.userId = user.userId();
+        this.email = user.email();
+        this.passwordHash = null;
+        this.role = user.role().toUpperCase();
+    }
+
     public String getRole() {
         return role;
     }

@@ -17,7 +17,8 @@ try {
         const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
         await context.addInitScript(() => {
             sessionStorage.setItem("bidverse.auth.user", JSON.stringify({ userId: 1, role: "host", name: "Preview host" }));
-            sessionStorage.setItem("bidverse.auth.authorization", "Basic cHJldmlldzp0ZXN0");
+            sessionStorage.setItem("bidverse.auth.authorization", "Bearer test-preview-token");
+            sessionStorage.setItem("bidverse.auth.expiresAt", new Date(Date.now() + 3600000).toISOString());
         });
         await context.route("**:8080/**", route => route.fulfill({ contentType: "application/json", body: JSON.stringify(rooms) }));
         const page = await context.newPage();

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { clearAuthSession, getAuthUser } from "../services/authSession";
+import { signOut, getAuthUser } from "../services/authSession";
 
 const navigation = {
     buyer: [["/buyer", "Overview"], ["/buyer/rooms", "Auction rooms"], ["/buyer/deals", "My deals"]],
@@ -31,7 +31,7 @@ export default function AppNavigation() {
         <div className="nav-account">
             {links ? <><span className="account-avatar" title={user.name}>{user.name?.charAt(0)?.toUpperCase() || "B"}</span>
                 <div className="account-copy"><strong>{user.name}</strong><small>{role} account</small></div>
-                <Link className="nav-signout" to={role === "host" ? "/host/login" : "/login"} onClick={clearAuthSession}>Sign out</Link></>
+                <Link className="nav-signout" to={role === "host" ? "/host/login" : "/login"} onClick={signOut}>Sign out</Link></>
                 : <><Link to="/login">Sign in</Link><Link className="button-primary" to="/register">Get started ↗</Link></>}
         </div>
     </header>;

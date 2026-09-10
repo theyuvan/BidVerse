@@ -29,6 +29,7 @@ import "./HostWorkspace.css";
 import "./StatusBadges.css";
 import "./AuctionWorkspace.css";
 import "./ProductImages.css";
+import "./LightTheme.css";
 
 const roleHome = {
     buyer: "/buyer",

@@ -33,7 +33,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder);
+        authService = new AuthService(userRepository, passwordEncoder, new com.example.bidverse.Security.SessionTokens());
     }
 
     @Test
@@ -48,6 +48,8 @@ class AuthServiceTest {
         AuthResponse response = authService.login(request);
 
         assertEquals("host", response.role());
+        org.junit.jupiter.api.Assertions.assertNotNull(response.accessToken());
+        org.junit.jupiter.api.Assertions.assertNotNull(response.expiresAt());
         assertEquals(bcryptHash, host.getPassword());
         verify(userRepository).save(host);
     }
@@ -108,6 +110,33 @@ class AuthServiceTest {
                 password,
                 "host"
         );
+    }
+
+    @Test
+    void registrationStoresBcryptHashNotPlainText() {
+        var encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4);
+        var service = new AuthService(userRepository, encoder, new com.example.bidverse.Security.SessionTokens());
+        var request = new com.example.bidverse.Dto.RegisterRequest();
+        request.setEmail("buyer@example.test");
+        request.setPassword("StrongPassword123");
+        request.setRole("buyer");
+        when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.empty());
+        var response = service.register(request);
+        var saved = org.mockito.ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        org.junit.jupiter.api.Assertions.assertNotEquals(request.getPassword(), saved.getValue().getPassword());
+        org.junit.jupiter.api.Assertions.assertTrue(encoder.matches(request.getPassword(), saved.getValue().getPassword()));
+        org.junit.jupiter.api.Assertions.assertNull(response.accessToken());
+    }
+
+    @Test
+    void registrationRejectsWeakPasswordBeforeSaving() {
+        var request = new com.example.bidverse.Dto.RegisterRequest();
+        request.setEmail("buyer@example.test");
+        request.setPassword("short");
+        request.setRole("buyer");
+        assertEquals(HttpStatus.BAD_REQUEST, assertThrows(ResponseStatusException.class, () -> authService.register(request)).getStatusCode());
+        org.mockito.Mockito.verifyNoInteractions(userRepository, passwordEncoder);
     }
 
     private LoginRequest loginRequest(String password, String role) {

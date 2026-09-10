@@ -7,6 +7,7 @@ import {
 
 const api = axios.create({
     baseURL: backendUrl,
+    timeout: 20000,
 });
 
 api.interceptors.request.use((config) => {

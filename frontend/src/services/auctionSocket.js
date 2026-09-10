@@ -72,3 +72,23 @@ export function sendNext(client, roomId, auctionItemId) {
         body: JSON.stringify({ auctionItemId })
     });
 }
+
+export function watchRoomCatalogue() {
+    const client = new Client({
+        brokerURL: auctionSocketUrl,
+        reconnectDelay: 5000,
+        heartbeatIncoming: 10000,
+        heartbeatOutgoing: 10000,
+        beforeConnect: () => {
+            const authorization = getAuthorizationHeader();
+            if (!authorization) { client.deactivate(); return; }
+            client.connectHeaders = { Authorization: authorization };
+        },
+        onConnect: () => {
+            client.subscribe("/topic/rooms", () => window.dispatchEvent(new Event("bidverse:rooms-changed")));
+            window.dispatchEvent(new Event("bidverse:rooms-changed"));
+        }
+    });
+    client.activate();
+    return () => { client.deactivate(); };
+}
