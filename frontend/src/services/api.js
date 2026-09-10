@@ -1,11 +1,12 @@
 import axios from "axios";
+import { backendUrl } from "./backendUrl";
 import {
     clearAuthSession,
     getAuthorizationHeader
 } from "./authSession";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+    baseURL: backendUrl,
 });
 
 api.interceptors.request.use((config) => {

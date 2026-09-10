@@ -118,6 +118,53 @@ try {
             await context.close();
         }
     }
+    for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+        const sellerContext = await createContext("seller", viewport);
+        let history = [...products, { ...products[0], productId: 103, name: "Rejected preview product", productStatus: "Rejected" }];
+        await sellerContext.route("**:8080/seller/products/history?*", route => route.fulfill({ contentType: "application/json", body: JSON.stringify(history) }));
+        const sellerPage = await sellerContext.newPage();
+        await sellerPage.goto(`${base}/seller/products`);
+        await sellerPage.locator(".seller-product-card").first().waitFor();
+        assert.deepEqual(await sellerPage.locator(".product-filters button").allTextContents(), ["All", "Pending", "Approved", "Rejected"]);
+        assert.equal(await sellerPage.getByRole("button", { name: "All", exact: true }).getAttribute("aria-pressed"), "true");
+        assert.equal(await sellerPage.locator(".seller-product-card").count(), 3);
+        assert.equal(await sellerPage.locator(".seller-product-card .product-id").count(), 0, "Seller cards do not show product IDs");
+        const filterStyles = await sellerPage.locator(".product-filters button").evaluateAll(buttons => buttons.map(button => ({ background: getComputedStyle(button).backgroundColor, color: getComputedStyle(button).color })));
+        assert.equal(new Set(filterStyles.slice(1).map(style => style.background)).size, 1, "Inactive seller filters use one neutral background");
+        assert.equal(new Set(filterStyles.slice(1).map(style => style.color)).size, 1, "Inactive seller filters use one neutral text color");
+        assert.notEqual(filterStyles[0].background, filterStyles[1].background);
+        for (const [label, productName] of [["Approved", products[1].name], ["Rejected", "Rejected preview product"], ["Pending", products[0].name]]) {
+            await sellerPage.getByRole("button", { name: label, exact: true }).click();
+            assert.equal(await sellerPage.getByRole("button", { name: label, exact: true }).getAttribute("aria-pressed"), "true");
+            assert.equal(await sellerPage.getByRole("button", { name: label, exact: true }).evaluate(button => getComputedStyle(button).backgroundColor), filterStyles[0].background, "Every selected seller filter uses the same crimson accent");
+            assert.deepEqual(await sellerPage.locator(".seller-product-card h2").allTextContents(), [productName]);
+        }
+        await sellerPage.getByRole("button", { name: "All", exact: true }).click();
+        assert.equal(await sellerPage.locator(".seller-product-card").count(), 3);
+        const photos = await sellerPage.locator(".seller-product-image img").evaluateAll(images => images.map(img => {
+            const frame = img.closest(".seller-product-image").getBoundingClientRect();
+            const bounds = img.getBoundingClientRect();
+            return { height: frame.height, fits: bounds.width <= frame.width && bounds.height <= frame.height, fit: getComputedStyle(img).objectFit };
+        }));
+        assert.ok(photos.every(photo => photo.height >= 240 && photo.fits && photo.fit === "contain"), "Product images remain uncropped on desktop and mobile");
+        assert.ok(await sellerPage.locator(".seller-product-card").evaluateAll(cards => cards.every(card => card.getBoundingClientRect().height < 680)), "Product cards stay compact");
+        const description = sellerPage.locator(".seller-product-description").first();
+        assert.equal(await description.getAttribute("open"), null);
+        await description.locator("summary").click();
+        assert.ok(await description.locator("p").isVisible(), "Full descriptions can still be read");
+        await description.locator("summary").click();
+        assert.ok(await sellerPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await sellerPage.screenshot({ path: `.ui-check/seller-product-filters-${viewport.width}.png`, fullPage: true });
+        history = [products[1]];
+        await sellerPage.reload();
+        await sellerPage.locator(".seller-product-card").waitFor();
+        await sellerPage.getByRole("button", { name: "Rejected", exact: true }).click();
+        await sellerPage.getByText("No rejected products yet.", { exact: true }).waitFor();
+        assert.equal(await sellerPage.locator(".seller-product-card").count(), 0);
+        await sellerPage.getByRole("button", { name: "Approved", exact: true }).click();
+        assert.equal(await sellerPage.locator(".seller-product-card").count(), 1);
+        await sellerContext.close();
+    }
     const context = await createContext("buyer", { width: 1440, height: 1000 });
     await context.route("**:8080/buyer/rooms/5/details", route => route.fulfill({ contentType: "application/json", body: JSON.stringify({ ...room, status: "live" }) }));
     const page = await context.newPage();
