@@ -9,7 +9,8 @@
     --accent:#1460db;
     --teal:#397ad6;
     --primary-hover:#104eb5;
-    --card-hover-background:#f7faff;
+    --showcase-background:#eaf2ff;
+    --card-hover-background:var(--showcase-background);
     --card-hover-shadow:0 0 0 1px #82a9e2,0 6px 20px #1b5ec012;
     --seller-bg:var(--canvas);
     --seller-card:var(--surface);
@@ -22,6 +23,33 @@
     --seller-yellow:#986200;
 }
 body { background:var(--canvas); color:var(--ink); }
+.app-shell .brand { gap:10px; }
+.app-shell .brand-logo { display:block; width:42px; height:47px; flex-shrink:0; object-fit:contain; }
+.app-shell main .stat-icon[data-icon] { display:inline-grid; place-items:center; width:44px; height:44px; flex-shrink:0; border-radius:13px; color:#1460db; background:#eaf2ff; }
+.app-shell .stat-icon svg { display:block; width:25px; height:25px; }
+.app-shell main .stat-icon:is([data-icon="upcoming"],[data-icon="pending"]) { color:#b86a08; }
+.app-shell main .stat-icon:is([data-icon="live"],[data-icon="approved"]) { color:#16804a; }
+.app-shell main .stat-icon[data-icon="completed"] { color:#7050c6; }
+.app-shell main .stat-icon[data-icon="won"] { color:#9b7300; }
+.app-shell main .stat-icon[data-icon="rejected"] { color:#c53b50; }
+.app-shell .stat-card-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.app-shell .overview-card .stat-card-heading { margin-bottom:14px; }
+.app-shell .overview-card .stat-card-heading h3 { margin:0; }
+.app-shell .editorial-art:has(.product-slideshow) { min-width:0; align-self:stretch; padding:20px 20px 8px; }
+.app-shell .editorial-art:has(.product-slideshow) .art-orbit { display:none; }
+.app-shell .product-slideshow { position:relative; width:100%; max-width:380px; min-width:0; align-self:center; display:grid; grid-template-rows:340px 40px; }
+.app-shell .product-slideshow-stage { position:relative; width:100%; min-height:0; overflow:hidden; }
+.app-shell .product-slide { position:absolute; inset:0; display:grid; place-items:center; opacity:0; transform:translateX(35px); transition:opacity .35s ease,transform .35s ease; pointer-events:none; }
+.app-shell .product-slide.is-current { opacity:1; transform:translateX(0); }
+.app-shell .product-slideshow .product-slide img { position:absolute; inset:0; display:block; width:100%; height:100%; min-width:0; min-height:0; max-height:100%; object-fit:contain; transform:none; mix-blend-mode:normal; border-radius:8px; }
+.app-shell .product-slideshow-controls,.app-shell .product-slide-dots { display:flex; align-items:center; justify-content:center; gap:4px; }
+.app-shell .product-slideshow-controls { height:40px; }
+.app-shell .product-slide-dots button { display:grid; place-items:center; width:32px; height:40px; min-height:40px; padding:0; border:0; background:transparent; }
+.app-shell .product-slide-dots button span { width:8px; height:8px; border-radius:50%; background:#b0c6e7; }
+.app-shell .product-slide-dots button[aria-pressed="true"] span { width:20px; border-radius:6px; background:#1460db; }
+@media(max-width:760px) { .app-shell .editorial-art:has(.product-slideshow) { height:344px; padding:12px 16px 8px; } .app-shell .product-slideshow { grid-template-rows:284px 40px; } }
+@media(max-width:400px) { .app-shell .brand-logo { width:32px; height:36px; } }
+@media(prefers-reduced-motion:reduce) { .app-shell .product-slide { transition:none; transform:none; } }
 .app-shell .skip-link { color:#fff; }
 .app-shell .skip-link:not(:focus) { visibility:hidden; }
 .app-shell :is(.auth-visual .overline,.host-login-label,.seller-next-steps-grid article > span) { color:#3564a6; }
@@ -78,7 +106,7 @@ body { background:var(--canvas); color:var(--ink); }
 .app-shell :is(.buyer-stat-title,.seller-stat-label,.overview-card h3,.product-summary-card span) { color:#314d73; }
 .app-shell :is(.buyer-stat-box,.seller-stat) small { color:var(--muted); }
 .app-shell .buyer-stat-number { color:#154a96; }
-.app-shell .editorial-banner { min-height:220px; background:linear-gradient(110deg,#e6f0ff,#edf5ff); border-color:#dce9fb; border-radius:14px; }
+.app-shell .editorial-banner { min-height:220px; background:var(--showcase-background); border-color:#dce9fb; border-radius:14px; }
 .app-shell .editorial-copy { padding:28px 32px; }
 .app-shell .editorial-copy h2 { font-family:inherit; font-weight:750; font-size:clamp(23px,2.3vw,32px); margin:8px 0 12px; }
 .app-shell .editorial-copy p { color:#526e94; font-size:15px; margin-bottom:16px; }

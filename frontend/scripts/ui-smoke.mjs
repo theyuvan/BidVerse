@@ -8,8 +8,8 @@ await mkdir(".ui-check", { recursive: true });
 const browser = await chromium.launch({ headless: true });
 const room = { roomId: 5, hostId: 1, title: "The Collectors' Edit", seatLimit: 35, advanceAmount: 300, startTime: "2026-12-09T18:30:00+05:30", status: "upcoming" };
 const products = [
-    { productId: 101, auctionItemId: 11, name: "Vintage leather watch", productName: "Vintage leather watch", sellerName: "Alex Morgan", sellerId: 41, categoryId: 1, categoryName: "Watches", description: "A distinctive mechanical watch with a beautifully detailed dial and leather strap.", basePrice: 15000, currentPrice: 15750, imageUrl: `${base}/images/watch.jpeg`, status: "pending", productStatus: "pending", auctionStatus: "waiting" },
-    { productId: 102, auctionItemId: 12, name: "iPhone 15", productName: "iPhone 15", sellerName: "Alex Morgan", sellerId: 41, categoryId: 2, categoryName: "Electronics", description: "Thoughtful design. Everyday possibility.", basePrice: 45000, currentPrice: 45000, imageUrl: `${base}/images/technology.webp`, status: "approved", productStatus: "approved", auctionStatus: "waiting" }
+    { productId: 101, auctionItemId: 11, name: "Vintage leather watch", productName: "Vintage leather watch", sellerName: "Alex Morgan", sellerId: 41, categoryId: 1, categoryName: "Watches", description: "A distinctive mechanical watch with a beautifully detailed dial and leather strap.", basePrice: 15000, currentPrice: 15750, imageUrl: `${base}/images/showcase-watch.png`, status: "pending", productStatus: "pending", auctionStatus: "waiting" },
+    { productId: 102, auctionItemId: 12, name: "iPhone 15", productName: "iPhone 15", sellerName: "Alex Morgan", sellerId: 41, categoryId: 2, categoryName: "Electronics", description: "Thoughtful design. Everyday possibility.", basePrice: 45000, currentPrice: 45000, imageUrl: `${base}/images/technology.png`, status: "approved", productStatus: "approved", auctionStatus: "waiting" }
 ];
 const deal = { ...products[0], dealId: 7, roomId: 5, buyerId: 21, buyerName: "Taylor Brooks", sellerEmail: "seller@example.com", buyerEmail: "buyer@example.com", sellerPhone: "9000000000", buyerPhone: "9000000001", finalPrice: 15750, dealStatus: "pending", buyerStatus: "pending", sellerStatus: "confirmed" };
 const cases = [
@@ -48,6 +48,33 @@ async function createContext(role, viewport) {
     return context;
 }
 try {
+    for (const role of ["buyer", "seller", "host"]) {
+        const slideshowContext = await createContext(role, { width: 1440, height: 1000 });
+        const slideshowPage = await slideshowContext.newPage();
+        await slideshowPage.emulateMedia({ reducedMotion: "no-preference" });
+        await slideshowPage.goto(`${base}/${role === "host" ? "host/dashboard" : role}`);
+        const stage = slideshowPage.locator(".product-slideshow-stage");
+        await stage.waitFor();
+        assert.equal(await slideshowPage.locator(".product-slide img").count(), 3);
+        assert.equal(await slideshowPage.locator(".stat-icon svg").count(), role === "buyer" ? 3 : 4);
+        await slideshowPage.waitForFunction(() => document.querySelector(".product-slideshow-stage")?.dataset.slide === "1", undefined, { timeout: 2500 });
+        await slideshowPage.waitForFunction(() => document.querySelector(".product-slideshow-stage")?.dataset.slide === "2", undefined, { timeout: 2500 });
+        await slideshowPage.waitForFunction(() => document.querySelector(".product-slideshow-stage")?.dataset.slide === "0", undefined, { timeout: 2500 });
+        assert.equal(await slideshowPage.getByRole("button", { name: /Pause product slideshow|Play product slideshow/ }).count(), 0);
+        await stage.hover();
+        const pausedSlide = await stage.getAttribute("data-slide");
+        await slideshowPage.waitForTimeout(1700);
+        assert.equal(await stage.getAttribute("data-slide"), pausedSlide, "Hover keeps the current image still");
+        await slideshowPage.getByRole("button", { name: /^Show image 3:/ }).click();
+        assert.equal(await stage.getAttribute("data-slide"), "2");
+        await slideshowPage.getByRole("heading", { level: 1 }).click();
+        await slideshowPage.waitForFunction(() => document.querySelector(".product-slideshow-stage")?.dataset.slide === "0", undefined, { timeout: 2500 });
+        await slideshowPage.emulateMedia({ reducedMotion: "reduce" });
+        await slideshowPage.mouse.move(0, 0);
+        await slideshowPage.screenshot({ path: `.ui-check/${role}-slideshow-and-icons.png`, fullPage: true });
+        assert.ok(await slideshowPage.locator(".brand-logo").first().evaluate(img => img.complete && img.naturalWidth > 0));
+        await slideshowContext.close();
+    }
     for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
         for (const [role, path] of cases) {
             const context = await createContext(role, viewport);
@@ -68,6 +95,18 @@ try {
             if (metrics.scrollWidth > metrics.width + 1) failures.push(`${path} @${viewport.width}: horizontal overflow ${JSON.stringify(metrics)}`);
             if (metrics.brokenImages.length) failures.push(`${path}: broken images ${metrics.brokenImages}`);
             if (metrics.smallControls.length) failures.push(`${path}: small controls ${metrics.smallControls}`);
+            if (["/buyer", "/seller", "/host/dashboard"].includes(path)) {
+                const fitted = await page.locator(".product-slide img").evaluateAll(images => images.every(image => {
+                    const stage = image.closest(".product-slideshow-stage").getBoundingClientRect();
+                    const bounds = image.getBoundingClientRect();
+                    return bounds.width <= stage.width + 1 && bounds.height <= stage.height + 1 && getComputedStyle(image).objectFit === "contain";
+                }));
+                assert.ok(fitted, `${path}: slideshow images fit inside their stage without cropping`);
+                const sizes = await page.locator(".product-slide img").evaluateAll(images => images.map(image => ({ width: image.clientWidth, height: image.clientHeight })));
+                assert.equal(sizes.length, 3);
+                assert.ok(sizes.every(size => size.width === sizes[0].width && size.height === sizes[0].height), `${path}: every product has the same image frame`);
+                assert.ok(sizes[0].height >= (viewport.width > 760 ? 340 : 284), `${path}: product frame is enlarged`);
+            }
             if (["/buyer", "/seller", "/host/dashboard"].includes(path) && viewport.width === 1440) {
                 const card = page.locator("a.room-card, a.seller-action-card, .host-room-tile").first();
                 const normalBorder = await card.evaluate(el => getComputedStyle(el).borderTopColor);
@@ -86,10 +125,9 @@ try {
                 for (const card of await cards.all()) {
                     await card.hover();
                     const lightBackground = await card.evaluate(element => {
-                        const rgb = getComputedStyle(element).backgroundColor.match(/[\d.]+/g).map(Number);
-                        return rgb.slice(0, 3).every(channel => channel >= 235);
+                        return getComputedStyle(element).backgroundColor === "rgb(234, 242, 255)";
                     });
-                    assert.ok(lightBackground, `${path}: card hover must stay light`);
+                    assert.ok(lightBackground, `${path}: card hover must match the pale-blue showcase background`);
                 }
                 const won = page.locator(".won-deal-card").first();
                 if (await won.count()) {
@@ -353,7 +391,7 @@ try {
 
     const uploadContext = await createContext("seller", { width: 1440, height: 1000 });
     const uploadPage = await uploadContext.newPage();
-    const photo = await readFile("public/images/watch.jpeg");
+    const photo = await readFile("public/images/showcase-watch.png");
     const publicImage = "https://storage.example.test/storage/v1/object/public/Products/seller-21/photo.jpg";
     let uploadCount = 0;
     let productCount = 0;

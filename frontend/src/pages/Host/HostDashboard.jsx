@@ -4,6 +4,7 @@ import { getRooms } from "../../services/hostService";
 import "./HostDashboard.css";
 import Showcase from "../../components/Showcase";
 import HostRoomCard from "../../components/HostRoomCard";
+import StatIcon from "../../components/StatIcon";
 
 function HostDashboard(){
     const [rooms, setRooms] = useState([]);
@@ -33,20 +34,20 @@ function HostDashboard(){
             <Showcase role="host" />
             <section className="dashboard-overview">
                 <div className="overview-card">
-                    <h3>Total Rooms</h3>
+                    <div className="stat-card-heading"><h3>Total Rooms</h3><StatIcon type="rooms" /></div>
                     <strong>{rooms.length}</strong>
                 </div>
 
                 <div className="overview-card">
-                    <h3>Upcoming rooms</h3>
+                    <div className="stat-card-heading"><h3>Upcoming rooms</h3><StatIcon type="upcoming" /></div>
                     <strong>{rooms.filter((room) => room.status === "upcoming").length}</strong>
                 </div>
                 <div className="overview-card">
-                    <h3>Live rooms</h3>
+                    <div className="stat-card-heading"><h3>Live rooms</h3><StatIcon type="live" /></div>
                     <strong>{rooms.filter((room) => room.status === "live").length}</strong>
                 </div>
                 <div className="overview-card">
-                    <h3>Completed rooms</h3>
+                    <div className="stat-card-heading"><h3>Completed rooms</h3><StatIcon type="completed" /></div>
                     <strong>{rooms.filter((room) => room.status === "completed").length}</strong>
                 </div>
             </section>

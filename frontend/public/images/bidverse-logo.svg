@@ -1,12 +1,7 @@
-<?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
- "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
-<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
- width="379.000000pt" height="404.000000pt" viewBox="0 0 379.000000 404.000000"
- preserveAspectRatio="xMidYMid meet">
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="30 20 325 365">
+  <title>Bidverse B and auction gavel</title>
 <g transform="translate(0.000000,404.000000) scale(0.100000,-0.100000)"
-fill="#000000" stroke="none">
+fill="#1b2840" stroke="none">
 <path d="M440 2519 l0 -1241 38 23 c66 41 856 556 881 575 2 2 -35 63 -83 135
 -47 72 -86 137 -86 143 0 15 766 528 789 530 20 1 521 -741 518 -768 -1 -13
 -124 -101 -387 -278 -211 -142 -391 -258 -400 -258 -8 0 -53 57 -99 126 -46
@@ -24,4 +19,5 @@ l-192 -140 -1 -317 0 -318 320 0 320 0 0 70 c0 39 6 86 14 104 18 44 62 84
 -37 -19 -59 -16 -36 -59 -68 -426 -314 l-408 -273 -49 4 c-41 4 -57 12 -86 42
 -34 34 -37 41 -37 95 0 43 5 64 19 79 26 30 812 553 844 562 29 9 53 5 93 -16z"/>
 </g>
+  <path d="M108 379v-8c0-13 8-21 22-21h119c14 0 21 8 21 21v8Z" fill="#d7bd77"/>
 </svg>

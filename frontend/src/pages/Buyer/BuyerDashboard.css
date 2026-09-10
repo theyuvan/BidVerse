@@ -138,9 +138,7 @@
     gap: 5px;
     margin: 0 0 42px;
     padding: 5px;
-    border: 1px solid #2b2f3d;
-    border-radius: 13px;
-    background: #171923;
+    background: #f9fafd;
 }
 
 .buyer-tabs button {

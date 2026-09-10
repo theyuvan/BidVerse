@@ -8,6 +8,7 @@ import {
 } from "../../services/buyerService";
 import "./BuyerDashboard.css";
 import Showcase from "../../components/Showcase";
+import StatIcon from "../../components/StatIcon";
 import useLiveResource from "../../hooks/useLiveResource";
 import { watchRoomCatalogue } from "../../services/auctionSocket";
 
@@ -232,17 +233,17 @@ function BuyerDashboard({ roomsOnly = false }) {
             <Showcase role="buyer" />
             <section className="buyer-stats" aria-label="Buyer activity summary">
                 <article className="buyer-stat-box bookings-stat">
-                    <div><span className="buyer-stat-title">Bookings</span><span className="stat-index">01</span></div>
+                    <div><span className="buyer-stat-title">Bookings</span><StatIcon type="bookings" /></div>
                     <strong className="buyer-stat-number">{bookingState.loading ? "…" : bookings.length}</strong>
                     <small>Total rooms reserved</small>
                 </article>
                 <article className="buyer-stat-box live-stat">
-                    <div><span className="buyer-stat-title">Live</span><span className="stat-index">02</span></div>
+                    <div><span className="buyer-stat-title">Live</span><StatIcon type="live" /></div>
                     <strong className="buyer-stat-number">{bookingState.loading ? "…" : liveRooms.length}</strong>
                     <small>Auctions happening now</small>
                 </article>
                 <article className="buyer-stat-box won-stat">
-                    <div><span className="buyer-stat-title">Deals Won</span><span className="stat-index">03</span></div>
+                    <div><span className="buyer-stat-title">Deals Won</span><StatIcon type="won" /></div>
                     <strong className="buyer-stat-number">{dealState.loading ? "…" : wonDeals.length}</strong>
                     <small>Products you have won</small>
                 </article>

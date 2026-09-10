@@ -4,6 +4,7 @@ import { getSellerProductHistory } from "../../services/sellerService";
 import { getSellerProfile } from "../../services/sellerSession";
 import "./Seller.css";
 import Showcase from "../../components/Showcase";
+import StatIcon from "../../components/StatIcon";
 
 function SellerDashboard() {
     const [error, setError] = useState("");
@@ -36,10 +37,10 @@ function SellerDashboard() {
             <Showcase role="seller" />
             {error && <p className="form-error" role="alert">{error}</p>}
             <section className="seller-stat-grid" aria-label="Seller summary">
-                <div className="seller-stat"><span className="seller-stat-label">Total listings</span><strong>{products.length}</strong><small>Products in your workspace</small></div>
-                <div className="seller-stat"><span className="seller-stat-label">Active auctions</span><strong>{products.filter((product) => ["active", "live", "running"].includes(product.auctionStatus?.toLowerCase())).length}</strong><small>Currently accepting bids</small></div>
-                <div className="seller-stat"><span className="seller-stat-label">Pending review</span><strong>{products.filter((product) => product.productStatus?.toLowerCase() === "pending").length}</strong><small>Awaiting host verification</small></div>
-                <div className="seller-stat"><span className="seller-stat-label">Completed sales</span><strong>{products.filter((product) => ["sold", "completed"].includes(product.dealStatus?.toLowerCase())).length}</strong><small>Successful deal records</small></div>
+                <div className="seller-stat"><div className="stat-card-heading"><span className="seller-stat-label">Total listings</span><StatIcon type="listings" /></div><strong>{products.length}</strong><small>Products in your workspace</small></div>
+                <div className="seller-stat"><div className="stat-card-heading"><span className="seller-stat-label">Active auctions</span><StatIcon type="live" /></div><strong>{products.filter((product) => ["active", "live", "running"].includes(product.auctionStatus?.toLowerCase())).length}</strong><small>Currently accepting bids</small></div>
+                <div className="seller-stat"><div className="stat-card-heading"><span className="seller-stat-label">Pending review</span><StatIcon type="pending" /></div><strong>{products.filter((product) => product.productStatus?.toLowerCase() === "pending").length}</strong><small>Awaiting host verification</small></div>
+                <div className="seller-stat"><div className="stat-card-heading"><span className="seller-stat-label">Completed sales</span><StatIcon type="won" /></div><strong>{products.filter((product) => ["sold", "completed"].includes(product.dealStatus?.toLowerCase())).length}</strong><small>Successful deal records</small></div>
             </section>
             <section className="seller-action-grid">
                 <Link className="seller-action-card" to="/seller/list-product">

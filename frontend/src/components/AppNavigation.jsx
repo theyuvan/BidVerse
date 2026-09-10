@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { signOut, getAuthUser } from "../services/authSession";
+import Brand from "./Brand";
 
 const navigation = {
     buyer: [["/buyer", "Overview"], ["/buyer/rooms", "Auction rooms"], ["/buyer/deals", "My deals"]],
@@ -15,9 +16,7 @@ export default function AppNavigation() {
     const links = user ? navigation[role] : null;
     const [open, setOpen] = useState(false);
     return <header className="app-navigation">
-        <Link className="brand" to={links ? navigation[role][0][0] : "/"} aria-label="Bidverse home">
-            <span className="brand-mark" aria-hidden="true">b.</span> bidverse<span className="brand-period">.</span>
-        </Link>
+        <Brand to={links ? navigation[role][0][0] : "/"} />
         <button className="menu-toggle" aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen(!open)}>Menu {open ? "−" : "+"}</button>
         <nav id="main-navigation" className={open ? "app-nav-links is-open" : "app-nav-links"} aria-label="Main navigation">
             {links ? links.map(([to, label]) => <NavLink key={to} to={to} end
