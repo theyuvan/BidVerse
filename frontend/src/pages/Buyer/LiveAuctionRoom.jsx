@@ -204,7 +204,7 @@ function LiveAuctionRoom() {
         catch (socketError) { setError(socketError.message); }
     };
 
-    const placeBid = (mode) => {
+    const placeBid = (mode, incrementPercent) => {
         setError("");
         setNotice("");
 
@@ -219,6 +219,7 @@ function LiveAuctionRoom() {
                 auctionItemId: auction.auctionItemId,
                 buyerId,
                 mode,
+                ...(mode === "AUTO" ? { incrementPercent } : {}),
                 amount: mode === "MANUAL" ? amount : null
             });
             if (mode === "MANUAL") setManualAmount("");
@@ -368,14 +369,12 @@ function LiveAuctionRoom() {
                     </div>
 
                     <div className="bid-actions">
-                        <button
-                            className="quick-bid"
-                            type="button"
-                            disabled={!biddingIsOpen}
-                            onClick={() => placeBid("AUTO")}
-                        >
-                            Quick bid +5%
-                        </button>
+                        <div className="quick-bid-options" role="group" aria-label="Quick bid presets">
+                            {[2, 5, 10].map(percent => <button className="quick-bid" type="button" key={percent}
+                                aria-label={`Quick bid +${percent}%`} disabled={!biddingIsOpen}
+                                onClick={() => placeBid("AUTO", percent)}>+{percent}%</button>)}
+                        </div>
+                        <p className="quick-bid-help">Quick bids add 2%, 5%, or 10% of the starting price to the current bid.</p>
 
                         <div className="manual-bid">
                             <label htmlFor="manual-amount">Your amount</label>

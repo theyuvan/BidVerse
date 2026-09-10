@@ -1,0 +1,21 @@
+.app-shell :is(.host-product-photo,.seller-product-image,.deal-list-image,.buyer-deal-card-image,.buyer-deal-product-image,
+    .seller-image-preview,.deal-product-image,.current-product-image,.won-deal-image-placeholder) {
+    background:transparent;
+    padding:0;
+}
+.app-shell :is(.host-product-photo,.seller-product-image,.deal-list-image,.buyer-deal-card-image,.buyer-deal-product-image) img,
+.app-shell :is(.seller-image-preview,.deal-product-image,.current-product-image),
+.app-shell .auction-products article img,
+.app-shell :is(.buyer-product-card,.assigned-product,.auction-products,.result-body,.won-deal-card) img {
+    background:transparent;
+    padding:0;
+    object-fit:contain;
+}
+.app-shell .host-product-photo { grid-template-rows:minmax(0,1fr); grid-template-columns:minmax(0,1fr); }
+.app-shell .host-product-photo img { min-width:0; min-height:0; max-width:100%; max-height:100%; display:block; }
+.app-shell .host-photo-placeholder { color:var(--muted); font-size:16px; }
+.app-shell .host-photo-placeholder strong { font-size:40px; }
+.app-shell .lot-visual .host-product-photo { height:clamp(300px,48vh,460px); }
+@media(max-width:760px) {
+    .app-shell .lot-visual .host-product-photo { height:280px; }
+}

@@ -23,10 +23,15 @@
     border-color:#4ade8060;
     background:#22c55e20;
 }
+.app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.upcoming) {
+    color:#71c3f5;
+    border-color:#71c3f560;
+    background:#71c3f520;
+}
 .app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.completed,.closed) {
-    color:#c1d4ef;
-    border-color:#8da9cd60;
-    background:#7c9bc026;
+    color:#c4b1e8;
+    border-color:#c4b1e860;
+    background:#c4b1e820;
 }
 .app-shell :is(.host-status,.buyer-room-status,.room-detail-status,.product-status,.room-status,.auction-status):is(.rejected,.cancelled,.canceled) {
     color:#ffa0ad;
@@ -35,3 +40,27 @@
 }
 .app-shell .waiting-countdown { color:#ffcb75; background:#f59e0b22; border:1px solid #edaa455e; }
 .app-shell .waiting-dot { background:#f5af43; box-shadow:0 0 0 8px #f59e0b20; }
+
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status] {
+    --filter-rgb:244,119,151;
+    color:rgb(var(--filter-rgb));
+    background:rgba(var(--filter-rgb),.08);
+    border:1px solid rgba(var(--filter-rgb),.4);
+    box-shadow:none;
+}
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status="upcoming"] { --filter-rgb:113,195,245; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button:is([data-status="waiting"],[data-status="pending"]) { --filter-rgb:255,194,102; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button:is([data-status="live"],[data-status="approved"]) { --filter-rgb:128,225,164; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status="completed"] { --filter-rgb:196,177,232; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status="booked"] { --filter-rgb:159,180,209; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status="rejected"] { --filter-rgb:255,139,148; }
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status]:is(.active,[aria-pressed="true"]) {
+    color:#101419;
+    background:rgb(var(--filter-rgb));
+    border-color:rgb(var(--filter-rgb));
+    box-shadow:0 0 0 2px rgba(var(--filter-rgb),.15);
+}
+.app-shell :is(.room-filters,.product-filters,.booking-tabs) button[data-status]:hover {
+    border-color:rgb(var(--filter-rgb));
+    box-shadow:0 0 0 2px rgba(var(--filter-rgb),.18);
+}

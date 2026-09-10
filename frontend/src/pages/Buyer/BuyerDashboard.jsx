@@ -220,6 +220,8 @@ function BuyerDashboard({ roomsOnly = false }) {
                             key={tab}
                             type="button"
                             className={activeTab === tab ? "active" : ""}
+                            data-status={tab}
+                            aria-pressed={activeTab === tab}
                             onClick={() => setActiveTab(tab)}
                         >
                             {tab[0].toUpperCase() + tab.slice(1)}

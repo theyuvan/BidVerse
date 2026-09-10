@@ -77,6 +77,13 @@ try {
                 await focusTarget.evaluate(el => el.blur());
             }
             assert.equal(await page.locator("footer").count(), 1);
+            if (["/host/rooms", "/host/products", "/buyer/rooms"].includes(path)) {
+                const colors = await page.locator("button[data-status]").evaluateAll(buttons => buttons.map(button => getComputedStyle(button).getPropertyValue("--filter-rgb").trim()));
+                assert.ok(colors.length >= 3);
+                assert.equal(new Set(colors).size, colors.length, "Status filters have distinct colors");
+            }
+            const frames = await page.locator(".host-product-photo, .buyer-deal-product-image, .seller-product-image").evaluateAll(elements => elements.map(el => ({ background: getComputedStyle(el).backgroundColor, padding: getComputedStyle(el).padding })));
+            assert.ok(frames.every(frame => frame.background === "rgba(0, 0, 0, 0)" && frame.padding === "0px"), "Product frames are transparent without white padding");
             if (path === "/host/rooms") {
                 const sizes = await page.locator(".host-room-tile").evaluateAll(cards => cards.map(card => ({
                     width: card.getBoundingClientRect().width, height: card.getBoundingClientRect().height,
@@ -116,6 +123,7 @@ try {
     const page = await context.newPage();
     let sendUpdate;
     let nextPayload;
+    const bidPayloads = [];
     await page.routeWebSocket("**/ws", ws => {
         const subscriptions = new Map();
         ws.onMessage(message => {
@@ -132,11 +140,53 @@ try {
             if (frame.startsWith("SEND") && header("destination") === "/app/room/5/next") {
                 nextPayload = JSON.parse(frame.split("\n\n")[1].replaceAll("\0", ""));
             }
+            if (frame.startsWith("SEND") && header("destination") === "/app/room/5/bid") {
+                bidPayloads.push(JSON.parse(frame.split("\n\n")[1].replaceAll("\0", "")));
+            }
         });
     });
     await page.goto(`${base}/buyer/rooms/5/live`);
     for (let i = 0; i < 30 && !sendUpdate; i++) await page.waitForTimeout(100);
     assert.ok(sendUpdate, "Auction socket connected");
+    const live = { roomId: 5, auctionItemId: 11, productName: products[0].name, currentPrice: 15750, roomStatus: "live", itemStatus: "live", eventType: "BID_UPDATE", highestBidderId: 22, secondsRemaining: 20 };
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport);
+        sendUpdate(live);
+        await page.locator(".quick-bid").first().waitFor();
+        await page.evaluate(() => scrollTo(0, 0));
+        await page.waitForTimeout(100);
+        const layout = await page.evaluate(() => {
+            const rect = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
+            return { image: rect(".lot-visual"), panel: rect(".lot-bid-panel"), timer: rect(".auction-timer"), manual: rect(".manual-bid"), width: document.documentElement.scrollWidth };
+        });
+        assert.ok(layout.width <= viewport.width, "Live auction does not overflow horizontally");
+        assert.ok(layout.timer.bottom <= viewport.height && layout.manual.bottom <= viewport.height, `Timer and all bid controls visible at ${viewport.width}: ${JSON.stringify(layout)}`);
+        assert.ok(viewport.width > 760 ? layout.image.right <= layout.panel.x : layout.panel.bottom <= layout.image.y, "Desktop image is left; mobile bidding controls come first");
+        const photo = await page.locator(".lot-visual .host-product-photo img").evaluate(img => {
+            const frame = img.parentElement.getBoundingClientRect(), bounds = img.getBoundingClientRect();
+            return { fits: bounds.height <= frame.height && bounds.width <= frame.width, fit: getComputedStyle(img).objectFit, padding: getComputedStyle(img).padding };
+        });
+        assert.ok(photo.fits && photo.fit === "contain" && photo.padding === "0px", "Full product photo fits without cropping or artificial padding");
+        assert.ok(await page.locator(".auction-products article img").evaluateAll(images => images.every(img => getComputedStyle(img).backgroundColor === "rgba(0, 0, 0, 0)")), "Auction thumbnails have transparent backgrounds");
+        await page.screenshot({ path: `.ui-check/auction-live-${viewport.width}.png`, fullPage: true });
+    }
+    for (const percent of [2, 5, 10]) {
+        await page.getByRole("button", { name: `Quick bid +${percent}%`, exact: true }).click();
+    }
+    await page.waitForTimeout(100);
+    assert.deepEqual(bidPayloads.map(payload => payload.incrementPercent), [2, 5, 10]);
+    assert.ok(bidPayloads.every(payload => payload.auctionItemId === 11 && payload.buyerId === 21 && payload.mode === "AUTO"));
+    await page.locator("#manual-amount").fill("17000");
+    await page.waitForTimeout(1100);
+    assert.equal(await page.locator("#manual-amount").inputValue(), "17000", "Countdown preserves manual input");
+    await page.getByRole("button", { name: "Place bid", exact: true }).click();
+    await page.waitForTimeout(100);
+    assert.equal(bidPayloads.at(-1).amount, 17000);
+    assert.equal(bidPayloads.at(-1).mode, "MANUAL");
+    sendUpdate({ ...live, secondsRemaining: 0 });
+    await page.waitForTimeout(100);
+    for (const button of await page.locator(".bid-actions button").all()) assert.ok(await button.isDisabled(), "Bids disabled after deadline");
+    await page.setViewportSize({ width: 1440, height: 1000 });
     const result = { roomId: 5, auctionItemId: 11, productName: products[0].name, currentPrice: 15750, roomStatus: "live", itemStatus: "sold", eventType: "ITEM_RESOLVED", highestBidderId: 21, winningBuyerName: "Taylor Brooks", nextProductId: 102, nextProductName: products[1].name, participantCount: 2, readyBuyerIds: [], intermissionEndsAt: new Date(Date.now() + 15000).toISOString() };
     sendUpdate(result);
     await page.getByRole("heading", { name: "This one is yours." }).waitFor();

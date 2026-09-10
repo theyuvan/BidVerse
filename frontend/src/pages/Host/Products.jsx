@@ -26,7 +26,7 @@ export default function Products() {
     return <main className="host-page products-page">
         <header className="page-header"><div><span className="overline">CURATE THE NEXT AUCTION</span><h1>Product collection</h1><p>Review the details. Approve the pieces that are ready for bidding.</p></div></header>
         <div className="host-collection-toolbar"><div className="product-filters" aria-label="Product status filters">
-            {["all", "pending", "approved", "rejected"].map(status => <button key={status} type="button" className={filter === status ? "active" : ""} aria-pressed={filter === status} onClick={() => setFilter(status)}>{status[0].toUpperCase() + status.slice(1)}</button>)}
+            {["all", "pending", "approved", "rejected"].map(status => <button key={status} type="button" data-status={status} className={filter === status ? "active" : ""} aria-pressed={filter === status} onClick={() => setFilter(status)}>{status[0].toUpperCase() + status.slice(1)}</button>)}
         </div><input aria-label="Search products" type="search" placeholder="Search products or sellers" value={query} onChange={event => setQuery(event.target.value)} /></div>
         {error && <p className="form-error" role="alert">{error}</p>}
         {loading ? <p className="empty-state">Loading products…</p> : !visible.length ? <p className="empty-state">No products match this view.</p>

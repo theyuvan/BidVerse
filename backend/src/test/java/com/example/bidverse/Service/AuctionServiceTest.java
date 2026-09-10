@@ -18,6 +18,8 @@ import com.example.bidverse.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -171,6 +173,50 @@ class AuctionServiceTest {
                 bidTime.capture(), deadline.capture());
         assertEquals(20, Duration.between(bidTime.getValue(), deadline.getValue()).getSeconds());
         verify(bidRepository).upsertBid(11L, 21L, new BigDecimal("105.00"), bidTime.getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {2, 5, 10})
+    void quickBidAddsSelectedPercentageOfStartingPrice(int percent) {
+        auction_item item = liveItem(new BigDecimal("200.00"), OffsetDateTime.now().plusSeconds(10));
+        BigDecimal expected = new BigDecimal("200.00").add(BigDecimal.valueOf(percent));
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
+        when(auctionItemRepo.acceptBidAndResetDeadline(
+                eq(11L), eq(new BigDecimal("200.00")), eq(expected), any(), any())).thenReturn(1);
+
+        auctionService.placeBid(1L, new BidMessage(11L, 21L, "AUTO", null, percent));
+
+        verify(bidRepository).upsertBid(eq(11L), eq(21L), eq(expected), any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 0, 3, 100})
+    void unsupportedQuickBidPercentageIsRejected(int percent) {
+        auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(10));
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
+
+        auctionService.placeBid(1L, new BidMessage(11L, 21L, "AUTO", null, percent));
+
+        verify(auctionItemRepo, never()).acceptBidAndResetDeadline(any(), any(), any(), any(), any());
+        verify(bidRepository, never()).upsertBid(any(), any(), any(), any());
+        verify(messagingTemplate).convertAndSend(eq("/topic/room/1/buyer/21"),
+                eq(new BidError(11L, "Choose a quick bid of 2%, 5%, or 10%")));
+    }
+
+    @Test
+    void quickBidAlwaysRaisesPriceByAtLeastOnePaise() {
+        auction_item item = liveItem(new BigDecimal("0.01"), OffsetDateTime.now().plusSeconds(10));
+        item.setStartPrice(new BigDecimal("0.01"));
+        when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
+        when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
+        when(auctionItemRepo.acceptBidAndResetDeadline(
+                eq(11L), eq(new BigDecimal("0.01")), eq(new BigDecimal("0.02")), any(), any())).thenReturn(1);
+
+        auctionService.placeBid(1L, new BidMessage(11L, 21L, "AUTO", null, 2));
+
+        verify(bidRepository).upsertBid(eq(11L), eq(21L), eq(new BigDecimal("0.02")), any());
     }
 
     @Test

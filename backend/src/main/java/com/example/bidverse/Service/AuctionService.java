@@ -54,7 +54,7 @@ public class AuctionService {
     private static final long WAITING_ROOM_SECONDS = 90;
     private static final long SOLD_RESULT_SECONDS = 15;
     private static final long UNSOLD_RESULT_SECONDS = 20;
-    private static final BigDecimal AUTO_BID_INCREMENT_PERCENT = new BigDecimal("0.05");
+    private static final Set<Integer> QUICK_BID_PERCENTAGES = Set.of(2, 5, 10);
     private static final List<String> AUTO_STARTABLE_ROOM_STATUSES = List.of("upcoming", "open");
 
     private final AuctionItemRepository auctionItemRepo;
@@ -274,9 +274,19 @@ public class AuctionService {
         BigDecimal targetAmount;
 
         if (isAutoMode(message.mode())) {
-            BigDecimal increment = item.getStartPrice().multiply(AUTO_BID_INCREMENT_PERCENT);
+            int percent = message.incrementPercent() == null ? 5 : message.incrementPercent();
+            if (!QUICK_BID_PERCENTAGES.contains(percent)) {
+                sendError(roomId, buyerId, auctionItemId, "Choose a quick bid of 2%, 5%, or 10%");
+                return;
+            }
+            BigDecimal increment = item.getStartPrice().multiply(BigDecimal.valueOf(percent)).movePointLeft(2)
+                    .setScale(2, RoundingMode.HALF_UP).max(new BigDecimal("0.01"));
             targetAmount = currentPrice.add(increment).setScale(2, RoundingMode.HALF_UP);
         } else {
+            if (!"MANUAL".equalsIgnoreCase(message.mode())) {
+                sendError(roomId, buyerId, auctionItemId, "Choose AUTO or MANUAL bidding");
+                return;
+            }
             if (message.amount() == null) {
                 sendError(roomId, buyerId, auctionItemId, "amount is required for a manual bid");
                 return;

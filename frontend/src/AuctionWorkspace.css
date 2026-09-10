@@ -50,6 +50,9 @@
 .app-shell .lot-bid-panel .manual-bid input { width:100%; min-width:0; font-size:17px; }
 .app-shell .lot-bid-panel :is(.auction-notice,.auction-error) { margin-top:14px; font-size:15px; overflow-wrap:anywhere; }
 .bid-availability { color:var(--muted); font-size:14px; }
+.quick-bid-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.app-shell .lot-bid-panel .quick-bid { padding:12px 8px; font-size:19px; }
+.quick-bid-help { color:var(--muted); font-size:13px; line-height:1.5; margin:-8px 0 0; }
 .app-shell .live-auction-page .auction-products { max-width:none; }
 .app-shell .auction-product-list article { gap:12px; }
 .app-shell .auction-product-list article div { min-width:0; }
