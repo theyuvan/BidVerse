@@ -91,7 +91,7 @@ class AuctionServiceTest {
     }
 
     @Test
-    void newlyActivatedItemGetsTwentySecondDeadline() {
+    void newlyActivatedItemGetsFifteenSecondDeadline() {
         auction_item item = liveItem(new BigDecimal("100.00"), null);
         item.setStatus("waiting");
         when(auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(1L)).thenReturn(List.of(item));
@@ -100,12 +100,27 @@ class AuctionServiceTest {
 
         com.example.bidverse.Entity.Room room = new com.example.bidverse.Entity.Room();
         room.setRoomId(1L);
+        room.setStatus("live");
         auctionService.activateFirstItem(room);
 
         ArgumentCaptor<OffsetDateTime> startedAt = ArgumentCaptor.forClass(OffsetDateTime.class);
         ArgumentCaptor<OffsetDateTime> endedAt = ArgumentCaptor.forClass(OffsetDateTime.class);
         verify(auctionItemRepo).activateIfWaiting(eq(11L), startedAt.capture(), endedAt.capture());
-        assertEquals(20, Duration.between(startedAt.getValue(), endedAt.getValue()).getSeconds());
+        assertEquals(15, Duration.between(startedAt.getValue(), endedAt.getValue()).getSeconds());
+    }
+
+    @Test
+    void waitingRoomCannotActivateOrExposeAnAuctionItem() {
+        Room room = room("waiting");
+        room.setWaitingStartedAt(OffsetDateTime.now());
+        when(roomRepo.findById(1L)).thenReturn(Optional.of(room));
+        auctionService.activateFirstItem(room);
+        var update = auctionService.getCurrentState(1L);
+        assertEquals("waiting", update.roomStatus());
+        assertEquals(null, update.auctionItemId());
+        assertTrue(update.waitingSecondsRemaining() >= 18 && update.waitingSecondsRemaining() <= 20);
+        verify(auctionItemRepo, never()).activateIfWaiting(any(), any(), any());
+        verify(auctionItemRepo, never()).findByRoomIdAndStatus(any(), any());
     }
 
     @Test
@@ -123,6 +138,20 @@ class AuctionServiceTest {
         assertEquals("waiting", startedRoom.getStatus());
         verify(roomRepo).beginWaitingIfNotStarted(eq(1L), any());
         verify(auctionItemRepo, never()).activateIfWaiting(any(), any(), any());
+    }
+
+    @Test
+    void waitingRoomsOpenAfterTwentySecondsButNotBefore() {
+        Room earlyRoom = room("waiting");
+        earlyRoom.setWaitingStartedAt(OffsetDateTime.now().minusSeconds(10));
+        Room readyRoom = room("waiting");
+        readyRoom.setRoomId(2L);
+        readyRoom.setWaitingStartedAt(OffsetDateTime.now().minusSeconds(21));
+        when(roomRepo.findByStatus("waiting")).thenReturn(List.of(earlyRoom, readyRoom));
+        when(self.getObject()).thenReturn(auctionService);
+        auctionService.openWaitingRooms();
+        verify(roomRepo, never()).goLiveIfWaiting(eq(1L), any(), any());
+        verify(roomRepo).goLiveIfWaiting(eq(2L), any(), any());
     }
 
     @Test
@@ -151,12 +180,16 @@ class AuctionServiceTest {
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
 
         auctionService.openBidding(1L);
+        ArgumentCaptor<OffsetDateTime> cutoff = ArgumentCaptor.forClass(OffsetDateTime.class);
+        ArgumentCaptor<OffsetDateTime> now = ArgumentCaptor.forClass(OffsetDateTime.class);
+        verify(roomRepo).goLiveIfWaiting(eq(1L), cutoff.capture(), now.capture());
+        assertEquals(20, Duration.between(cutoff.getValue(), now.getValue()).getSeconds());
 
         verify(auctionItemRepo).activateIfWaiting(eq(11L), any(), any());
     }
 
     @Test
-    void joinedBuyerBidIsAcceptedAndResetsDeadlineToTwentySeconds() {
+    void joinedBuyerBidIsAcceptedAndResetsDeadlineToFifteenSeconds() {
         auction_item item = liveItem(new BigDecimal("100.00"), OffsetDateTime.now().plusSeconds(5));
         when(auctionItemRepo.findById(11L)).thenReturn(Optional.of(item));
         when(roomSeatRepo.existsByRoomIdAndBuyerIdAndAttendanceStatus(1L, 21L, "joined")).thenReturn(true);
@@ -171,7 +204,7 @@ class AuctionServiceTest {
         verify(auctionItemRepo).acceptBidAndResetDeadline(
                 eq(11L), eq(new BigDecimal("100.00")), eq(new BigDecimal("105.00")),
                 bidTime.capture(), deadline.capture());
-        assertEquals(20, Duration.between(bidTime.getValue(), deadline.getValue()).getSeconds());
+        assertEquals(15, Duration.between(bidTime.getValue(), deadline.getValue()).getSeconds());
         verify(bidRepository).upsertBid(11L, 21L, new BigDecimal("105.00"), bidTime.getValue());
     }
 

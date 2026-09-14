@@ -124,12 +124,26 @@ body { background:var(--canvas); color:var(--ink); }
 .app-shell main :is(.seller-product-meta dd,.deal-facts dd,.buyer-winning-price strong,.buyer-contact-list strong,.buyer-contact-list a,
     .buyer-deal-card-footer strong,.seller-product-price strong,.auction-card-details strong,.auction-start-time strong,.result-countdown strong,
     .host-room-facts dd,.booking-card-info p,.room-summary strong,.buyer-deal-product-copy h2) { color:var(--ink); }
+.app-shell main.buyer-room-details-page .room-detail-hero { border-color:var(--line); }
+.app-shell main.buyer-room-details-page .room-summary { background:var(--surface); border-color:var(--line); }
+.app-shell main.buyer-room-details-page .room-summary > div { border-color:var(--line); padding:22px 24px; gap:10px; }
+.app-shell main.buyer-room-details-page .room-summary strong { color:#435a77; font-size:13px; line-height:1.5; letter-spacing:.06em; }
+.app-shell main.buyer-room-details-page .room-summary span { color:var(--ink); font-size:20px; line-height:1.5; font-weight:700; }
+.app-shell main.buyer-room-details-page .booking-section { background:var(--showcase-background); border-color:#c6dafa; box-shadow:0 3px 14px #254c7c09; }
+.app-shell main.buyer-room-details-page .booking-section h2 { color:var(--ink); line-height:1.25; }
+.app-shell main.buyer-room-details-page .booking-section p { color:#435a77; font-size:17px; line-height:1.6; }
+.app-shell main.buyer-room-details-page .room-detail-eyebrow { font-size:13px; line-height:1.5; }
+.app-shell main.buyer-room-details-page .assigned-product { border-color:var(--line); }
+.app-shell main.buyer-room-details-page .assigned-product:is(:hover,:focus-within) { border-color:#82a9e2; }
+.app-shell main.buyer-room-details-page .booking-toast :is(strong,p,.booking-toast-close) { color:inherit; }
 .app-shell main :is(.buyer-deal-seller,.buyer-deal-product-copy > p,.buyer-seller-panel > p,.buyer-decision-copy p,.buyer-deals-message p,
     .buyer-contact-list span,.buyer-deal-progress > div > span:first-child,.buyer-winning-price span,.buyer-deal-card-top > span:first-child,
     .buyer-deal-card-footer span,.buyer-deal-details-header p,.buyer-deals-header p,.seller-product-description,.host-product-description) { color:var(--muted); }
 .app-shell main :is(.buyer-deal-product-panel,.buyer-deal-progress,.buyer-decision-panel,.buyer-winning-price,.buyer-deal-card-footer,
     .host-room-date,.host-review-note,.result-footer) { border-color:var(--line); }
 .app-shell .host-room-symbol { color:var(--accent); }
+.app-shell .host-manual-start { display:flex; flex-wrap:wrap; gap:10px; }
+.app-shell .host-manual-start p { width:100%; margin:0; color:var(--muted); line-height:1.6; }
 .app-shell main :is(.room-filters,.product-filters,.booking-tabs,.buyer-deal-filters) :is(button,button[data-status]),
 .app-shell .seller-products-page .product-filters button[data-status] {
     --filter-rgb:20,96,219;

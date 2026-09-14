@@ -39,7 +39,7 @@ export default function CreateRoom() {
             <section className="host-builder-panel"><div className="host-step-heading"><span>01</span><div><h2>Room essentials</h2><p>A clear title and schedule help buyers plan ahead.</p></div></div>
                 <div className="host-builder-fields">
                     <label>Room title<input name="title" value={form.title} onChange={change} required maxLength={200} disabled={saving} placeholder="e.g. The weekend collectors’ edit" /></label>
-                    <label>Start time<input type="datetime-local" name="startTime" value={form.startTime} onChange={change} required disabled={saving} /><small>The room opens automatically, then bidding starts after 90 seconds.</small></label>
+                    <label>Start time<input type="datetime-local" name="startTime" value={form.startTime} onChange={change} required disabled={saving} /><small>The room opens automatically, then bidding starts after 20 seconds.</small></label>
                     <label>Seat limit<input type="number" name="seatLimit" min="1" step="1" value={form.seatLimit} onChange={change} required disabled={saving} placeholder="Maximum buyers" /></label>
                     <label>Advance amount (₹)<input type="number" name="advanceAmount" min="0" step="0.01" value={form.advanceAmount} onChange={change} required disabled={saving} placeholder="Reservation advance" /></label>
                 </div>

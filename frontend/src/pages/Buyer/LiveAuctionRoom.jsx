@@ -40,6 +40,7 @@ function LiveAuctionRoom() {
 
 
             if (latestUpdate?.roomStatus === "completed" && update.roomStatus !== "completed") return;
+            if (latestUpdate?.roomStatus === "live" && ["waiting", "upcoming", "open"].includes(update.roomStatus)) return;
             if (update.auctionItemId && latestUpdate?.auctionItemId > update.auctionItemId) return;
             if (update.auctionItemId === latestUpdate?.auctionItemId
                 && latestUpdate?.eventType === "ITEM_RESOLVED" && update.itemStatus === "live") return;
@@ -180,6 +181,14 @@ function LiveAuctionRoom() {
 
         return () => window.clearInterval(timer);
     }, [auction?.roomStatus]);
+
+    useEffect(() => {
+        if (!connected || auction?.roomStatus !== "waiting" || waitingSecondsRemaining > 0) return undefined;
+        const refresh = () => socketRef.current?.refreshState?.();
+        refresh();
+        const timer = window.setInterval(refresh, 2000);
+        return () => window.clearInterval(timer);
+    }, [connected, auction?.roomStatus, waitingSecondsRemaining]);
 
     useEffect(() => {
         if (!auction?.intermissionEndsAt) return undefined;

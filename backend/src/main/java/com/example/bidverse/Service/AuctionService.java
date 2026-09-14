@@ -50,8 +50,8 @@ public class AuctionService {
 
     private static final String DEAL_STATUS_PENDING = "pending";
 
-    private static final long BID_INACTIVITY_SECONDS = 20;
-    private static final long WAITING_ROOM_SECONDS = 90;
+    private static final long BID_INACTIVITY_SECONDS = 15;
+    private static final long WAITING_ROOM_SECONDS = 20;
     private static final long SOLD_RESULT_SECONDS = 15;
     private static final long UNSOLD_RESULT_SECONDS = 20;
     private static final Set<Integer> QUICK_BID_PERCENTAGES = Set.of(2, 5, 10);
@@ -110,6 +110,7 @@ public class AuctionService {
 
     @Transactional
     public void activateFirstItem(Room room) {
+        if (!ROOM_STATUS_LIVE.equals(room.getStatus())) return;
         List<auction_item> items = auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(room.getRoomId());
         items.stream()
                 .filter(i -> ITEM_STATUS_WAITING.equals(i.getStatus()))
@@ -137,7 +138,7 @@ public class AuctionService {
 
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
-        broadcastCurrentState(roomId, null, "WAITING_STARTED", "Waiting room is open for 90 seconds");
+        broadcastCurrentState(roomId, null, "WAITING_STARTED", "Waiting room is open for " + WAITING_ROOM_SECONDS + " seconds");
         return room;
     }
 
@@ -216,11 +217,11 @@ public class AuctionService {
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Room Not Found"));
 
-        Optional<auction_item> liveItem = auctionItemRepo.findByRoomIdAndStatus(roomId, ITEM_STATUS_LIVE);
-        if (liveItem.isPresent()) {
-            return buildUpdate(roomId, liveItem.get(), "SNAPSHOT", null);
-        }
         if (ROOM_STATUS_LIVE.equals(room.getStatus())) {
+            Optional<auction_item> liveItem = auctionItemRepo.findByRoomIdAndStatus(roomId, ITEM_STATUS_LIVE);
+            if (liveItem.isPresent()) {
+                return buildUpdate(roomId, liveItem.get(), "SNAPSHOT", null);
+            }
             Intermission pause = intermissions.get(roomId);
             if (pause == null) pause = restoreIntermission(roomId,
                     auctionItemRepo.findByRoomIdOrderByAuctionItemIdAsc(roomId));

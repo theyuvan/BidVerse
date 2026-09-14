@@ -28,7 +28,17 @@ export function connectToAuction({
         heartbeatOutgoing: 10000
     });
 
+    let statusSubscription;
+    client.refreshState = () => {
+        if (!client.connected) return;
+        statusSubscription?.unsubscribe();
+        statusSubscription = client.subscribe(`/app/room/${roomId}/status`, (message) => {
+            readMessage(message, onUpdate);
+        });
+    };
+
     client.onConnect = () => {
+        statusSubscription = null;
         onConnectionChange(true);
 
         client.subscribe(`/topic/room/${roomId}`, (message) => {
@@ -39,9 +49,7 @@ export function connectToAuction({
             readMessage(message, onBidError);
         });
 
-        client.subscribe(`/app/room/${roomId}/status`, (message) => {
-            readMessage(message, onUpdate);
-        });
+        client.refreshState();
     };
 
     client.onWebSocketClose = () => onConnectionChange(false);

@@ -270,7 +270,7 @@ try {
     await page.goto(`${base}/buyer/rooms/5/live`);
     for (let i = 0; i < 30 && !sendUpdate; i++) await page.waitForTimeout(100);
     assert.ok(sendUpdate, "Auction socket connected");
-    const live = { roomId: 5, auctionItemId: 11, productName: products[0].name, currentPrice: 15750, roomStatus: "live", itemStatus: "live", eventType: "BID_UPDATE", highestBidderId: 22, secondsRemaining: 20 };
+    const live = { roomId: 5, auctionItemId: 11, productName: products[0].name, currentPrice: 15750, roomStatus: "live", itemStatus: "live", eventType: "BID_UPDATE", highestBidderId: 22, secondsRemaining: 15 };
     for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 390, height: 844 }]) {
         await page.setViewportSize(viewport);
         sendUpdate(live);
@@ -455,7 +455,7 @@ try {
     await hostPage.getByRole("checkbox", { name: "Include Vintage leather watch" }).uncheck();
     await hostPage.getByRole("checkbox", { name: "Include iPhone 15" }).check();
     assert.equal(await hostPage.getByRole("button", { name: /Open waiting room|Start room/ }).count(), 0, "Scheduled rooms do not need a manual start button");
-    assert.ok(await hostPage.getByText("Bidding starts 90 seconds later", { exact: false }).isVisible());
+    assert.ok(await hostPage.getByText("Bidding starts 20 seconds later", { exact: false }).isVisible());
     await hostPage.getByRole("button", { name: "Save collection" }).click();
     await hostPage.getByRole("status").filter({ hasText: "Room collection updated." }).waitFor();
     assert.deepEqual(selectionBody.productIds, [102]);

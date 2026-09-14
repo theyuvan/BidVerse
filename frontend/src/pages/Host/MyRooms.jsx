@@ -26,7 +26,7 @@ export default function MyRooms() {
     }, []);
     const visible = rooms.filter(room => filter === "all" || room.status?.toLowerCase() === filter);
     return <main className="host-page rooms-page">
-        <header className="page-header"><div><span className="overline">YOUR AUCTION WORKSPACE</span><h1>Auction rooms</h1><p>Rooms open automatically at their scheduled time. Bidding follows a 90-second waiting period.</p></div><Link className="button-primary" to="/host/rooms/create">Create room +</Link></header>
+        <header className="page-header"><div><span className="overline">YOUR AUCTION WORKSPACE</span><h1>Auction rooms</h1><p>Rooms open automatically at their scheduled time. Bidding follows a 20-second waiting period.</p></div><Link className="button-primary" to="/host/rooms/create">Create room +</Link></header>
         <div className="room-filters" aria-label="Room status filters">{["all", "upcoming", "waiting", "live", "completed"].map(status => <button key={status} type="button" data-status={status} className={filter === status ? "active" : ""} aria-pressed={filter === status} onClick={() => setFilter(status)}>{status[0].toUpperCase() + status.slice(1)}</button>)}</div>
         {error && <p className="form-error" role="alert">{error}</p>}
         {loading ? <p className="empty-state">Loading rooms…</p> : !visible.length ? <p className="empty-state">No rooms in this view.</p>

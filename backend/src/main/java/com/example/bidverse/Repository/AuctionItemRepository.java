@@ -89,7 +89,8 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE auction_item a SET a.currentPrice = :newPrice, a.endedAt = :newDeadline " +
             "WHERE a.auctionItemId = :id AND a.status = 'live' " +
-            "AND a.currentPrice = :expectedPrice AND a.endedAt > :bidTime")
+            "AND a.currentPrice = :expectedPrice AND a.endedAt > :bidTime " +
+            "AND EXISTS (SELECT r.roomId FROM Room r WHERE r.roomId = a.roomId AND r.status = 'live')")
     int acceptBidAndResetDeadline(@Param("id") Long id,
                                   @Param("expectedPrice") BigDecimal expectedPrice,
                                   @Param("newPrice") BigDecimal newPrice,
@@ -99,14 +100,17 @@ public interface AuctionItemRepository extends JpaRepository<auction_item, Long>
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE auction_item a SET a.status = 'live', a.startedAt = :startedAt, a.endedAt = :endedAt " +
-            "WHERE a.auctionItemId = :id AND a.status = 'waiting'")
+            "WHERE a.auctionItemId = :id AND a.status = 'waiting' " +
+            "AND EXISTS (SELECT r.roomId FROM Room r WHERE r.roomId = a.roomId AND r.status = 'live')")
     int activateIfWaiting(@Param("id") Long id,
                            @Param("startedAt") OffsetDateTime startedAt,
                            @Param("endedAt") OffsetDateTime endedAt);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE auction_item a SET a.status = :newStatus, a.endedAt = :now " +
-            "WHERE a.auctionItemId = :id AND a.status = 'live' AND a.endedAt <= :now")
+            "WHERE a.auctionItemId = :id AND a.status = 'live' AND a.endedAt <= :now " +
+            "AND a.startedAt IS NOT NULL " +
+            "AND EXISTS (SELECT r.roomId FROM Room r WHERE r.roomId = a.roomId AND r.status = 'live')")
     int resolveExpiredIfLive(@Param("id") Long id,
                              @Param("newStatus") String newStatus,
                              @Param("now") OffsetDateTime now);

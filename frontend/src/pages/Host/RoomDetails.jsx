@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { getAvailableProducts, getRoomDetails, getRoomProducts, saveRoomProducts } from "../../services/hostService";
+import { getAvailableProducts, getRoomDetails, getRoomProducts, saveRoomProducts, startRoom } from "../../services/hostService";
 import { getAuthUser } from "../../services/authSession";
 import ProductPicker from "../../components/ProductPicker";
 import ProductPhoto from "../../components/ProductPhoto";
@@ -21,6 +21,7 @@ export default function RoomDetails() {
     const [editing, setEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [busy, setBusy] = useState(false);
+    const [confirmStart, setConfirmStart] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState(location.state?.message || "");
     const applyData = data => {
@@ -36,6 +37,7 @@ export default function RoomDetails() {
     }, [roomId]);
     useEffect(() => {
         let stopped = false, refreshing = false;
+        if (busy) return undefined;
         const timer = setInterval(async () => {
             if (refreshing) return;
             refreshing = true;
@@ -49,7 +51,7 @@ export default function RoomDetails() {
             finally { refreshing = false; }
         }, 5000);
         return () => { stopped = true; clearInterval(timer); };
-    }, [roomId]);
+    }, [roomId, busy]);
     const isOwner = String(getAuthUser()?.userId) === String(room?.hostId);
     const editable = isOwner && ["upcoming", "open"].includes(room?.status?.toLowerCase());
     const choices = [...assigned, ...available.filter(product => !assigned.some(item => item.productId === product.productId))];
@@ -63,19 +65,42 @@ export default function RoomDetails() {
         } catch (error) { setError(errorMessage(error)); }
         finally { setBusy(false); }
     };
+    const start = async () => {
+        if (!editable || editing || busy || !assigned.length) return;
+        setBusy(true); setError(""); setMessage("");
+        try {
+            const response = await startRoom(roomId);
+            setRoom(response.data);
+            setConfirmStart(false);
+            setMessage("Room started. Buyers have 20 seconds to join before bidding begins.");
+            window.dispatchEvent(new Event("bidverse:rooms-changed"));
+        } catch (error) { setError(errorMessage(error)); }
+        finally { setBusy(false); }
+    };
     if (loading) return <main className="host-page"><p className="empty-state">Loading your auction workspace…</p></main>;
     if (!room) return <main className="host-page"><Link to="/host/rooms">Back to rooms</Link><p role="alert" className="form-error">{error}</p></main>;
     return <main className="host-page host-room-workspace">
         <Link className="back-link" to="/host/rooms">← Back to rooms</Link>
         <section className="host-workspace-hero">
             <div><span className="overline">AUCTION ROOM #{room.roomId}</span><h1>{room.title}</h1><p>One collection. One shared bidding experience.</p><span className={`host-status ${room.status}`}>{room.status}</span></div>
-            <div className="host-workspace-action"><strong>Scheduled automatic start</strong><small>The waiting room opens at the scheduled time. Bidding starts 90 seconds later while the backend is running.</small>{editable ? <small>{editing ? "Save your product selection before the scheduled time." : !assigned.length ? "Add approved products: an empty room cannot start automatically." : "The product collection locks when the waiting room opens."}</small> : <small>{isOwner ? "Product selection is locked for this auction." : "Only this room’s host can change its collection."}</small>}</div>
+            <div className="host-workspace-action">
+                <strong>Start now or at the scheduled time</strong>
+                <small>The waiting room opens at the scheduled time, or you can start it early. Bidding starts 20 seconds later while the backend is running.</small>
+                {editable ? <>
+                    <small>{editing ? "Save or cancel your product changes before starting." : !assigned.length ? "Add approved products before starting this room." : "Starting the room locks its product collection."}</small>
+                    {confirmStart ? <div className="host-manual-start" role="group" aria-label="Confirm room start">
+                        <p>Open the waiting room now? Buyers will have 20 seconds before bidding begins.</p>
+                        <button className="button-primary" type="button" disabled={busy || editing || !assigned.length} onClick={start}>{busy ? "Starting…" : "Confirm start"}</button>
+                        <button className="button-outline" type="button" disabled={busy} onClick={() => setConfirmStart(false)}>Cancel start</button>
+                    </div> : <button className="button-primary" type="button" disabled={busy || editing || !assigned.length} onClick={() => setConfirmStart(true)}>Start room</button>}
+                </> : <small>{isOwner ? "This room has already started or ended. Product selection is locked." : "Only this room’s host can start it or change its collection."}</small>}
+            </div>
         </section>
         <dl className="host-workspace-facts"><div><dt>Buyer seats</dt><dd>{room.seatLimit}</dd></div><div><dt>Reservation advance</dt><dd>₹{Number(room.advanceAmount).toLocaleString("en-IN")}</dd></div><div><dt>Scheduled start</dt><dd>{new Date(room.startTime).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</dd></div></dl>
         {message && <p className="form-success" role="status">{message}</p>}{error && <p className="form-error" role="alert">{error}</p>}
         <section className="host-builder-panel">
             <div className="host-collection-heading"><div><span className="overline">THE AUCTION COLLECTION</span><h2>{editing ? "Choose your products" : "Products in this room"}</h2><p>{editing ? "Select to include. Uncheck to remove. Changes apply only when you save." : "Review each piece before welcoming your buyers."}</p></div>
-                {editable && !editing && <button className="button-outline" type="button" onClick={() => { setSelectedIds(assigned.map(item => item.productId)); setEditing(true); }}>Edit collection</button>}</div>
+                {editable && !editing && <button className="button-outline" type="button" disabled={busy} onClick={() => { setConfirmStart(false); setSelectedIds(assigned.map(item => item.productId)); setEditing(true); }}>Edit collection</button>}</div>
             {editing ? <><ProductPicker products={choices} selectedIds={selectedIds} onChange={setSelectedIds} disabled={busy} />
                 <div className="host-edit-actions"><button type="button" disabled={busy} onClick={save}>{busy ? "Saving…" : "Save collection"}</button><button className="button-outline" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancel</button></div></>
                 : !assigned.length ? <p className="empty-state">Your collection is empty. Use Edit collection to add approved products.</p>
